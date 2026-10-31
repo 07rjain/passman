@@ -33,6 +33,14 @@ The initial private credential requests expired without submission. Subsequent C
 - `DATABASE_URL`, `CLERK_ISSUER` and `CLERK_JWT_KEY` remain absent. `/api/health` returned 503 `UNAVAILABLE`; authenticated storage and the real signup/CLI/SDK journey remain unverified. The public JWT verifier can be configured after the intended instance/domain is confirmed; the application does not require a backend administrator key for session verification.
 - No database mutation, account migration, Clerk policy change or DNS change was performed in this recheck. Preview's hidden key mode was not verified and must be checked separately before using previews.
 
+## Signup reference investigation — 2026-10-31
+
+- Correlated reference `JMlfn4nT` with the currently served production instance using its previously authorized backend credential for read-only investigation. Confirmed `protect.sign_up.blocked` followed by `sign_up.failed`, both for `sua_3LTPC65v0ZQ2v68hOL7Om0CgGG2`; the Protect payload reports `reason: policy`, decision `7c0ff16f-0c67-4810-aeb0-ef7843fbf310`. No signup password, email address, credential or full application-log export is included in this record.
+- The public JWKS still matches the historical instance. The Vercel environment-variable update timestamps are unchanged from the earlier integration recheck; a replacement backend value cannot be verified from hidden sensitive variables.
+- The served instance reports its production domain as `passman.subdomain.wtf`. The specific matched Protect rule is not identified by the event payload. The instance's requirements-check fields alone do not identify the rule that rejected this signup. Inspect the decision in the Production dashboard before changing protections; no rule was disabled or bypassed.
+- The custom-domain homepage and Clerk public endpoints returned 200; health remains 503 with the database URL and explicit JWT verifier configuration absent. Those application configuration gaps are separate from the confirmed Clerk signup-policy rejection.
+- No DNS, instance configuration, account binding or database changes were made during this investigation. Replacement domain verification and ordinary signup remain pending.
+
 ## Historical evidence
 
 [The previous hosted setup and Clerk investigation](history/legacy-hosted-setup.md) records infrastructure/API checks and a Protect policy rejection on the former deployment. [Agent37 verification](agent37-verification.md) records the older development-instance CLI/SDK run. These records remain evidence for those particular runs; they are not passes for the replacement production application.
