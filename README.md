@@ -22,7 +22,7 @@ Configure a separate test PostgreSQL database and Clerk settings using [deployme
 
 Import `07rjain/passman` and select **`apps/web`** as the Root Directory with the Next.js preset and Node.js 24. Include source files outside the Root Directory. The checked-in settings run `cd ../.. && npm ci` for installation and `npm run build` for the app, compiling its shared core prerequisite automatically.
 
-The replacement Vercel/Clerk deployment is pending. Follow [the fresh setup checklist](docs/deployment.md#fresh-standalone-deployment) and record new live results in [live-setup.md](docs/live-setup.md). Earlier provider/test evidence is historical and does not establish that a replacement Clerk instance can complete signup.
+The replacement Vercel project and custom domain are deployed; Clerk/database configuration and live acceptance remain pending. Follow [the fresh setup checklist](docs/deployment.md#fresh-standalone-deployment) and record new live results in [live-setup.md](docs/live-setup.md). Earlier provider/test evidence is historical and does not establish that a replacement Clerk instance can complete signup.
 
 ## Install the released client
 

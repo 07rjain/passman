@@ -1,6 +1,6 @@
 # Deploy the MVP to Vercel
 
-Status: this standalone repository is prepared for a replacement Vercel/Clerk deployment. The former Keyman deployment is being retired by its owner; no new infrastructure is configured merely by importing source. Use synthetic secrets and record fresh results in [live-setup.md](live-setup.md).
+Status: the replacement Vercel project/domain are deployed; Clerk/database configuration and real signup acceptance remain pending. The former Keyman deployment is being retired by its owner; no new infrastructure is configured merely by importing source. Use synthetic secrets and record fresh results in [live-setup.md](live-setup.md).
 
 ## Fresh standalone deployment
 
@@ -102,7 +102,7 @@ These settings have passed local production builds and the hosted infrastructure
 - `EBADENGINE` showing Node.js 26: select **Settings → Build and Deployment → Node.js Version → 24.x**, and deploy the latest `main` commit containing the app-level engine pin. These log lines are warnings; read the end of the build log for the actual failure.
 - `Module not found: Can't resolve '@keyman-mvp/core'`: verify the Root Directory is `apps/web`, inclusion of outside source files is enabled, and the build command is `npm run build`. Current code runs `@keyman-mvp/web ... prebuild`, then the core TypeScript build, before `next build`. A custom command of `next build` alone bypasses the npm lifecycle; reset that override to `npm run build`.
 - Retry using the newest `main` commit rather than redeploying an earlier failed commit. The default app build was tested in a fresh independent source snapshot with a new dependency install and no generated artifacts or repository-parent dependencies. CI also builds the web workspace first, before any other package build, to catch this regression.
-- A Clerk signup security screen with a reference code requires investigation in the production instance's Application Logs / Protect dashboard. Correlate `sign_up.failed` and `protect.sign_up.blocked` for that reference before changing protections. A sensitive `CLERK_SECRET_KEY` setting's existence does not establish that its hidden value belongs to the right instance; validate a replacement against the production JWKS, keep it server-only and redeploy when changing it. The browser's signup request uses the public Frontend API; updating a backend credential alone does not establish that a Protect policy block is resolved. See the [live investigation record](live-setup.md#production-backend-key-and-signup-investigation--2026-10-31).
+- A Clerk signup security screen with a reference code requires investigation in the production instance's Application Logs / Protect dashboard. Correlate `sign_up.failed` and `protect.sign_up.blocked` for that reference before changing protections. A sensitive `CLERK_SECRET_KEY` setting's existence does not establish that its hidden value belongs to the right instance; validate a replacement against the production JWKS, keep it server-only and redeploy when changing it. The browser's signup request uses the public Frontend API; updating a backend credential alone does not establish that a Protect policy block is resolved. See the [live investigation record](history/legacy-hosted-setup.md#production-backend-key-and-signup-investigation--2026-10-31).
 
 ## Operational checks
 

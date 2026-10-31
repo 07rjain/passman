@@ -1,6 +1,6 @@
 # Passman implementation plan
 
-Status: experimental standalone source prepared for [07rjain/passman](https://github.com/07rjain/passman). Reprovisioning/deployment is a separate next step; the owner will retire the old Vercel/Clerk resources. Follow the [PRD](PRD.md), [design decisions](simplified-design.md) and [working instructions](../AGENTS.md). See [testing.md](testing.md) for commands and [live-setup.md](live-setup.md) for the new deployment checklist.
+Status: experimental standalone source prepared for [07rjain/passman](https://github.com/07rjain/passman). The new Vercel project/domain are deployed; Clerk/database configuration and fresh live acceptance remain pending. Follow the [PRD](PRD.md), [design decisions](simplified-design.md) and [working instructions](../AGENTS.md). See [testing.md](testing.md) for commands and [live-setup.md](live-setup.md) for the new deployment checklist.
 
 ## Implemented and verified locally
 
