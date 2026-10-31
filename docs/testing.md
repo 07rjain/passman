@@ -122,3 +122,15 @@ Executed locally on Linux: six unit tests, installed-tarball/type/runtime/CLI ch
 The default `npm run build` from `apps/web` also passed in an independent fresh source snapshot with a new dependency install and no generated core or Next.js artifacts. Its npm `prebuild` lifecycle compiles core first. The Linux integration CI job exercises this default prerequisite path by building the web workspace before the client, rather than relying on a previously built core package.
 
 The separate hosted setup record establishes Vercel/Neon configuration and seven API/SDK enrollment smoke checks. Neither that record nor these automated suites establish an interactive Clerk signup/login/reverification dialog, interactive Mac installation, supported-browser encryption, production load, disaster recovery or an independent audit. Linux/macOS checks and Linux PostgreSQL integration are configured in the dedicated MVP GitHub workflow. Report its actual result separately from local success.
+
+## Standalone repository verification — 2026-10-31
+
+OPS-11 was checked using a separate clean Git clone outside the former parent repository, with no inherited environment files, generated artifacts or parent license/documentation files. `npm ci`, `npm run check` and `npm run test:distribution` passed on Linux/Node.js 24. The suite includes six unit tests, package runtime/declaration checks, formatting, lint, type checking and the repository-local Markdown checks.
+
+After removing generated core/client/web output, a direct `npm run build --workspace @keyman-mvp/web` passed and regenerated the hosted installer. Keep explicit npm `prebuild` hooks enabled: inheriting `ignore-scripts=true` would suppress this prerequisite in a standalone Vercel build. The repository's `.npmrc` retains strict engines/exact saves without that setting.
+
+A separate temporary PostgreSQL 16 cluster on loopback ran the real built-Next.js integration against a disposable `keyman_mvp_test` database. The parent scenario and both named subtests passed, covering actual CLI approval/upload/search, exact SDK decryption, authorization/isolation, conflicts, expiry and revocation. No deployed database or customer vault was used.
+
+GitHub private vulnerability reporting was enabled for `07rjain/passman`. Package source metadata and future release publication point to that repository; existing immutable 0.1.0 downloads intentionally retain their original location. No SDK release was published.
+
+The install audit reported eleven moderate advisories in existing development-tool dependencies (ESLint/TypeScript-ESLint/minimatch), with no high/critical findings. Their versions were preserved and the upgrade review is tracked in [plan.md](plan.md). These local results do not establish macOS CI success, replacement Vercel/Clerk deployment, actual inbox/browser signup or independent security approval.

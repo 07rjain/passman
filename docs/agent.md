@@ -41,7 +41,7 @@ Documentation-only changes require appropriate structural, link, example, and co
 
 ## 3. Code quality and module boundaries
 
-- Use the repository's established toolchain and conventions. The initial SDK, CLI, broker, and backend baseline is TypeScript on Node.js; the dashboard uses TypeScript as well.
+- Use the repository's established toolchain and conventions. The SDK, CLI, website and API use TypeScript on Node.js 24. Preserve the pinned toolchain unless a change is justified and tested.
 - Use strict typing. Validate external input at trust boundaries; TypeScript types do not validate network requests, configuration, IPC messages, or database content at runtime.
 - Keep functions and modules cohesive. Choose explicit names, straightforward control flow, and clear ownership of side effects.
 - Avoid unsafe casts, unexplained `any`, global mutable state, hidden initialization, and implicit account/machine switching. Justify narrow exceptions where necessary.

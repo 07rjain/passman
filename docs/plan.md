@@ -52,6 +52,8 @@ The initial SDK/CLI version is 0.1.0. Distribution includes the installer/privat
 
 ## Future TODO
 
+- [ ] Review the existing development-tool dependency advisories: the standalone install reported 11 moderate findings in the ESLint/TypeScript-ESLint/minimatch toolchain and no high/critical findings. Dependency versions were preserved during extraction; evaluate upgrades separately with regression checks.
+
 - [ ] Upgrade the MVP to Node.js 26.x: verify dependency compatibility; run crypto/local-vault, SDK/CLI, packaging, database integration and clean web-build checks on Linux/macOS as applicable; then align package engine constraints, lockfile metadata, `.nvmrc`, CI, Vercel settings and documentation. Complete a deployed smoke test before making 26.x the default. Keep 24.x as the current baseline until validation passes.
 - [ ] Separately authorized programmatic SDK create/update/delete operations; ordinary application credentials stay read-only.
 - [ ] Browser-to-local connector bridge, only after origin binding, authentication and permissions are specified.

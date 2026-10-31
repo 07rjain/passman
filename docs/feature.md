@@ -46,6 +46,7 @@ Never point integration tests at the deployed Neon database. `npm run check` cov
 | [Workflow integration](../test/workflow.integration.ts) | Built Next.js, real PostgreSQL, actual CLI/SDK, isolation, conflicts, expiry/replay/revocation | Fixture JWTs; no real inbox or browser interactions |
 | [Distribution checks](../distribution/check.mjs) | Offline archive consumption, SDK types/runtime, HTTPS installer, upgrade/tamper/vault preservation and version tooling | Downloads a pinned Node runtime; does not validate every desktop configuration |
 | [Agent37 verification](agent37-verification.md) | Independent Linux VM, actual release, genuine Clerk development sessions and live service operations | Development test OTPs, not production email or visual browser forms |
+| [Standalone clone verification](testing.md#standalone-repository-verification--2026-10-31) | Independent source checkout, direct web prerequisite build, package/installer checks and disposable PostgreSQL workflow | Local Linux; replacement deployment/browser/inbox acceptance remains open |
 | Manual acceptance below | Real platform/domain/provider/browser/operations behavior | Record actual results per run; no standing blanket pass |
 
 ## 1. Installation, updates and SDK distribution
