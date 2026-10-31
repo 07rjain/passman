@@ -23,7 +23,15 @@ See [deployment.md](deployment.md#fresh-standalone-deployment) for the concrete 
 - Actual HTTPS checks: `/` returned 200 and the missing-Clerk setup screen; `/install.sh` returned 200 with the installer script; `/api/health` returned 503 `UNAVAILABLE`, as expected without the required backend configuration. This is not a passing health/authentication check.
 - Local Vercel project metadata is linked in ignored `.vercel/`. No customer key, provider plaintext or deployment credential was added to Git.
 
-The replacement Clerk production key and previous database runtime connection URL are required to finish setup. The private credential requests expired without submission; configuration remains pending until the credentials are supplied securely and validated. Replacing the Vercel project alone does not resolve the previous Clerk Protect policy rejection. Use the checklist above and record ordinary signup/email verification and the authenticated CLI/SDK workflow separately.
+The initial private credential requests expired without submission. Subsequent Clerk integration checks are recorded below. The previous database runtime connection URL remains required privately; the existing database has not been modified. Replacing the Vercel project alone does not resolve the previous Clerk Protect policy rejection. Use the checklist above and record ordinary signup/email verification and the authenticated CLI/SDK workflow separately.
+
+## Clerk integration recheck — 2026-10-31
+
+- Vercel now contains `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` in Production and Preview, saved as sensitive variables. Their presence does not establish the hidden backend key's instance. No secret value was retrieved or logged.
+- Redeployed the current source as `dpl_9Vng6xH22rtYWkZhGaHSZjxb7emW`; Vercel reported Ready with aliases assigned. The custom-domain homepage returned 200, removed the missing-Clerk setup screen and served a `pk_live_` frontend key for `clerk.passman.subdomain.wtf`.
+- The public Clerk environment reported production mode, and its JWKS returned 200 with RSA/RS256. However, its signing-key ID remains `ins_3LRD1sYQePusdG11jlVm2a4zBQb`, matching the historical instance. This does not verify that the requested replacement instance is active. Confirm the connected resource and replacement domain configuration before pinning its verifier. The Vercel token could not list Clerk Marketplace resources (403); no replacement resource identity is assumed.
+- `DATABASE_URL`, `CLERK_ISSUER` and `CLERK_JWT_KEY` remain absent. `/api/health` returned 503 `UNAVAILABLE`; authenticated storage and the real signup/CLI/SDK journey remain unverified. The public JWT verifier can be configured after the intended instance/domain is confirmed; the application does not require a backend administrator key for session verification.
+- No database mutation, account migration, Clerk policy change or DNS change was performed in this recheck. Preview's hidden key mode was not verified and must be checked separately before using previews.
 
 ## Historical evidence
 
