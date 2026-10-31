@@ -1,13 +1,13 @@
 # Standalone deployment status
 
-The standalone source is hosted in [07rjain/passman](https://github.com/07rjain/passman). A replacement Vercel project and custom domain are deployed as recorded below. Replacement Clerk/database configuration and a real signup remain pending. The owner subsequently requested deletion of the old Clerk resource; its deletion is recorded below. The hosted application is not yet a functioning vault deployment.
+The standalone source is hosted in [07rjain/passman](https://github.com/07rjain/passman). The replacement Vercel project, custom domain and Clerk production configuration are recorded below. Database configuration and real signup acceptance remain pending. The old Clerk resource was deleted at the owner's request and replaced with a directly configured Passman instance. The hosted application is not yet a functioning vault deployment.
 
 ## Replacement setup checklist
 
 - [x] Import the new repository into Vercel with Root Directory `apps/web`, Node.js 24 and the committed install/build commands.
 - [ ] Reconnect the previous MVP database using its restricted runtime role, as selected by the owner. Verify its existing schema and preserve data; new Clerk identities receive separate account bindings without email-based merging or resets.
-- [ ] Create/configure Clerk for the intended stable origin. Set matched frontend, issuer and public RSA verifier settings; any server-only backend credential must belong to the same instance.
-- [ ] Obtain the replacement instance's exact DNS targets, verify DNS/certificates and preserve unrelated websites. Earlier DKIM/mail targets are instance-specific and must not be copied blindly.
+- [x] Configure the replacement Clerk production instance for the intended stable origin, with matched frontend, issuer and public RSA verifier settings and a matching backend credential.
+- [x] Obtain the replacement instance's exact DNS targets, verify public DNS and Frontend API TLS, and preserve unrelated websites. Clerk dashboard deployment/verification status and ordinary browser acceptance remain separate checks.
 - [ ] Complete ordinary browser email signup/verification and sign-in without a testing token. Inspect Protect decisions if blocked; recreating infrastructure does not guarantee a policy rejection disappears.
 - [ ] Confirm health and denied-request behavior, then perform CLI approval, local encrypted upload, exact SDK retrieval, read-only enforcement and revocation.
 - [ ] Record commits, client version, environment/platform, feature case IDs, actual results, cleanup and unresolved cases here.
@@ -48,6 +48,15 @@ The initial private credential requests expired without submission. Subsequent C
 - Vercel removed the linked Clerk environment variables; only Production `APP_ORIGIN` remains. Existing deployment artifacts may still contain the old public frontend configuration until redeployed. Replacement keys, issuer/public verifier and the preserved database runtime URL remain pending.
 - No PostgreSQL data, vault files, website domain, DNS records or unrelated resource was deleted. Old Clerk mail/DKIM DNS records remain until the replacement instance supplies its exact targets. This deletion does not migrate Clerk users or recover their existing ciphertext bindings.
 - A directly managed replacement may be created in the owner's own Clerk workspace; applications in the Vercel-managed organization remain subject to Marketplace management. Set its production domain to `passman.subdomain.wtf`, verify exact DNS/certificates and supply matching production frontend/server settings. Email-only authentication requires no social OAuth credentials.
+
+## Replacement Passman Clerk configuration — 2026-10-31
+
+- Validated the owner-added Vercel production keys against Clerk's Backend API. Both use production prefixes and belong to replacement instance `ins_3LTh8XTGOnc7D7frSkStlo2giLb`, whose primary domain is `passman.subdomain.wtf`. No backend secret value was printed or committed; it was used only in memory for authorized validation.
+- The public Frontend API reports application name `passman`, production mode, public signup, email authentication and required email verification, with no social providers. Its RSA/RS256 JWKS matches the replacement instance's Backend API JWKS.
+- Existing `clerk.passman.subdomain.wtf` and `accounts.passman.subdomain.wtf` CNAME targets already matched. Corrected the three stale instance-specific CNAMEs to the exact replacement contract: `clkmail.passman.subdomain.wtf` → `mail.35fvjyf8ky2x.clerk.services`, `clk._domainkey.passman.subdomain.wtf` → `dkim1.35fvjyf8ky2x.clerk.services`, and `clk2._domainkey.passman.subdomain.wtf` → `dkim2.35fvjyf8ky2x.clerk.services`. Verified all five with public DNS and compared every unrelated DNS record unchanged. No Clerk CNAME is missing or points to an incorrect target after this change; DMARC, website and wildcard records are preserved.
+- Added Production `CLERK_ISSUER=https://clerk.passman.subdomain.wtf` and the matching public RSA `CLERK_JWT_KEY`. Existing keys cover Production and Preview, but only Production has the pinned origin/verifier configuration. Preview acceptance is not claimed.
+- Production deployment `dpl_AcTmxQ8ftZ8VGBjBC1YEEGBbXZCb` reached Ready with aliases assigned. The custom-domain homepage returned 200 with a production frontend key and no missing-Clerk setup screen. Its public JWKS matches the replacement instance. `/api/health` remains 503 `UNAVAILABLE` with `Cache-Control: private, no-store` because `DATABASE_URL` is absent; this is a configuration gap, not an authenticated API acceptance pass. The preserved database and account bindings have not been modified.
+- Public Frontend API HTTPS requests succeeded. A non-browser request to the accounts portal received Cloudflare's 403 browser challenge, which is not an ordinary-browser signup result. Genuine email signup/verification, Protect acceptance and the complete authenticated CLI/SDK journey remain pending; no protection was disabled and no testing token was used.
 
 ## Historical evidence
 

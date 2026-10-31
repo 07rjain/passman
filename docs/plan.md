@@ -30,7 +30,7 @@ On the former Keyman deployment, the configuration cutover completed on 2026-10-
 
 ## Remaining release work
 
-- [ ] Configure the replacement Vercel project from this repository (`apps/web`), a separate Neon database/runtime role, the stable domain and a matched Clerk production instance. Repeat DNS/TLS, genuine signup/verification and API denial checks; see [live-setup.md](live-setup.md).
+- [ ] Finish the replacement Vercel deployment from this repository (`apps/web`) using the owner-selected previous MVP database and its restricted runtime role, preserving existing data and identity bindings. The replacement Clerk production instance, domain DNS and public verifier are configured; database connectivity, genuine signup/verification and API denial checks remain pending. See [live-setup.md](live-setup.md).
 - [ ] Rehearse human email signup/login, local-machine approval, project creation, encrypted upload, SDK retrieval and revocation against the hosted service. Test optional browser input on supported browsers.
 - [ ] Independently review cryptographic/authentication contracts and the documented base-HPKE/hosted-code/client-compromise limits.
 - [ ] Set edge/IP abuse protection, monitoring, spending limits and encrypted backup/restore operations; current database counters are a baseline.
