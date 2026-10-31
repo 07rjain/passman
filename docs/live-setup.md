@@ -1,6 +1,6 @@
 # Standalone deployment status
 
-The standalone source is hosted in [07rjain/passman](https://github.com/07rjain/passman). A replacement Vercel project and custom domain are deployed as recorded below. Replacement Clerk/database configuration and a real signup remain pending; the current setup screen is not a functioning vault deployment.
+The standalone source is hosted in [07rjain/passman](https://github.com/07rjain/passman). A replacement Vercel project and custom domain are deployed as recorded below. Replacement Clerk/database configuration and a real signup remain pending. The owner subsequently requested deletion of the old Clerk resource; its deletion is recorded below. The hosted application is not yet a functioning vault deployment.
 
 ## Replacement setup checklist
 
@@ -40,6 +40,14 @@ The initial private credential requests expired without submission. Subsequent C
 - The served instance reports its production domain as `passman.subdomain.wtf`. The specific matched Protect rule is not identified by the event payload. The instance's requirements-check fields alone do not identify the rule that rejected this signup. Inspect the decision in the Production dashboard before changing protections; no rule was disabled or bypassed.
 - The custom-domain homepage and Clerk public endpoints returned 200; health remains 503 with the database URL and explicit JWT verifier configuration absent. Those application configuration gaps are separate from the confirmed Clerk signup-policy rejection.
 - No DNS, instance configuration, account binding or database changes were made during this investigation. Replacement domain verification and ordinary signup remain pending.
+
+## Owner-requested Clerk resource deletion — 2026-10-31
+
+- Identified the exact resource `clerk-aqua-crystal` (`ir_BKcB2mhMDaq1E6h2`) through Vercel's resource inventory. It had one connection, to the standalone Passman project. Disconnected that connection, verified no remaining connected projects, then deleted only this resource. Vercel returned 200 for deletion.
+- Verified the deleted resource is absent from a fresh inventory, all other resource IDs remain present and the Passman project still exists. The historical Clerk backend key's instance lookup now returns 404. Domain reuse should be retried in the replacement app; this check did not attempt to claim the domain on another instance.
+- Vercel removed the linked Clerk environment variables; only Production `APP_ORIGIN` remains. Existing deployment artifacts may still contain the old public frontend configuration until redeployed. Replacement keys, issuer/public verifier and the preserved database runtime URL remain pending.
+- No PostgreSQL data, vault files, website domain, DNS records or unrelated resource was deleted. Old Clerk mail/DKIM DNS records remain until the replacement instance supplies its exact targets. This deletion does not migrate Clerk users or recover their existing ciphertext bindings.
+- A directly managed replacement may be created in the owner's own Clerk workspace; applications in the Vercel-managed organization remain subject to Marketplace management. Set its production domain to `passman.subdomain.wtf`, verify exact DNS/certificates and supply matching production frontend/server settings. Email-only authentication requires no social OAuth credentials.
 
 ## Historical evidence
 
