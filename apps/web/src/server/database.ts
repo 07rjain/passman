@@ -1,0 +1,44 @@
+import { Pool, type PoolClient } from "pg";
+export const migration = `
+CREATE SCHEMA IF NOT EXISTS keyman_mvp;
+CREATE TABLE IF NOT EXISTS keyman_mvp.migrations(version integer PRIMARY KEY);
+CREATE TABLE IF NOT EXISTS keyman_mvp.accounts(id uuid PRIMARY KEY,clerk_id text NOT NULL UNIQUE,vault_id uuid NOT NULL UNIQUE,public_key jsonb NOT NULL,key_id text NOT NULL);
+CREATE TABLE IF NOT EXISTS keyman_mvp.projects(id uuid PRIMARY KEY,account_id uuid NOT NULL REFERENCES keyman_mvp.accounts(id),name text NOT NULL,UNIQUE(account_id,name),UNIQUE(id,account_id));
+CREATE TABLE IF NOT EXISTS keyman_mvp.secrets(account_id uuid NOT NULL,project_id uuid NOT NULL,name text NOT NULL,revision integer NOT NULL CHECK(revision>0),envelope jsonb NOT NULL,PRIMARY KEY(project_id,name),FOREIGN KEY(project_id,account_id) REFERENCES keyman_mvp.projects(id,account_id) ON DELETE CASCADE);
+CREATE TABLE IF NOT EXISTS keyman_mvp.credentials(id uuid PRIMARY KEY,account_id uuid NOT NULL REFERENCES keyman_mvp.accounts(id),hash text NOT NULL UNIQUE,label text NOT NULL,kind text NOT NULL CHECK(kind IN('read','upload')),project_id uuid,expires_at bigint NOT NULL,revoked boolean NOT NULL DEFAULT false,FOREIGN KEY(project_id,account_id) REFERENCES keyman_mvp.projects(id,account_id));
+CREATE TABLE IF NOT EXISTS keyman_mvp.devices(id uuid PRIMARY KEY,public_key jsonb NOT NULL,key_id text NOT NULL,device_hash text NOT NULL UNIQUE,code_hash text NOT NULL,expires_at bigint NOT NULL,account_id uuid REFERENCES keyman_mvp.accounts(id),approved boolean NOT NULL DEFAULT false,consumed boolean NOT NULL DEFAULT false);
+CREATE TABLE IF NOT EXISTS keyman_mvp.limits(subject text NOT NULL,bucket bigint NOT NULL,count integer NOT NULL,PRIMARY KEY(subject,bucket));
+INSERT INTO keyman_mvp.migrations(version) VALUES(1) ON CONFLICT DO NOTHING;
+`;
+export function database(url: string) {
+  return new Pool({
+    connectionString: url,
+    max: 3,
+    connectionTimeoutMillis: 5000,
+    statement_timeout: 10000,
+    idleTimeoutMillis: 10000,
+  });
+}
+export async function transaction<T>(
+  pool: Pool,
+  fn: (client: PoolClient) => Promise<T>,
+): Promise<T> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const result = await fn(client);
+    await client.query("COMMIT");
+    return result;
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+export async function migrate(pool: Pool) {
+  await transaction(pool, async (client) => {
+    await client.query("SELECT pg_advisory_xact_lock(74125902)");
+    await client.query(migration);
+  });
+}

@@ -1,0 +1,30 @@
+# Credentials and private local state
+.env
+.env.*
+!.env.example
+.keyman-mvp/
+.keyman/
+.ssh/
+/private/
+vault.json
+
+# Local experiments, deployment metadata and generated output
+/ignore-docs/
+.vercel/
+node_modules/
+dist/
+build/
+coverage/
+.next/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+/apps/web/public/install.sh
+
+# Logs and operating-system files
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+__pycache__/
+.pytest_cache/

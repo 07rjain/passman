@@ -1,0 +1,29 @@
+{
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "name": "@keyman-mvp/client",
+  "bin": {
+    "passman": "dist/cli.js",
+    "keyman-mvp": "dist/cli.js"
+  },
+  "dependencies": {
+    "@keyman-mvp/core": "0.0.0"
+  }
+}

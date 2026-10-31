@@ -1,0 +1,26 @@
+{
+  "name": "@keyman-mvp/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "prebuild": "npm --prefix ../.. run build --workspace @keyman-mvp/core && node ../../distribution/prepare-web.mjs",
+    "build": "next build",
+    "dev": "next dev --port 3100",
+    "start": "next start --port 3100"
+  },
+  "dependencies": {
+    "@keyman-mvp/core": "0.0.0",
+    "@clerk/nextjs": "7.9.22",
+    "@clerk/backend": "3.26.4",
+    "next": "16.4.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "pg": "8.23.1",
+    "@clerk/shared": "4.43.0"
+  }
+}

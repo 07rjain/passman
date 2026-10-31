@@ -1,0 +1,7 @@
+node_modules/
+**/dist/
+**/.next/
+ignore-docs/
+package-lock.json
+**/*.md
+**/next-env.d.ts

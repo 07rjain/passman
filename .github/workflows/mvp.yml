@@ -1,0 +1,61 @@
+name: MVP CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm run check
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+      - run: npm run test:distribution
+      - run: npm run docs:check
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16.15-bookworm@sha256:e8a07d2c7579b038938cdba6c539e580e5001caf9ea203d397b5cc83e76bd938
+        env:
+          POSTGRES_USER: keyman_test
+          POSTGRES_PASSWORD: synthetic-test-password
+          POSTGRES_DB: keyman_mvp_test
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U keyman_test -d keyman_mvp_test" --health-interval 5s --health-timeout 3s --health-retries 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - name: Build web directly from a clean workspace, then build the client
+        run: |
+          npm run build --workspace @keyman-mvp/web
+          npm run build --workspace @keyman-mvp/client
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+      - run: npm run test:integration
+        env:
+          MVP_TEST_DATABASE_URL: postgresql://keyman_test:synthetic-test-password@127.0.0.1:5432/keyman_mvp_test

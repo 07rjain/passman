@@ -1,0 +1,42 @@
+name: Passman release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: SDK/CLI version already committed in package.json and SDK_CHANGELOG.md
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: passman-release
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - name: Validate requested version
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: node --input-type=module -e 'import fs from "node:fs";const p=JSON.parse(fs.readFileSync("packages/client/package.json"));if(!/^\d+\.\d+\.\d+$/.test(process.env.RELEASE_VERSION)||p.version!==process.env.RELEASE_VERSION)throw Error("Requested version must match the committed client version");'
+      - run: npm run check
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+      - run: npm run test:distribution
+      - run: npm run release:build
+      - name: Publish immutable release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_COMMIT: ${{ github.sha }}
+        run: node distribution/publish.mjs
