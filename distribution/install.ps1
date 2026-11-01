@@ -59,6 +59,7 @@ function Checksum([string]$File, [string]$Manifest, [string]$Name) {
     return $expected
 }
 $work = $null
+$stage = 'INITIALIZE'
 try {
     if ($env:OS -ne 'Windows_NT') { throw 'This installer requires Windows.' }
     $base = if ($env:PASSMAN_DOWNLOAD_BASE) { $env:PASSMAN_DOWNLOAD_BASE.TrimEnd('/') } else { 'https://github.com/07rjain/passman/releases' }
@@ -90,44 +91,49 @@ try {
     }
     if ($version -notmatch '^\d+\.\d+\.\d+$') { throw 'Invalid release version.' }
     if ([version]$version -lt [version]'0.2.0') { throw 'Windows requires Passman 0.2.0 or newer.' }
+    $stage = 'DOWNLOAD_RELEASE'
     $archive = "passman-$version.tgz"
     $package = Join-Path $work 'package.tgz'
     $manifest = Join-Path $work 'package.sha256'
     Download "$base/download/passman-v$version/$archive" $package
     Download "$base/download/passman-v$version/$archive.sha256" $manifest
+    $stage = 'VERIFY_RELEASE'
     $expected = Checksum $package $manifest $archive
     $release = Join-Path $versions $version
+    $stage = 'PREPARE_VERSION'
     if (Test-Path -LiteralPath $release) {
         PlainPath $release
         if ([IO.File]::ReadAllText((Join-Path $release 'installed.sha256')).Trim() -ne $expected) { throw 'Version exists with different contents; refusing replacement.' }
     } else {
         $cpu = if ($env:PROCESSOR_ARCHITEW6432) { $env:PROCESSOR_ARCHITEW6432 } else { $env:PROCESSOR_ARCHITECTURE }
         $arch = switch ($cpu) { 'AMD64' { 'x64' } 'ARM64' { 'arm64' } default { throw 'Supported Windows CPUs: x64 and arm64.' } }
+        $stage = 'DOWNLOAD_RUNTIME'
         $nodeVersion = '24.22.2'
         $nodeArchive = "node-v$nodeVersion-win-$arch.zip"
         Download "https://nodejs.org/dist/v$nodeVersion/$nodeArchive" (Join-Path $work 'node.zip')
         Download "https://nodejs.org/dist/v$nodeVersion/SHASUMS256.txt" (Join-Path $work 'node.sha256')
         Checksum (Join-Path $work 'node.zip') (Join-Path $work 'node.sha256') $nodeArchive | Out-Null
-        $stage = Join-Path $work 'release'
-        [IO.Directory]::CreateDirectory($stage) | Out-Null
+        $stagePath = Join-Path $work 'release'
+        [IO.Directory]::CreateDirectory($stagePath) | Out-Null
         $entries = & tar.exe -tzf $package
         if ($LASTEXITCODE -ne 0 -or @($entries | Where-Object { $_ -notmatch '^package/' -or $_ -match '(^|/)\.\.(/|$)|\\' }).Count -ne 0) { throw 'Invalid package archive paths.' }
-        & tar.exe -xzf $package -C $stage
+        & tar.exe -xzf $package -C $stagePath
         if ($LASTEXITCODE -ne 0) { throw 'Package extraction failed.' }
         Expand-Archive -LiteralPath (Join-Path $work 'node.zip') -DestinationPath $work
-        Move-Item -LiteralPath (Join-Path $work "node-v$nodeVersion-win-$arch") -Destination (Join-Path $stage 'runtime')
-        $actual = & (Join-Path $stage 'runtime\node.exe') (Join-Path $stage 'package\dist\cli.js') --version
+        Move-Item -LiteralPath (Join-Path $work "node-v$nodeVersion-win-$arch") -Destination (Join-Path $stagePath 'runtime')
+        $actual = & (Join-Path $stagePath 'runtime\node.exe') (Join-Path $stagePath 'package\dist\cli.js') --version
         if ($LASTEXITCODE -ne 0 -or $actual -ne $version) { throw 'Installed CLI failed its version check.' }
-        [IO.File]::WriteAllText((Join-Path $stage 'installed.sha256'), $expected)
-        Move-Item -LiteralPath $stage -Destination $release
+        [IO.File]::WriteAllText((Join-Path $stagePath 'installed.sha256'), $expected)
+        Move-Item -LiteralPath $stagePath -Destination $release
     }
+    $stage = 'ACTIVATE'
     $newLauncher = Join-Path $bin ('.passman-' + [Guid]::NewGuid() + '.cmd')
     $text = $marker + 'setlocal DisableDelayedExpansion' + "`r`n" + 'set /p PASSMAN_ACTIVE=<"%~dp0..\current.txt"' + "`r`n" + '"%~dp0..\versions\%PASSMAN_ACTIVE%\runtime\node.exe" "%~dp0..\versions\%PASSMAN_ACTIVE%\package\dist\cli.js" %*' + "`r`nexit /b %errorlevel%`r`n"
     [IO.File]::WriteAllText($newLauncher, $text, [Text.Encoding]::ASCII)
-    if (Test-Path -LiteralPath $launcher) { [IO.File]::Replace($newLauncher, $launcher, $null) } else { [IO.File]::Move($newLauncher, $launcher) }
+    if (Test-Path -LiteralPath $launcher) { [IO.File]::Replace($newLauncher, $launcher, [NullString]::Value) } else { [IO.File]::Move($newLauncher, $launcher) }
     $newPointer = Join-Path $root ('.current-' + [Guid]::NewGuid())
     [IO.File]::WriteAllText($newPointer, $version, [Text.Encoding]::ASCII)
-    if (Test-Path -LiteralPath $pointer) { [IO.File]::Replace($newPointer, $pointer, $null) } else { [IO.File]::Move($newPointer, $pointer) }
+    if (Test-Path -LiteralPath $pointer) { [IO.File]::Replace($newPointer, $pointer, [NullString]::Value) } else { [IO.File]::Move($newPointer, $pointer) }
     Write-Host "Passman $version installed. Your vault was not changed."
     $displayLauncher = $launcher.Replace("'", "''")
     Write-Host "Sign in: & '$displayLauncher' login"
@@ -135,8 +141,8 @@ try {
     Write-Host "For this PowerShell session: `$env:Path = '$displayBin;' + `$env:Path"
     Write-Host 'Update by running this installer again. PASSMAN_VERSION selects a specific version.'
 } catch {
-    Write-Error 'Passman installation failed. Check HTTPS downloads, local NTFS permissions and the selected release. Your vault was not changed.'
-    throw
+    $kind = $_.Exception.GetType().Name
+    throw "Passman installation failed ($stage/$kind). Check HTTPS downloads, local NTFS permissions and the selected release. Your vault was not changed."
 } finally {
     if ($work -and (Test-Path -LiteralPath $work)) { Remove-Item -LiteralPath $work -Recurse -Force }
 }

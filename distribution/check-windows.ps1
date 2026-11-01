@@ -1,4 +1,5 @@
 $ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
 Set-StrictMode -Version Latest
 $repo = Split-Path $PSScriptRoot -Parent
 $fixture = Join-Path ([IO.Path]::GetTempPath()) ('passman-windows-test-' + [Guid]::NewGuid())
@@ -14,7 +15,7 @@ function DownloadFixture($Url, $Destination) {
         if ($script:tamper -and $Url.EndsWith('.tgz')) { [IO.File]::WriteAllText($Destination,'corrupt'); return }
         $name = ([Uri]$Url).Segments[-1]
         Copy-Item -LiteralPath (Join-Path $repo "ignore-docs/releases/$name") -Destination $Destination
-    } else { Invoke-WebRequest -UseBasicParsing -Uri $Url -OutFile $Destination }
+    } else { Invoke-WebRequest -UseBasicParsing -Uri $Url -OutFile $Destination -TimeoutSec 180 }
 }
 try {
     $text = [IO.File]::ReadAllText((Join-Path $PSScriptRoot 'install.ps1'))
