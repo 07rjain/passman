@@ -150,3 +150,7 @@ The first integration run exposed lexical rather than numeric cursor ordering; t
 ## Windows acceptance
 
 Use [windows.md](windows.md) for native Windows prerequisites and security boundaries. CI runs native Windows builds/unit/package checks plus `distribution/check-windows.ps1`; Linux/macOS continue using the shell installer checks. Native ARM64 and real production Windows browser/terminal acceptance must be reported separately. Local Linux success cannot establish Windows ACL or PowerShell behavior.
+
+### Windows 0.2.0 results — 2026-11-01
+
+[Native cross-platform CI](https://github.com/07rjain/passman/actions/runs/41320353014) passed all Windows x64/macOS/Linux checks and disposable PostgreSQL integration. [Public Windows acceptance](https://github.com/07rjain/passman/actions/runs/41320715002) passed using the real hosted installer/public archive, with synthetic local vault data and SDK retrieval/decryption, repeat installation and unavailable-release preservation. See [release evidence](releases.md#020-verification-record--2026-11-01) for the tested checksum and cross-version vault compatibility. No real Windows Clerk login, native ARM64 or independent audit is established by these runs.

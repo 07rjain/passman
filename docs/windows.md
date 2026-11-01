@@ -1,6 +1,6 @@
 # Passman on Windows
 
-Windows support starts with client 0.2.0. Supported target: Windows 10/11 x64 or arm64, Windows PowerShell 5.1 or newer, and local NTFS storage. The installer needs HTTPS access and the Windows `tar.exe` utility. It installs per-user without administrator access or an existing Node/npm installation. Native ARM64 acceptance is separate from x64 CI.
+Windows support starts with client 0.2.0. Supported target: Windows 10/11 x64 or arm64, Windows PowerShell 5.1 or newer, and local fixed-drive NTFS storage. The installer needs HTTPS access and the Windows `tar.exe` utility. It installs per-user without administrator access or an existing Node/npm installation. Native ARM64 acceptance is separate from x64 CI.
 
 ## Install and sign in
 
@@ -44,3 +44,11 @@ Updates preserve the vault. Losing every private-key copy is unrecoverable. Crea
 ## Verification
 
 Native Windows CI exercises crypto/SDK/vault tests, ACL rejection, junction rejection, owner-only file access, installed-package checks, and PowerShell installation/reinstallation/checksum failure with an actual private Node runtime. Installer tests use synthetic release data and real Node HTTPS downloads; they are not live Clerk/browser acceptance. Actual production login, interactive hidden input and native ARM64 testing remain separate acceptance checks.
+
+## Verified release — 2026-11-01
+
+[Passman 0.2.0](https://github.com/07rjain/passman/releases/tag/passman-v0.2.0) is published. [Cross-platform CI](https://github.com/07rjain/passman/actions/runs/41320353014) passed Windows x64, macOS, Linux and PostgreSQL integration. Native Windows checks include shared-ACL/junction rejection, owner-only input files, encrypted vault updates, installer reinstallation, checksum failure and installed SDK decryption.
+
+The separate [public Windows acceptance run](https://github.com/07rjain/passman/actions/runs/41320715002) downloaded the actual hosted installer, verified it matched source, installed the public GitHub archive with the official private Node runtime, exercised SDK retrieval/decryption using a synthetic encrypted response, reinstalled and rejected an unavailable version while preserving the active command and vault. It used no real user credentials or production vault. The runner was Windows x64; native ARM64 and interactive production Clerk/browser/terminal acceptance remain pending.
+
+Elevated Windows tokens can create files owned by the Administrators group despite a private parent directory. The client explicitly assigns owner-only security to each exclusively created vault file before writing it; existing files still fail validation if ownership or sharing is wrong.

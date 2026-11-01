@@ -19,12 +19,16 @@ This file records website/API/security and operational changes. Installable clie
 ### Compatibility and upgrade
 
 - Run additive database migration 2 and grant the existing runtime role audit SELECT/INSERT and identity-sequence USAGE before deploying. Health now requires version 2. Configure session webhooks and schedule retention separately; see [audit.md](audit.md).
-- Existing client 0.1.1, vault/ciphertext formats and account identities are unchanged. No SDK release is required.
+- Audit-only changes preserve existing client compatibility, vault/ciphertext formats and account identities. Windows support is delivered separately in client 0.2.0.
 
 ### Known limitations
 
 - Audit records are not independent of a compromised server/DB administrator. External immutable export and automated alerts are not yet implemented.
 - Local decryption/provider use are unobservable; failed Clerk sign-ins remain in Clerk Application Logs. Anonymous application events are bounded representatives, not complete traffic counts.
+
+## 2026-11-01 — Windows client 0.2.0
+
+- Publish Windows installation and strict NTFS key custody with unchanged encryption/vault formats. Verified native x64 and actual public-download/SDK acceptance; native ARM64 and interactive production Windows login remain pending. See [release verification](releases.md#020-verification-record--2026-11-01).
 
 ## 2026-11-01 — hosted configuration and acceptance
 

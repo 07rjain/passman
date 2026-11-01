@@ -79,3 +79,9 @@ The [Passman skill](skills.md) provides portable instructions for local CLI meta
 MCP remains future work: a local stdio adapter may wrap the SDK after login with privately configured service credentials and manual local unlock. Search/existence/status are metadata-only; raw retrieval/decryption would expose plaintext to the MCP client/model and requires explicit opt-in, disabled by default. Preserve read-only credentials, separate management authorization and the same local-key/OS-user limitations. See [the detailed scope](skills.md#future-mcp-integration).
 
 - [ ] Implement a local MCP adapter only as a separately scoped feature: private service-key configuration, manual unlock, metadata tools, explicit opt-in for raw plaintext retrieval, separate management authority and redacted audit/diagnostic behavior. See [MCP design](skills.md#future-mcp-integration).
+
+## Windows client delivery
+
+- [x] Publish client 0.2.0 with a per-user PowerShell installer, private Node runtime, browser URL handler and explicit current-user NTFS ACL checks, without changing vault/API encryption formats.
+- [x] Pass Windows x64/macOS/Linux/PostgreSQL CI and actual public Windows installer/SDK acceptance; see [evidence](windows.md#verified-release--2026-11-01).
+- [ ] Complete native ARM64 and interactive Windows production login/terminal acceptance. These are not established by x64 CI or synthetic encrypted responses.

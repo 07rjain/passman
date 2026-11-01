@@ -88,7 +88,7 @@ Checksums detect corruption and mismatched files; a checksum downloaded from the
 
 Published [passman-v0.1.0](https://github.com/07rjain/keyman-2/releases/tag/passman-v0.1.0) from commit `ef3e081` on 2026-10-31. Root and MVP GitHub CI passed on Linux/macOS, including the distribution checks; the real PostgreSQL/Next.js/CLI integration also passed. A fresh Linux installation from the actual hosted installer and a global npm installation from the public GitHub archive both returned version 0.1.0. Installer tests exercised a version upgrade, retained the prior executable and preserved the existing vault. This verifies distribution, not a live human signup or independent security audit.
 
-The 0.1.0 record above describes its original verification; those old assets are now private. Use the public 0.1.1 instructions for current installation.
+The 0.1.0 record above describes its original verification; those old assets are now private. Use the current public installation instructions above.
 
 ## 0.1.1 verification record — 2026-11-01
 
@@ -99,3 +99,13 @@ Published [passman-v0.1.1](https://github.com/07rjain/passman/releases/tag/passm
 ## Changelog requirements
 
 Every user-visible change includes an Unreleased entry in the appropriate changelog after tests pass. Website/API changes go in [CHANGELOG.md](CHANGELOG.md); SDK/CLI changes go in [SDK_CHANGELOG.md](SDK_CHANGELOG.md). Client releases include version/date, user impact, compatibility/migration notes and known limits; server rollout records identify the deployed commit or deployment ID. Keep historical evidence dated, reconcile current guides and never relabel a planned feature as deployed.
+
+## 0.2.0 verification record — 2026-11-01
+
+Published [passman-v0.2.0](https://github.com/07rjain/passman/releases/tag/passman-v0.2.0) from fully checked commit `9ffd9b6e4c1e5e513dd5bd13ca41860900628222`. Newer commit `3669632d756257389ce41f3002f9fb619034300a` adds the public Windows acceptance workflow without changing client/core sources or installers. Both cross-platform CI runs passed; see [the latest run](https://github.com/07rjain/passman/actions/runs/41320353014). No existing release asset was replaced.
+
+Archive SHA-256: `477a953b06b331f1760bb0f552c872c0647a8485cffd18d61802199f91e84f2c`. The public archive matched the locally tested bytes. Local build/unit/package/distribution/docs checks passed. Windows CI used native NTFS ACL tests and installed SDK decryption; [actual public Windows installation](https://github.com/07rjain/passman/actions/runs/41320715002) passed fresh install, reinstall, unavailable-release preservation and synthetic SDK retrieval/decryption. The hosted PowerShell installer returned 200 and matched source. Anonymous Linux installation/reinstallation from the real hosted shell installer both returned 0.2.0.
+
+Actual public 0.1.1 and 0.2.0 SDK archives were also exercised in an isolated Linux process: 0.1.1 created a synthetic vault; 0.2.0 unlocked/saved it with the original key; 0.1.1 could unlock the resulting file. No account, key or ciphertext migration is introduced. This is format compatibility evidence, not recovery or machine-sharing support.
+
+Native ARM64, interactive Windows production login/hidden prompts and independent security review remain distinct gates. See [windows.md](windows.md). The manual `Windows published client acceptance` workflow can repeat the actual public-download checks after future releases; it uses synthetic local data and no Clerk/provider credentials.
