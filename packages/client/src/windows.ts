@@ -41,15 +41,15 @@ try {
  }
  $stage = 'VERIFY_ACL'
  $acl = $item.GetAccessControl()
- if ($acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne $sid.Value) { throw 'Wrong owner' }
+ if ($acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne $sid.Value) { $stage = 'WRONG_OWNER'; throw 'Wrong owner' }
  $found = $false
  foreach ($rule in $acl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier])) {
   if ($rule.AccessControlType -eq 'Allow') {
-   if ($rule.IdentityReference.Value -ne $sid.Value) { throw 'Shared access' }
+   if ($rule.IdentityReference.Value -ne $sid.Value) { $stage = 'SHARED_ACCESS'; throw 'Shared access' }
    if (($rule.FileSystemRights -band [Security.AccessControl.FileSystemRights]::ReadData) -ne 0) { $found = $true }
   }
  }
- if (!$found) { throw 'Missing owner access' }
+ if (!$found) { $stage = 'MISSING_OWNER_ACCESS'; throw 'Missing owner access' }
 } catch { [Console]::Error.WriteLine('WINDOWS_ACL_' + $stage + '_' + $_.Exception.GetType().Name); exit 1 }
 `;
   await execute(
