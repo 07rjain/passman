@@ -33,7 +33,7 @@ test(
     await writeFile(file, "synthetic-local-value");
     assert.equal(await readPrivateFile(file), "synthetic-local-value");
     const payload = Buffer.from(file).toString("base64");
-    const script = `$ErrorActionPreference='Stop'; $file=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${payload}')); $acl=Get-Acl -LiteralPath $file; $acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new([Security.Principal.SecurityIdentifier]::new('S-1-1-0'),'Read','Allow')); Set-Acl -LiteralPath $file -AclObject $acl`;
+    const script = `$ErrorActionPreference='Stop'; $file=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${payload}')); $item=Get-Item -LiteralPath $file -Force; $acl=$item.GetAccessControl(); $acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new([Security.Principal.SecurityIdentifier]::new('S-1-1-0'),'Read','Allow')); $item.SetAccessControl($acl)`;
     execFileSync(
       path.join(
         process.env.SystemRoot ?? "C:\\Windows",

@@ -37,10 +37,10 @@ try {
   $acl.SetAccessRuleProtection($true,$false)
   $acl.AddAccessRule($rule)
   $stage = 'SET_ACL'
-  Set-Acl -LiteralPath $item.FullName -AclObject $acl
+  $item.SetAccessControl($acl)
  }
  $stage = 'VERIFY_ACL'
- $acl = Get-Acl -LiteralPath $item.FullName
+ $acl = $item.GetAccessControl()
  if ($acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne $sid.Value) { throw 'Wrong owner' }
  $found = $false
  foreach ($rule in $acl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier])) {

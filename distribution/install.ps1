@@ -43,9 +43,11 @@ function PrivateDirectory([string]$Location) {
         $acl.SetOwner($sid)
         $acl.SetAccessRuleProtection($true, $false)
         $acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($sid, 'FullControl', 'ContainerInherit,ObjectInherit', 'None', 'Allow'))
-        Set-Acl -LiteralPath $Location -AclObject $acl
+        $item = Get-Item -LiteralPath $Location -Force
+        if ($PSVersionTable.PSEdition -eq 'Core') { [IO.FileSystemAclExtensions]::SetAccessControl($item,$acl) } else { $item.SetAccessControl($acl) }
     }
-    $acl = Get-Acl -LiteralPath $Location
+    $item = Get-Item -LiteralPath $Location -Force
+    $acl = if ($PSVersionTable.PSEdition -eq 'Core') { [IO.FileSystemAclExtensions]::GetAccessControl($item) } else { $item.GetAccessControl() }
     if ($acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne $sid.Value) { throw 'Wrong installation owner.' }
     foreach ($rule in $acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])) {
         if ($rule.AccessControlType -eq 'Allow' -and $rule.IdentityReference.Value -ne $sid.Value) { throw 'Installation directory grants access to other accounts.' }

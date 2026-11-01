@@ -30,13 +30,20 @@ try {
     $consumer = Join-Path $env:PASSMAN_INSTALL_DIR "versions/$version/package/windows-test.mjs"
     [IO.File]::WriteAllText($consumer, @'
 import assert from 'node:assert/strict';
-import {initializeIdentity,unlockIdentity,saveIdentity} from './dist/index.js';
+import {initializeIdentity,unlockIdentity,saveIdentity,KeymanClient} from './dist/index.js';
+import {encryptValue} from '@keyman-mvp/core';
 const dir=process.env.PASSMAN_TEST_VAULT;
 const profile=await initializeIdentity(dir,'synthetic-windows-passphrase','https://passman.test');
 await saveIdentity(dir,'synthetic-windows-passphrase',profile);
 assert.deepEqual(await unlockIdentity(dir,'synthetic-windows-passphrase'),profile);
 await assert.rejects(unlockIdentity(dir,'synthetic-wrong-passphrase'));
-console.log('Windows encrypted vault roundtrip passed.');
+profile.vault={id:crypto.randomUUID(),accountId:crypto.randomUUID(),publicKey:profile.publicKey,keyId:profile.keyId};
+await saveIdentity(dir,'synthetic-windows-passphrase',profile);
+const context={version:1,accountId:profile.vault.accountId,vaultId:profile.vault.id,projectId:crypto.randomUUID(),project:'windows',name:'KEY',revision:1};
+const envelope=await encryptValue('synthetic-provider-value',profile.publicKey,context);
+const client=new KeymanClient({identity:await unlockIdentity(dir,'synthetic-windows-passphrase'),serviceKey:'kmr_'+'a'.repeat(43),project:'windows',transport:async()=>Response.json({context,envelope})});
+assert.equal(await client.getSecret({name:'KEY'}),'synthetic-provider-value');
+console.log('Windows encrypted vault and SDK retrieval passed; values omitted.');
 '@)
     $node = Join-Path $env:PASSMAN_INSTALL_DIR "versions/$version/runtime/node.exe"
     & $node $consumer
