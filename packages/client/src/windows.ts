@@ -39,7 +39,7 @@ try {
  $stage = 'VERIFY_ACL'
  $sections = [Security.AccessControl.AccessControlSections]::Access -bor [Security.AccessControl.AccessControlSections]::Owner
  $acl = if ($item.PSIsContainer) { [IO.Directory]::GetAccessControl($item.FullName,$sections) } else { [IO.File]::GetAccessControl($item.FullName,$sections) }
- if ($acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne $sid.Value) { $stage = 'WRONG_OWNER'; throw 'Wrong owner' }
+ if ($acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne $sid.Value) { [Console]::Error.WriteLine('FIXTURE_OWNER=' + $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value + ';TOKEN=' + $sid.Value); $stage = 'WRONG_OWNER'; throw 'Wrong owner' }
  $found = $false
  foreach ($rule in $acl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier])) {
   if ($rule.AccessControlType -eq 'Allow') {
