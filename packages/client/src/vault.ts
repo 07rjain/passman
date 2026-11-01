@@ -162,7 +162,9 @@ export async function saveIdentity(
     target = create ? file : temp;
   const handle = await open(target, "wx", 0o600);
   try {
-    if (process.platform === "win32") await windowsPrivatePath(target);
+    // Elevated Windows tokens can give new files an Administrators owner even
+    // inside a private directory. Secure this exclusively created file before writing.
+    if (process.platform === "win32") await windowsPrivatePath(target, true);
     await handle.writeFile(
       JSON.stringify({
         version: 1,
