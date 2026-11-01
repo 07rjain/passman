@@ -1,3 +1,4 @@
+param([switch]$Published)
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 Set-StrictMode -Version Latest
@@ -7,7 +8,7 @@ $fixture = Join-Path ([IO.Path]::GetTempPath()) ('passman-windows-test-' + [Guid
 $env:PASSMAN_INSTALL_DIR = Join-Path $fixture "install space-é's"
 $version = (Get-Content -LiteralPath (Join-Path $repo 'packages/client/package.json') -Raw | ConvertFrom-Json).version
 $env:PASSMAN_VERSION = $version
-$env:PASSMAN_DOWNLOAD_BASE = 'https://release-fixture.test/releases'
+$env:PASSMAN_DOWNLOAD_BASE = if ($Published) { 'https://github.com/07rjain/passman/releases' } else { 'https://release-fixture.test/releases' }
 $script:tamper = $false
 # Only release downloads are intercepted; Node.zip and its checksum use actual HTTPS downloads.
 function DownloadFixture($Url, $Destination) {
@@ -19,9 +20,16 @@ function DownloadFixture($Url, $Destination) {
 }
 try {
     $text = [IO.File]::ReadAllText((Join-Path $PSScriptRoot 'install.ps1'))
+    if ($Published) {
+        $downloaded = Join-Path $fixture 'install.ps1'
+        Invoke-WebRequest -UseBasicParsing -Uri https://passman.subdomain.wtf/install.ps1 -OutFile $downloaded -TimeoutSec 180
+        $remoteText = [IO.File]::ReadAllText($downloaded)
+        if ($remoteText -ne $text) { throw 'Hosted installer differs from the tested source' }
+        $installer = [scriptblock]::Create($remoteText)
+    }
     # Replace the download function only in this isolated fixture. Production script is unchanged.
     $text = $text.Replace('function Download([string]$Url, [string]$Destination) {','function RealDownload([string]$Url, [string]$Destination) {')
-    $installer = [scriptblock]::Create($text.Replace('Download "','DownloadFixture "'))
+    if (!$Published) { $installer = [scriptblock]::Create($text.Replace('Download "','DownloadFixture "')) }
     & $installer
     $launcher = Join-Path $env:PASSMAN_INSTALL_DIR 'bin/passman.cmd'
     $actual = & $launcher --version
@@ -53,11 +61,12 @@ console.log('Windows encrypted vault and SDK retrieval passed; values omitted.')
     & $installer
     if ((& $launcher --version) -ne $version) { throw 'Reinstall failed' }
     $script:tamper = $true
+    if ($Published) { $env:PASSMAN_VERSION = '9999.0.0' }
     $failed = $false
     try { & $installer } catch { $failed = $true }
     if (!$failed -or (& $launcher --version) -ne $version) { throw 'Tamper must preserve active version' }
     if ((Get-FileHash -LiteralPath (Join-Path $vault 'vault.json')).Hash -ne $before) { throw 'Installer modified vault' }
-    Write-Host 'Windows install, reinstall, checksum rejection, encrypted vault and identity preservation passed.'
+    Write-Host 'Windows install, reinstall, failed-download preservation, encrypted vault and SDK retrieval passed.'
 } finally {
     Remove-Item -LiteralPath $fixture -Recurse -Force
     Remove-Item Env:PASSMAN_INSTALL_DIR,Env:PASSMAN_VERSION,Env:PASSMAN_DOWNLOAD_BASE,Env:PASSMAN_TEST_VAULT -ErrorAction SilentlyContinue
