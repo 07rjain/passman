@@ -35,6 +35,7 @@ execFileSync(
     path.join(directory, "passman-" + version + ".tgz.sha256"),
     path.join(directory, "latest.txt"),
     path.join(root, "distribution/install.sh"),
+    path.join(root, "distribution/install.ps1"),
   ],
   { stdio: "inherit" },
 );

@@ -25,3 +25,5 @@ Optional configuration: `--url ORIGIN`, `--directory PATH`, `--no-browser`, `--p
 Projects organize entries; they are not separate encryption-key domains. A fresh machine/key cannot access existing ciphertext merely by signing in. Multi-machine private-key transfer, recovery, `.env` import and environment injection are not implemented.
 
 The activity API is documented in [audit.md](audit.md). Encryption and request contracts are described in [security.md](security.md).
+
+Windows installation, NTFS ACL requirements and the `.cmd` launcher are documented in [windows.md](windows.md).

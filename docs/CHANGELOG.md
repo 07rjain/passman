@@ -6,6 +6,8 @@ This file records website/API/security and operational changes. Installable clie
 
 ### Added
 
+- Add Windows client/installer support, current-user NTFS ACL enforcement, native Windows CI and hosted `install.ps1`. Client changes are versioned separately as 0.2.0; see the SDK changelog.
+
 - Add a portable Passman agent skill for existing CLI/SDK workflows, with private-configuration guidance and skills.sh installation/discovery instructions. Track the local MCP adapter as future work; no client/API/vault behavior changes.
 
 - Require future contributors/agents to preserve audit guarantees, maintain task-oriented documentation and changelogs, and verify migration prerequisites before automatically deployed pushes.

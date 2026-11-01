@@ -23,9 +23,9 @@ Store generic named secret values encrypted on a service and retrieve/decrypt th
 
 ## Client installation and versioning
 
-- Provide a macOS/Linux arm64/x64 installer, `passman login` with the hosted default, and a typed Node.js SDK installable from a versioned package archive without cloning the repository.
+- Provide macOS/Linux arm64/x64 and Windows x64/arm64 installers, `passman login` with the hosted default, and a typed Node.js SDK installable from a versioned package archive without cloning the repository.
 - Include a private Node.js 24 runtime in the installer experience; do not require sudo or modify existing system Node installations or vault identities.
-- Version the SDK/CLI together using semantic versions, maintain a changelog, verify downloaded checksums and publish immutable release assets. See [releases.md](releases.md). Windows and Homebrew distribution are deferred.
+- Version the SDK/CLI together using semantic versions, maintain a changelog, verify downloaded checksums and publish immutable release assets. See [releases.md](releases.md). Windows installation is documented in [windows.md](windows.md); Homebrew distribution remains deferred.
 
 ## Explicit limits and exclusions
 

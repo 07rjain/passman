@@ -210,3 +210,15 @@ Changelog and documentation updates:
 | SKILL-03 | Instructions match actual CLI/SDK permissions, pagination and unlock behavior | Review against current implementation and existing SDK/CLI regression evidence |
 | SKILL-04 | No supplied private credentials enter skill files or publication | Changed-file credential scan |
 | SKILL-05 | Agent uses a secret for an approved task without printing it | Client-specific live acceptance pending; instructions are not isolation |
+
+## Windows regression cases
+
+| ID | Required behavior | Evidence |
+| --- | --- | --- |
+| WIN-01 | Current-user-only NTFS ACLs protect vault/private inputs; shared ACLs rejected | Native Windows unit tests |
+| WIN-02 | Junction/reparse vault paths rejected; save/unlock preserves key identity | Native Windows unit tests |
+| WIN-03 | Private Node runtime and managed launcher install/reinstall with spaces/Unicode paths | Native PowerShell installer checks |
+| WIN-04 | Corrupt downloads fail without changing active version or vault | PowerShell installer checks |
+| WIN-05 | Installed SDK encrypts/unlocks, rejects wrong passphrase and preserves vault format | Native installed-client checks |
+| WIN-06 | Production browser approval and interactive hidden prompts work on Windows | Live acceptance pending |
+| WIN-07 | Native ARM64 installer/runtime passes equivalent checks | ARM64 acceptance pending |

@@ -122,8 +122,14 @@ async function main() {
     );
     if (!args.includes("--no-browser")) {
       const child = spawn(
-        process.platform === "darwin" ? "open" : "xdg-open",
-        [started.verificationUrl],
+        process.platform === "win32"
+          ? "rundll32.exe"
+          : process.platform === "darwin"
+            ? "open"
+            : "xdg-open",
+        process.platform === "win32"
+          ? ["url.dll,FileProtocolHandler", started.verificationUrl]
+          : [started.verificationUrl],
         { stdio: "ignore", detached: true },
       );
       child.on("error", () => undefined);

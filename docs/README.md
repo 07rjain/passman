@@ -12,6 +12,8 @@ Passman is an experimental, source-available encrypted secret store. Start with 
 
 - [Use Passman with an agent skill](skills.md); MCP is deferred.
 
+- [Windows installation and local protection](windows.md).
+
 ## Understand the security model
 
 - [Security profile and encryption](security.md).

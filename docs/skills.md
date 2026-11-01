@@ -1,6 +1,6 @@
 # Passman agent skill
 
-The portable [Passman skill](../skills/passman/SKILL.md) teaches a shell/code-capable agent to use the existing CLI/SDK. It adds no runtime server, credential store or decryption mechanism. Skill metadata version 0.1.0 is separate from client 0.1.1; neither vault nor API format changes.
+The portable [Passman skill](../skills/passman/SKILL.md) teaches a shell/code-capable agent to use the existing CLI/SDK. It adds no runtime server, credential store or decryption mechanism. Skill metadata version 0.1.1 is separate from client 0.2.0; neither vault nor API format changes.
 
 ## Install
 

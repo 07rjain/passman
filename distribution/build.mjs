@@ -9,6 +9,7 @@ import {
 } from "node:fs/promises";
 import path from "node:path";
 import { tmpdir } from "node:os";
+import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
@@ -129,8 +130,15 @@ export async function buildDistribution(
     await mkdir(output, { recursive: true });
     const packed = JSON.parse(
       execFileSync(
-        "npm",
-        ["pack", "--json", "--ignore-scripts", "--pack-destination", output],
+        process.execPath,
+        [
+          process.env.npm_execpath,
+          "pack",
+          "--json",
+          "--ignore-scripts",
+          "--pack-destination",
+          output,
+        ],
         { cwd: stage, encoding: "utf8" },
       ),
     )[0];
@@ -150,5 +158,5 @@ export async function buildDistribution(
     await rm(stage, { recursive: true, force: true });
   }
 }
-if (process.argv[1] === new URL(import.meta.url).pathname)
+if (process.argv[1] === fileURLToPath(import.meta.url))
   console.log(JSON.stringify(await buildDistribution(process.argv[2])));

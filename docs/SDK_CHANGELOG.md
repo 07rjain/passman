@@ -4,6 +4,12 @@ The SDK and CLI share one semantic version. This changelog covers the installabl
 
 ## Unreleased
 
+## 0.2.0 — 2026-11-01
+
+- Add Windows x64/arm64 installation with a private Node.js runtime, HTTPS/checksum verification, version selection and a managed per-user command. Windows requires local NTFS storage and Windows PowerShell 5.1+; no administrator installation is needed.
+- Protect Windows vaults/private input files with current-user SID/NTFS ACL validation instead of unsupported POSIX mode checks. Reject shared ACLs and reparse points; preserve manual unlock and existing encryption/vault formats.
+- Open Windows browser approval without a command shell. Add Windows native CI and installed-client/installer acceptance; existing macOS/Linux behavior remains supported.
+
 ## 0.1.1 — 2026-11-01
 
 - Move source/package metadata and release downloads to the public `07rjain/passman` repository. Fix installation returning 404 after the original release repository became private; preserve the earlier immutable release without republishing it.

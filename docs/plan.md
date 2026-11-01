@@ -49,7 +49,7 @@ On the former Keyman deployment, the configuration cutover completed on 2026-10-
 
 ## Client distribution
 
-The current SDK/CLI version is 0.1.1. Distribution includes the installer/private runtime, a self-contained npm archive with bundled locked dependencies, default hosted login, artifact/installer tests, and manual immutable GitHub Releases. Follow [releases.md](releases.md) and [SDK_CHANGELOG.md](SDK_CHANGELOG.md) for future versions. Windows, Homebrew and npm-registry publication remain follow-up work.
+The current SDK/CLI version is 0.2.0. Distribution includes the installer/private runtime, a self-contained npm archive with bundled locked dependencies, default hosted login, artifact/installer tests, and manual immutable GitHub Releases. Follow [releases.md](releases.md) and [SDK_CHANGELOG.md](SDK_CHANGELOG.md) for future versions. Windows support is documented in [windows.md](windows.md); Homebrew and npm-registry publication remain follow-up work.
 
 ## Future TODO
 

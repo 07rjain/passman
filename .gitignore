@@ -20,6 +20,7 @@ coverage/
 *.tsbuildinfo
 next-env.d.ts
 /apps/web/public/install.sh
+/apps/web/public/install.ps1
 
 # Logs and operating-system files
 *.log

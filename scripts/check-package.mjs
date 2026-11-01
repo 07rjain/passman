@@ -9,10 +9,20 @@ try {
   const tarballs = [];
   for (const name of ["core", "client"]) {
     const result = JSON.parse(
-      execFileSync("npm", ["pack", "--json", "--pack-destination", directory], {
-        cwd: path.join(root, "packages", name),
-        encoding: "utf8",
-      }),
+      execFileSync(
+        process.execPath,
+        [
+          process.env.npm_execpath,
+          "pack",
+          "--json",
+          "--pack-destination",
+          directory,
+        ],
+        {
+          cwd: path.join(root, "packages", name),
+          encoding: "utf8",
+        },
+      ),
     )[0];
     assert.ok(
       result.files.every(
@@ -30,8 +40,15 @@ try {
     }),
   );
   execFileSync(
-    "npm",
-    ["install", "--ignore-scripts", "--no-audit", "--no-fund", ...tarballs],
+    process.execPath,
+    [
+      process.env.npm_execpath,
+      "install",
+      "--ignore-scripts",
+      "--no-audit",
+      "--no-fund",
+      ...tarballs,
+    ],
     { cwd: directory, stdio: "pipe" },
   );
   await writeFile(

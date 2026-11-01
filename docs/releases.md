@@ -1,6 +1,6 @@
 # Passman installation and releases
 
-Passman SDK and CLI share version **0.1.1**. The command is `passman`; the previous `keyman-mvp` command remains available. Packages use PolyForm Noncommercial 1.0.0; third-party licenses are included. This remains an experimental vault, not production security approval.
+Passman SDK and CLI share version **0.2.0**. The command is `passman`; the previous `keyman-mvp` command remains available. Packages use PolyForm Noncommercial 1.0.0; third-party licenses are included. This remains an experimental vault, not production security approval.
 
 ## Repository transition
 
@@ -29,24 +29,24 @@ passman put --project testing --name TEST_KEY
 The installer does not modify shell profiles, the system Node installation, or the local vault. It refuses to replace an unrelated `passman` file, unexpected symlinks, or an already-installed version whose checksum differs. Network, checksum or version-check failures before activation leave the current version intact. Re-running the installer installs the latest published release. To select a specific release:
 
 ```sh
-curl -fsSL https://passman.subdomain.wtf/install.sh | PASSMAN_VERSION=0.1.1 sh
+curl -fsSL https://passman.subdomain.wtf/install.sh | PASSMAN_VERSION=0.2.0 sh
 ```
 
-`PASSMAN_INSTALL_DIR` and `PASSMAN_BIN_DIR` accept absolute custom paths. Older installed versions are retained, allowing explicit selection with the same installer; vault-format compatibility must be checked before downgrading across future format changes. Windows and Homebrew are not provided yet.
+`PASSMAN_INSTALL_DIR` and `PASSMAN_BIN_DIR` accept absolute custom paths. Older installed versions are retained, allowing explicit selection with the same installer; vault-format compatibility must be checked before downgrading across future format changes. Windows uses the [PowerShell installer](windows.md); Homebrew is not provided yet.
 
 ## npm and SDK
 
 With Node.js 24/npm already installed, install the exact same self-contained package:
 
 ```sh
-npm install -g https://github.com/07rjain/passman/releases/download/passman-v0.1.1/passman-0.1.1.tgz
+npm install -g https://github.com/07rjain/passman/releases/download/passman-v0.2.0/passman-0.2.0.tgz
 passman login
 ```
 
 For an application:
 
 ```sh
-npm install https://github.com/07rjain/passman/releases/download/passman-v0.1.1/passman-0.1.1.tgz
+npm install https://github.com/07rjain/passman/releases/download/passman-v0.2.0/passman-0.2.0.tgz
 ```
 
 ```js

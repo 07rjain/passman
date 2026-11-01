@@ -146,3 +146,7 @@ On Linux/Node.js 24, `npm run check` passed formatting, production build, types,
 New audit coverage exercises tenant isolation, payload/token/private-key exclusion, denied-event durability, rollback when audit INSERT is unavailable, read failure on audit outage, concurrent request context, filtered numeric cursor pagination, anonymous event bounding, forbidden runtime UPDATE/DELETE, retention, forged/stale webhook rejection, concurrent delivery deduplication and retry after storage failure. Fixed diagnostic events in the test output are intentionally induced audit outages.
 
 The first integration run exposed lexical rather than numeric cursor ordering; the SQL was corrected and the full integration run passed. Production migration/grants, actual Clerk webhook delivery, scheduled retention/alerts and native browser activity interaction were not performed by these local checks. No client version or ciphertext/vault format changed.
+
+## Windows acceptance
+
+Use [windows.md](windows.md) for native Windows prerequisites and security boundaries. CI runs native Windows builds/unit/package checks plus `distribution/check-windows.ps1`; Linux/macOS continue using the shell installer checks. Native ARM64 and real production Windows browser/terminal acceptance must be reported separately. Local Linux success cannot establish Windows ACL or PowerShell behavior.

@@ -7,7 +7,7 @@ case "$base" in https://*) ;; *) fail 'Downloads must use HTTPS.';; esac
 for tool in curl tar mktemp uname awk grep cat mv mkdir; do command -v "$tool" >/dev/null 2>&1 || fail "Missing required tool: $tool"; done
 if command -v sha256sum >/dev/null 2>&1; then hash() { sha256sum "$1" | awk '{print $1}'; }; else command -v shasum >/dev/null 2>&1 || fail 'SHA-256 verification requires shasum or sha256sum.'; hash() { shasum -a 256 "$1" | awk '{print $1}'; }; fi
 fetch() { curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' --connect-timeout 15 --max-time 180 "$1" -o "$2" || fail 'Download failed. Check your connection and that the selected release is publicly available. The active installation was not changed.'; }
-case "$(uname -s)" in Darwin) platform=darwin;; Linux) platform=linux;; *) fail 'Supported platforms: macOS and Linux. Windows support is not yet available.';; esac
+case "$(uname -s)" in Darwin) platform=darwin;; Linux) platform=linux;; *) fail 'Use macOS/Linux here; Windows requires https://passman.subdomain.wtf/install.ps1 in PowerShell.';; esac
 case "$(uname -m)" in arm64|aarch64) arch=arm64;; x86_64|amd64) arch=x64;; *) fail 'Supported CPUs: arm64 and x64.';; esac
 root=${PASSMAN_INSTALL_DIR:-"$HOME/.local/share/passman"}
 bin=${PASSMAN_BIN_DIR:-"$HOME/.local/bin"}

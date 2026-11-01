@@ -59,3 +59,7 @@ Loss of all usable private-key copies makes the corresponding data unrecoverable
 ## Reporting vulnerabilities
 
 Use [GitHub private vulnerability reporting](https://github.com/07rjain/passman/security/advisories/new). Include the affected revision, impact and a minimal synthetic reproduction. Do not publish sensitive details, credentials or private keys in public issues or pull requests. No response SLA or production support commitment is currently promised. If private reporting is unavailable, request an alternative private route without disclosing the details publicly.
+
+## Windows key custody
+
+Windows uses current-user SID/NTFS ACL validation rather than POSIX mode bits. Private files and directories reject shared Allow entries, non-owner SIDs and reparse points. New vault directories are made owner-only before writing private data. Local NTFS storage and Windows PowerShell are required; see [windows.md](windows.md). No cryptographic format, account recovery or OS-administrator isolation is added.

@@ -80,7 +80,7 @@ Select tests according to risk and behavior:
 - **Packaging:** install and consume the published package artifact, its runtime exports and TypeScript declarations, and the documented supported runtimes/platforms.
 - **Operations:** container health, deployment/migration ordering, encrypted backup/restore, redacted observability, and safe shutdown where affected.
 
-Use real PostgreSQL in tests for transaction, constraint, and database authorization semantics; mocks alone do not establish those guarantees. Keep ordinary tests deterministic and independent of live provider credentials. Test macOS/Linux paths for components that claim support on both platforms.
+Use real PostgreSQL in tests for transaction, constraint, and database authorization semantics; mocks alone do not establish those guarantees. Keep ordinary tests deterministic and independent of live provider credentials. Test macOS/Linux/Windows paths for components that claim support on those platforms. Windows key custody requires current-user NTFS ACL validation; never bypass checks by accepting Unix mode bits or disabling permission checks.
 
 Run formatting, linting, type checking, relevant suites, builds, and package checks through the repository scripts once those scripts exist. Before that, do not invent commands or report nonexistent checks as passing. CI must reproduce required checks before merge/release. Narrow local checks are useful during development; the full affected suite and required CI checks must pass before completion.
 

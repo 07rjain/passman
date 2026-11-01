@@ -1,6 +1,6 @@
 # First successful retrieval
 
-Use a synthetic value. Passman is experimental. Supported clients: macOS/Linux arm64/x64, Node.js 24 for the SDK. The installer provides its own runtime for the CLI.
+Use a synthetic value. Passman is experimental. Supported clients: macOS/Linux arm64/x64 and [Windows x64/arm64](windows.md), Node.js 24 for the SDK. The installer provides its own runtime for the CLI.
 
 ## Install and sign in
 

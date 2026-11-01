@@ -33,7 +33,7 @@ curl -fsSL https://passman.subdomain.wtf/install.sh | sh
 ~/.local/bin/passman login
 ```
 
-The CLI/SDK release is **0.1.1**, distributed publicly from `07rjain/passman`. The installer uses that repository because the earlier release repository is now private. Existing local vaults and earlier immutable assets are preserved. See [releases.md](docs/releases.md).
+The CLI/SDK release is **0.2.0**, distributed publicly from `07rjain/passman`. The installer uses that repository because the earlier release repository is now private. Existing local vaults and earlier immutable assets are preserved. See [releases.md](docs/releases.md).
 
 ## Agent skill
 
@@ -44,6 +44,8 @@ npx skills add 07rjain/passman --skill passman
 ```
 
 The skill uses the existing local CLI/SDK; it does not install Passman, unlock a vault or receive credentials. See [agent setup and registry discovery](docs/skills.md). MCP integration is future work.
+
+For Windows, use the [PowerShell installation guide](docs/windows.md).
 
 ## Documentation
 

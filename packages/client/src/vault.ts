@@ -1,5 +1,5 @@
 import { constants } from "node:fs";
-import { open, mkdir, stat, rename, unlink } from "node:fs/promises";
+import { open, mkdir, stat, lstat, rename, unlink } from "node:fs/promises";
 import {
   createCipheriv,
   createDecipheriv,
@@ -8,6 +8,7 @@ import {
   createSecretKey,
 } from "node:crypto";
 import path from "node:path";
+import { windowsPrivatePath } from "./windows.js";
 import {
   generateIdentity,
   publicKeySchema,
@@ -66,7 +67,15 @@ export function apiOrigin(value: string) {
   return url.origin;
 }
 async function directory(pathname: string) {
-  await mkdir(pathname, { recursive: true, mode: 0o700 });
+  const created = await mkdir(pathname, { recursive: true, mode: 0o700 });
+  if (process.platform === "win32") {
+    try {
+      await windowsPrivatePath(pathname, created !== undefined);
+    } catch {
+      throw new LocalVaultError();
+    }
+    return;
+  }
   const info = await stat(pathname);
   if (
     !info.isDirectory() ||
@@ -79,13 +88,27 @@ export async function readPrivateFile(
   file: string,
   max = 100000,
 ): Promise<string> {
-  const handle = await open(file, constants.O_RDONLY | constants.O_NOFOLLOW);
+  if (process.platform === "win32") {
+    try {
+      await windowsPrivatePath(file);
+    } catch {
+      throw new LocalVaultError();
+    }
+  }
+  const before = await lstat(file);
+  if (before.isSymbolicLink()) throw new LocalVaultError();
+  const handle = await open(
+    file,
+    constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0),
+  );
   try {
     const info = await handle.stat();
     if (
       !info.isFile() ||
-      info.uid !== process.getuid?.() ||
-      (info.mode & 0o077) !== 0 ||
+      (process.platform !== "win32" &&
+        (info.uid !== process.getuid?.() || (info.mode & 0o077) !== 0)) ||
+      info.ino !== before.ino ||
+      info.dev !== before.dev ||
       info.size > max
     )
       throw new LocalVaultError();
@@ -139,6 +162,7 @@ export async function saveIdentity(
     target = create ? file : temp;
   const handle = await open(target, "wx", 0o600);
   try {
+    if (process.platform === "win32") await windowsPrivatePath(target);
     await handle.writeFile(
       JSON.stringify({
         version: 1,

@@ -1,6 +1,6 @@
 # Passman usage reference
 
-The public CLI/SDK release is 0.1.1. This skill has its own metadata version; it does not change client or wire/vault versions. Source and maintained guides: [07rjain/passman](https://github.com/07rjain/passman).
+The public CLI/SDK release is 0.2.0. This skill has its own metadata version; it does not change client or wire/vault versions. Source and maintained guides: [07rjain/passman](https://github.com/07rjain/passman).
 
 ## CLI metadata lookup
 
@@ -24,7 +24,7 @@ Only the path appears in this command, never the passphrase. Do not create the f
 Install in the intended application's directory with Node.js 24/npm:
 
 ```sh
-npm install https://github.com/07rjain/passman/releases/download/passman-v0.1.1/passman-0.1.1.tgz
+npm install https://github.com/07rjain/passman/releases/download/passman-v0.2.0/passman-0.2.0.tgz
 ```
 
 Use the published package name `@07rjain/passman`. Do not install unrelated npm packages named `passman` or `passman-cli`. `@keyman-mvp/client` is only the repository's internal workspace name.
@@ -71,3 +71,5 @@ Create projects and read credentials on the website. `passman put --project PROJ
 | `RATE_LIMITED` | Stop repeated attempts; wait/retry within service policy |
 
 Clerk login alone does not decrypt data. Account access plus a fresh key cannot recover an old private key. No machine roster, private-key transfer, recovery, raw-value CLI output or shared unlock daemon is implemented.
+
+Windows uses the per-user `.cmd` launcher and private NTFS ACLs rather than chmod. Follow the [Windows guide](https://github.com/07rjain/passman/blob/main/docs/windows.md). A separately generated Windows identity cannot recover an account bound to another private key.
