@@ -40,9 +40,7 @@ function PrivateDirectory([string]$Location) {
     $sid = [Security.Principal.WindowsIdentity]::GetCurrent().User
     if ($new) {
         $acl = [Security.AccessControl.DirectorySecurity]::new()
-        $acl.SetOwner($sid)
-        $acl.SetAccessRuleProtection($true, $false)
-        $acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($sid, 'FullControl', 'ContainerInherit,ObjectInherit', 'None', 'Allow'))
+        $acl.SetSecurityDescriptorSddlForm('O:' + $sid.Value + 'D:P(A;OICI;FA;;;' + $sid.Value + ')')
         $item = Get-Item -LiteralPath $Location -Force
         if ($PSVersionTable.PSEdition -eq 'Core') { [IO.FileSystemAclExtensions]::SetAccessControl($item,$acl) } else { $item.SetAccessControl($acl) }
     }

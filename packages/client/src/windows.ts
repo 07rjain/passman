@@ -28,14 +28,11 @@ try {
  if ($p.createAcl) {
   if ($item.PSIsContainer) {
    $acl = [Security.AccessControl.DirectorySecurity]::new()
-   $rule = [Security.AccessControl.FileSystemAccessRule]::new($sid,'FullControl','ContainerInherit,ObjectInherit','None','Allow')
+   $acl.SetSecurityDescriptorSddlForm('O:' + $sid.Value + 'D:P(A;OICI;FA;;;' + $sid.Value + ')')
   } else {
    $acl = [Security.AccessControl.FileSecurity]::new()
-   $rule = [Security.AccessControl.FileSystemAccessRule]::new($sid,'FullControl','Allow')
+   $acl.SetSecurityDescriptorSddlForm('O:' + $sid.Value + 'D:P(A;;FA;;;' + $sid.Value + ')')
   }
-  $acl.SetOwner($sid)
-  $acl.SetAccessRuleProtection($true,$false)
-  $acl.AddAccessRule($rule)
   $stage = 'SET_ACL'
   $item.SetAccessControl($acl)
  }
