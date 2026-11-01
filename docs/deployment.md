@@ -1,6 +1,6 @@
 # Deploy the MVP to Vercel
 
-Status: the replacement Vercel project/domain are deployed; Clerk/database configuration and real signup acceptance remain pending. The former Keyman deployment is being retired by its owner; no new infrastructure is configured merely by importing source. Use synthetic secrets and record fresh results in [live-setup.md](live-setup.md).
+Status: the replacement Vercel project/domain, Clerk production configuration and restricted database connection are deployed. Health, published-client login setup and authorization denial checks pass; genuine browser signup and full vault acceptance remain pending. The former Keyman deployment is being retired by its owner; no new infrastructure is configured merely by importing source. Use synthetic secrets and record fresh results in [live-setup.md](live-setup.md).
 
 ## Fresh standalone deployment
 
@@ -99,6 +99,7 @@ These settings have passed local production builds and the hosted infrastructure
 
 ## Troubleshooting the initial import
 
+- `passman login` reports `UNAVAILABLE` before printing an approval URL: check `https://passman.subdomain.wtf/api/health` and the Production server variables first. A missing `DATABASE_URL`, origin, issuer or public verifier returns 503 before setup can start. For Neon, open the existing MVP project → Connect, select its existing branch/database and restricted runtime role, and copy the pooled TLS connection URL into Vercel Production as `DATABASE_URL`. Do not use the database owner as the runtime role. Verify schema/privileges, then redeploy; the health endpoint must return 200 before retrying login. Local key creation happens before this request, so keep `~/.keyman-mvp/vault.json` and use the same passphrase on retry. Reinstallation or deleting the local vault does not repair server configuration.
 - `EBADENGINE` showing Node.js 26: select **Settings → Build and Deployment → Node.js Version → 24.x**, and deploy the latest `main` commit containing the app-level engine pin. These log lines are warnings; read the end of the build log for the actual failure.
 - `Module not found: Can't resolve '@keyman-mvp/core'`: verify the Root Directory is `apps/web`, inclusion of outside source files is enabled, and the build command is `npm run build`. Current code runs `@keyman-mvp/web ... prebuild`, then the core TypeScript build, before `next build`. A custom command of `next build` alone bypasses the npm lifecycle; reset that override to `npm run build`.
 - Retry using the newest `main` commit rather than redeploying an earlier failed commit. The default app build was tested in a fresh independent source snapshot with a new dependency install and no generated artifacts or repository-parent dependencies. CI also builds the web workspace first, before any other package build, to catch this regression.

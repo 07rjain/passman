@@ -1,6 +1,6 @@
 # Passman implementation plan
 
-Status: experimental standalone source prepared for [07rjain/passman](https://github.com/07rjain/passman). The new Vercel project/domain are deployed; Clerk/database configuration and fresh live acceptance remain pending. Follow the [PRD](PRD.md), [design decisions](simplified-design.md) and [working instructions](../AGENTS.md). See [testing.md](testing.md) for commands and [live-setup.md](live-setup.md) for the new deployment checklist.
+Status: experimental standalone source prepared for [07rjain/passman](https://github.com/07rjain/passman). The new Vercel project/domain are deployed; Clerk/database configuration, health, published-client login setup and authorization denial checks pass; fresh browser and complete vault acceptance remain pending. Follow the [PRD](PRD.md), [design decisions](simplified-design.md) and [working instructions](../AGENTS.md). See [testing.md](testing.md) for commands and [live-setup.md](live-setup.md) for the new deployment checklist.
 
 ## Implemented and verified locally
 
@@ -30,7 +30,7 @@ On the former Keyman deployment, the configuration cutover completed on 2026-10-
 
 ## Remaining release work
 
-- [ ] Finish the replacement Vercel deployment from this repository (`apps/web`) using the owner-selected previous MVP database and its restricted runtime role, preserving existing data and identity bindings. The replacement Clerk production instance, domain DNS and public verifier are configured; database connectivity, genuine signup/verification and API denial checks remain pending. See [live-setup.md](live-setup.md).
+- [ ] Finish the replacement Vercel deployment from this repository (`apps/web`) using the owner-selected previous MVP database and its restricted runtime role, preserving existing data and identity bindings. The replacement Clerk production instance, domain DNS, public verifier and restricted database connection are configured. Health, published-client setup and API denial checks pass; genuine signup/verification and the full vault journey remain pending. See [live-setup.md](live-setup.md).
 - [ ] Rehearse human email signup/login, local-machine approval, project creation, encrypted upload, SDK retrieval and revocation against the hosted service. Test optional browser input on supported browsers.
 - [ ] Independently review cryptographic/authentication contracts and the documented base-HPKE/hosted-code/client-compromise limits.
 - [ ] Set edge/IP abuse protection, monitoring, spending limits and encrypted backup/restore operations; current database counters are a baseline.

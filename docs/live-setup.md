@@ -1,11 +1,11 @@
 # Standalone deployment status
 
-The standalone source is hosted in [07rjain/passman](https://github.com/07rjain/passman). The replacement Vercel project, custom domain and Clerk production configuration are recorded below. Database configuration and real signup acceptance remain pending. The old Clerk resource was deleted at the owner's request and replaced with a directly configured Passman instance. The hosted application is not yet a functioning vault deployment.
+The standalone source is hosted in [07rjain/passman](https://github.com/07rjain/passman). The replacement Vercel project, custom domain, Clerk production configuration and preserved database connection are configured. Health, published-client login setup and negative authorization checks pass as recorded below. Real browser signup/verification, approval and the complete authenticated vault workflow remain pending. The old Clerk resource was deleted at the owner's request and replaced with a directly configured Passman instance.
 
 ## Replacement setup checklist
 
 - [x] Import the new repository into Vercel with Root Directory `apps/web`, Node.js 24 and the committed install/build commands.
-- [ ] Reconnect the previous MVP database using its restricted runtime role, as selected by the owner. Verify its existing schema and preserve data; new Clerk identities receive separate account bindings without email-based merging or resets.
+- [x] Reconnect the previous MVP database using a new restricted runtime role. Verify its existing schema and preserve data; new Clerk identities receive separate account bindings without email-based merging or resets.
 - [x] Configure the replacement Clerk production instance for the intended stable origin, with matched frontend, issuer and public RSA verifier settings and a matching backend credential.
 - [x] Obtain the replacement instance's exact DNS targets, verify public DNS and Frontend API TLS, and preserve unrelated websites. Clerk dashboard deployment/verification status and ordinary browser acceptance remain separate checks.
 - [ ] Complete ordinary browser email signup/verification and sign-in without a testing token. Inspect Protect decisions if blocked; recreating infrastructure does not guarantee a policy rejection disappears.
@@ -57,6 +57,15 @@ The initial private credential requests expired without submission. Subsequent C
 - Added Production `CLERK_ISSUER=https://clerk.passman.subdomain.wtf` and the matching public RSA `CLERK_JWT_KEY`. Existing keys cover Production and Preview, but only Production has the pinned origin/verifier configuration. Preview acceptance is not claimed.
 - Production deployment `dpl_AcTmxQ8ftZ8VGBjBC1YEEGBbXZCb` reached Ready with aliases assigned. The custom-domain homepage returned 200 with a production frontend key and no missing-Clerk setup screen. Its public JWKS matches the replacement instance. `/api/health` remains 503 `UNAVAILABLE` with `Cache-Control: private, no-store` because `DATABASE_URL` is absent; this is a configuration gap, not an authenticated API acceptance pass. The preserved database and account bindings have not been modified.
 - Public Frontend API HTTPS requests succeeded. A non-browser request to the accounts portal received Cloudflare's 403 browser challenge, which is not an ordinary-browser signup result. Genuine email signup/verification, Protect acceptance and the complete authenticated CLI/SDK journey remain pending; no protection was disabled and no testing token was used.
+
+## Login UNAVAILABLE repair — 2026-11-01
+
+- Reproduced HTTP 503 with `DATABASE_URL` absent from Production. CLI initialization persists the local vault before requesting setup, so repeated failures do not call for deleting the vault or changing its passphrase.
+- The owner supplied the existing Neon connection privately. A verified-TLS, read-only inspection found schema migration version 1 and the existing records; no migration/reset was needed. The supplied login was an owner account, so it was kept out of the application runtime. Created a separate login with schema usage, DML on the six runtime tables and SELECT-only access to migrations. Verified it has no superuser, database/role creation, RLS bypass, Neon administrator membership, or CREATE privilege in either the application or public schema.
+- Configured the new restricted URL as a sensitive Production `DATABASE_URL`, using `sslmode=verify-full`. No owner connection, password or customer private key was added to Git or logs. Existing roles/passwords were not reset.
+- Deployment `dpl_BHp3Ys7qmVEiQz5Q9ibPbfbB7p9c` reached Ready with aliases assigned. The live health endpoint returned 200. Downloaded the public 0.1.1 archive and used its actual SDK to initialize a disposable local vault, start login against the custom domain and confirm the approval origin/fingerprint checks and pending polling state. This verifies the setup stage that previously failed; no human approval, fake session or testing token was supplied.
+- Live negative checks returned 401 for missing/forged owner sessions, 403 for a foreign browser origin and 401 for an invalid service credential. Deleted only the test's pending device record and its polling counter, then removed the temporary local vault. Persistent counts remained unchanged: 2 accounts, 3 projects, 0 secrets and 4 credentials. Ordinary global rate counters were not reset.
+- The user's existing Mac vault can be reused with the same passphrase. Genuine browser signup/sign-in, approval, encrypted upload/retrieval and revocation remain acceptance work; healthy infrastructure is not an independent security audit.
 
 ## Historical evidence
 

@@ -1,6 +1,6 @@
 # Passman product requirements
 
-Status: experimental standalone implementation, extracted from the former Keyman MVP into [07rjain/passman](https://github.com/07rjain/passman). The implementation and vault/API/database formats are preserved. Replacement Vercel/Clerk deployment and fresh live acceptance are pending. Follow the [design decisions](simplified-design.md), [plan](plan.md) and [current setup checklist](live-setup.md). Historical infrastructure and VM checks do not establish acceptance for a newly created Clerk instance.
+Status: experimental standalone implementation, extracted from the former Keyman MVP into [07rjain/passman](https://github.com/07rjain/passman). The implementation and vault/API/database formats are preserved. Replacement Vercel/Clerk/database configuration is deployed and basic setup checks pass; fresh browser and full vault acceptance remain pending. Follow the [design decisions](simplified-design.md), [plan](plan.md) and [current setup checklist](live-setup.md). Historical infrastructure and VM checks do not establish acceptance for a newly created Clerk instance.
 
 ## Purpose
 
