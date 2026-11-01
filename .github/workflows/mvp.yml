@@ -39,6 +39,21 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+      - name: Verify native Windows ACL owner semantics
+        shell: powershell
+        run: |
+          $folder = Join-Path $env:TEMP ('passman-acl-smoke-' + [Guid]::NewGuid())
+          [IO.Directory]::CreateDirectory($folder) | Out-Null
+          try {
+            $sid = [Security.Principal.WindowsIdentity]::GetCurrent().User
+            $acl = [Security.AccessControl.DirectorySecurity]::new()
+            $acl.SetSecurityDescriptorSddlForm('O:' + $sid.Value + 'D:P(A;OICI;FA;;;' + $sid.Value + ')')
+            [IO.Directory]::SetAccessControl($folder,$acl)
+            $actual = [IO.Directory]::GetAccessControl($folder)
+            Write-Host ('Expected fixture owner: ' + $sid.Value)
+            Write-Host ('Actual fixture descriptor: ' + $actual.GetSecurityDescriptorSddlForm([Security.AccessControl.AccessControlSections]::Owner -bor [Security.AccessControl.AccessControlSections]::Access))
+            if ($actual.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne $sid.Value) { throw 'Native fixture ownership did not persist' }
+          } finally { Remove-Item -LiteralPath $folder -Recurse -Force }
       - run: npm ci
       - run: npm run check
         env:
