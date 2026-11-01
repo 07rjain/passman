@@ -4,7 +4,10 @@ The SDK and CLI share one semantic version. This changelog covers the installabl
 
 ## Unreleased
 
-- Move source/package metadata and future release tooling to `07rjain/passman`. Keep immutable 0.1.0 downloads at the original release location until the next release; no vault/API format change or new publication is included.
+## 0.1.1 — 2026-11-01
+
+- Move source/package metadata and release downloads to the public `07rjain/passman` repository. Fix installation returning 404 after the original release repository became private; preserve the earlier immutable release without republishing it.
+- Explain failed downloads and verify that unavailable releases leave the working client and vault intact. No vault/API format change.
 
 ## 0.1.0 — 2026-10-31
 

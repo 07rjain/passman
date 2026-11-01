@@ -25,7 +25,7 @@ On the former Keyman deployment, the configuration cutover completed on 2026-10-
 
 - Include license, engineering/contribution/security guides, local documentation checks and Linux/macOS/PostgreSQL workflows inside this repository.
 - Use `apps/web` as Vercel's Root Directory. Keep the internal workspace names, schema, wire/vault versions and local vault path stable.
-- Keep the earlier immutable client release working at its original download location. Publish the next client version from the new repository deliberately, with an installer download-base update and real artifact checks.
+- Preserve the earlier immutable client release. Version 0.1.1 moves public downloads to this repository after the former repository became private; verify the hosted installer and published artifacts.
 - Preserve historical setup evidence separately; no old deployment IDs, secrets or Clerk user bindings configure the replacement automatically.
 
 ## Remaining release work
@@ -48,7 +48,7 @@ On the former Keyman deployment, the configuration cutover completed on 2026-10-
 
 ## Client distribution
 
-The initial SDK/CLI version is 0.1.0. Distribution includes the installer/private runtime, a self-contained npm archive with bundled locked dependencies, default hosted login, artifact/installer tests, and manual immutable GitHub Releases. Follow [releases.md](releases.md) and [SDK_CHANGELOG.md](SDK_CHANGELOG.md) for future versions. Windows, Homebrew and npm-registry publication remain follow-up work.
+The current SDK/CLI version is 0.1.1. Distribution includes the installer/private runtime, a self-contained npm archive with bundled locked dependencies, default hosted login, artifact/installer tests, and manual immutable GitHub Releases. Follow [releases.md](releases.md) and [SDK_CHANGELOG.md](SDK_CHANGELOG.md) for future versions. Windows, Homebrew and npm-registry publication remain follow-up work.
 
 ## Future TODO
 

@@ -33,7 +33,7 @@ curl -fsSL https://passman.subdomain.wtf/install.sh | sh
 ~/.local/bin/passman login
 ```
 
-The existing immutable 0.1.0 client assets remain hosted in the original `07rjain/keyman` GitHub release. The installer retains that working download source until a new version is deliberately published from this repository. See [releases.md](docs/releases.md). This repository setup does not publish or replace a client release.
+The CLI/SDK release is **0.1.1**, distributed publicly from `07rjain/passman`. The installer uses that repository because the earlier release repository is now private. Existing local vaults and earlier immutable assets are preserved. See [releases.md](docs/releases.md).
 
 ## Documentation
 

@@ -2,7 +2,7 @@
 
 This is the maintained feature/test catalogue for the standalone **Passman MVP**. It does not describe the older application in `07rjain/keyman`. Update it whenever a feature, permission, wire contract, storage format or supported platform changes. A checklist entry is an expected result, not proof that the test ran.
 
-Current client release: 0.1.0. Authentication target: Clerk **production** for the hosted production app; development instances and reserved OTPs remain confined to isolated test environments. The [Agent37 report](agent37-verification.md) records the earlier development-instance run, not production authentication acceptance.
+Current client release: 0.1.1. Authentication target: Clerk **production** for the hosted production app; development instances and reserved OTPs remain confined to isolated test environments. The [Agent37 report](agent37-verification.md) records the earlier development-instance run, not production authentication acceptance.
 
 The historical [2026-10-31 production configuration record](history/legacy-hosted-setup.md#production-clerk-cutover--2026-10-31) establishes matching live frontend/issuer/verifier settings, DNS/TLS and live denial checks. It applies to the former Keyman deployment and does not close actual inbox/browser, reverification, signup CAPTCHA or the authenticated production client journey cases.
 
@@ -44,7 +44,7 @@ Never point integration tests at the deployed Neon database. `npm run check` cov
 | [Vault/client tests](../test/vault.test.ts) | Protected local file, unlock failures, client response bounds | Does not isolate same-OS-user malware |
 | [Auth tests](../test/auth.test.ts) | Real verifier with signed fixture JWTs: key/issuer/origin/session/expiry/recent-auth checks | Does not log into a live Clerk production instance |
 | [Workflow integration](../test/workflow.integration.ts) | Built Next.js, real PostgreSQL, actual CLI/SDK, isolation, conflicts, expiry/replay/revocation | Fixture JWTs; no real inbox or browser interactions |
-| [Distribution checks](../distribution/check.mjs) | Offline archive consumption, SDK types/runtime, HTTPS installer, upgrade/tamper/vault preservation and version tooling | Downloads a pinned Node runtime; does not validate every desktop configuration |
+| [Distribution checks](../distribution/check.mjs) | Offline archive consumption, SDK types/runtime, HTTPS installer, upgrade/tamper/missing-release/vault preservation and version tooling | Downloads a pinned Node runtime; does not validate every desktop configuration |
 | [Agent37 verification](agent37-verification.md) | Independent Linux VM, actual release, genuine Clerk development sessions and live service operations | Development test OTPs, not production email or visual browser forms |
 | [Standalone clone verification](testing.md#standalone-repository-verification--2026-10-31) | Independent source checkout, direct web prerequisite build, package/installer checks and disposable PostgreSQL workflow | Local Linux; replacement deployment/browser/inbox acceptance remains open |
 | Manual acceptance below | Real platform/domain/provider/browser/operations behavior | Record actual results per run; no standing blanket pass |

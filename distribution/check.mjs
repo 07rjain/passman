@@ -171,6 +171,7 @@ try {
     rootCertificates.join("\n") + "\n" + cert,
   );
   let tamper = false;
+  let unavailable = false;
   server = createServer(
     { key: await readFile(path.join(fixture, "key.pem")), cert },
     async (req, res) => {
@@ -190,7 +191,7 @@ try {
           ".sha256"
       )
         filename = release.filename + ".sha256";
-      if (!filename) {
+      if (!filename || unavailable) {
         res.writeHead(404).end();
         return;
       }
@@ -231,6 +232,9 @@ try {
   const again = await install();
   assert.equal(again.code, 0, again.output);
   const oldVersion = release.version;
+  const nextVersion = oldVersion.split(".");
+  nextVersion[2] = String(Number(nextVersion[2]) + 1);
+  const upgradeVersion = nextVersion.join(".");
   const upgrade = path.join(fixture, "upgrade");
   await mkdir(upgrade);
   execFileSync("tar", [
@@ -241,10 +245,10 @@ try {
   ]);
   const updatedPackage = path.join(upgrade, "package/package.json");
   const updated = JSON.parse(await readFile(updatedPackage, "utf8"));
-  updated.version = "0.1.1";
+  updated.version = upgradeVersion;
   await writeFile(updatedPackage, JSON.stringify(updated));
-  release.version = "0.1.1";
-  release.filename = "passman-0.1.1.tgz";
+  release.version = upgradeVersion;
+  release.filename = "passman-" + upgradeVersion + ".tgz";
   execFileSync("tar", [
     "-czf",
     path.join(release.output, release.filename),
@@ -265,7 +269,10 @@ try {
   );
   const upgraded = await install();
   assert.equal(upgraded.code, 0, upgraded.output);
-  assert.equal((await run(launcher, ["--version"])).output.trim(), "0.1.1");
+  assert.equal(
+    (await run(launcher, ["--version"])).output.trim(),
+    upgradeVersion,
+  );
   assert.equal(
     (
       await run(
@@ -292,6 +299,14 @@ try {
   const broken = await install();
   assert.notEqual(broken.code, 0);
   assert.match(broken.output, /checksum mismatch/);
+  assert.equal(
+    (await run(launcher, ["--version"])).output.trim(),
+    release.version,
+  );
+  unavailable = true;
+  const missing = await install();
+  assert.notEqual(missing.code, 0);
+  assert.match(missing.output, /selected release is publicly available/);
   assert.equal(
     (await run(launcher, ["--version"])).output.trim(),
     release.version,

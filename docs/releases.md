@@ -1,12 +1,10 @@
 # Passman installation and releases
 
-Passman SDK and CLI share version **0.1.0**. The command is `passman`; the previous `keyman-mvp` command remains available. Packages use PolyForm Noncommercial 1.0.0; third-party licenses are included. This remains an experimental vault, not production security approval.
+Passman SDK and CLI share version **0.1.1**. The command is `passman`; the previous `keyman-mvp` command remains available. Packages use PolyForm Noncommercial 1.0.0; third-party licenses are included. This remains an experimental vault, not production security approval.
 
 ## Repository transition
 
-Source and future release tooling now live in `07rjain/passman`. The existing immutable 0.1.0 release and the installer's default download URL intentionally remain in `07rjain/keyman`, where those assets were published. A fresh source checkout does not require the former parent repository. No new release is published by this extraction.
-
-Before the first release from this repository, prepare a new client version and update the default download base in `distribution/install.sh` to `https://github.com/07rjain/passman/releases` in the same reviewed change. Publish the new assets and verify the real hosted installer before directing testers to that new release. Never replace 0.1.0 to move it.
+Source and public client downloads live in `07rjain/passman`. Version 0.1.1 switches the installer to this public repository. The original release repository was renamed to `07rjain/keyman-2` and made private, causing unauthenticated installation to fail with 404. No earlier tag or asset is overwritten; the new release uses a new version and preserves local vault compatibility.
 
 ## Install, sign in, use
 
@@ -31,7 +29,7 @@ passman put --project testing --name TEST_KEY
 The installer does not modify shell profiles, the system Node installation, or the local vault. It refuses to replace an unrelated `passman` file, unexpected symlinks, or an already-installed version whose checksum differs. Network, checksum or version-check failures before activation leave the current version intact. Re-running the installer installs the latest published release. To select a specific release:
 
 ```sh
-curl -fsSL https://passman.subdomain.wtf/install.sh | PASSMAN_VERSION=0.1.0 sh
+curl -fsSL https://passman.subdomain.wtf/install.sh | PASSMAN_VERSION=0.1.1 sh
 ```
 
 `PASSMAN_INSTALL_DIR` and `PASSMAN_BIN_DIR` accept absolute custom paths. Older installed versions are retained, allowing explicit selection with the same installer; vault-format compatibility must be checked before downgrading across future format changes. Windows and Homebrew are not provided yet.
@@ -41,14 +39,14 @@ curl -fsSL https://passman.subdomain.wtf/install.sh | PASSMAN_VERSION=0.1.0 sh
 With Node.js 24/npm already installed, install the exact same self-contained package:
 
 ```sh
-npm install -g https://github.com/07rjain/keyman/releases/download/passman-v0.1.0/passman-0.1.0.tgz
+npm install -g https://github.com/07rjain/passman/releases/download/passman-v0.1.1/passman-0.1.1.tgz
 passman login
 ```
 
 For an application:
 
 ```sh
-npm install https://github.com/07rjain/keyman/releases/download/passman-v0.1.0/passman-0.1.0.tgz
+npm install https://github.com/07rjain/passman/releases/download/passman-v0.1.1/passman-0.1.1.tgz
 ```
 
 ```js
@@ -88,4 +86,6 @@ Checksums detect corruption and mismatched files; a checksum downloaded from the
 
 ## 0.1.0 verification record
 
-Published [passman-v0.1.0](https://github.com/07rjain/keyman/releases/tag/passman-v0.1.0) from commit `ef3e081` on 2026-10-31. Root and MVP GitHub CI passed on Linux/macOS, including the distribution checks; the real PostgreSQL/Next.js/CLI integration also passed. A fresh Linux installation from the actual hosted installer and a global npm installation from the public GitHub archive both returned version 0.1.0. Installer tests exercised a version upgrade, retained the prior executable and preserved the existing vault. This verifies distribution, not a live human signup or independent security audit.
+Published [passman-v0.1.0](https://github.com/07rjain/keyman-2/releases/tag/passman-v0.1.0) from commit `ef3e081` on 2026-10-31. Root and MVP GitHub CI passed on Linux/macOS, including the distribution checks; the real PostgreSQL/Next.js/CLI integration also passed. A fresh Linux installation from the actual hosted installer and a global npm installation from the public GitHub archive both returned version 0.1.0. Installer tests exercised a version upgrade, retained the prior executable and preserved the existing vault. This verifies distribution, not a live human signup or independent security audit.
+
+The 0.1.0 record above describes its original verification; those old assets are now private. Use the public 0.1.1 instructions for current installation.
