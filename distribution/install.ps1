@@ -42,10 +42,10 @@ function PrivateDirectory([string]$Location) {
         $acl = [Security.AccessControl.DirectorySecurity]::new()
         $acl.SetSecurityDescriptorSddlForm('O:' + $sid.Value + 'D:P(A;OICI;FA;;;' + $sid.Value + ')')
         $item = Get-Item -LiteralPath $Location -Force
-        if ($PSVersionTable.PSEdition -eq 'Core') { [IO.FileSystemAclExtensions]::SetAccessControl($item,$acl) } else { $item.SetAccessControl($acl) }
+        if ($PSVersionTable.PSEdition -eq 'Core') { [IO.FileSystemAclExtensions]::SetAccessControl($item,$acl) } else { [IO.Directory]::SetAccessControl($item.FullName,$acl) }
     }
     $item = Get-Item -LiteralPath $Location -Force
-    $acl = if ($PSVersionTable.PSEdition -eq 'Core') { [IO.FileSystemAclExtensions]::GetAccessControl($item) } else { $item.GetAccessControl() }
+    $acl = if ($PSVersionTable.PSEdition -eq 'Core') { [IO.FileSystemAclExtensions]::GetAccessControl($item) } else { [IO.Directory]::GetAccessControl($item.FullName) }
     if ($acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne $sid.Value) { throw 'Wrong installation owner.' }
     foreach ($rule in $acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])) {
         if ($rule.AccessControlType -eq 'Allow' -and $rule.IdentityReference.Value -ne $sid.Value) { throw 'Installation directory grants access to other accounts.' }

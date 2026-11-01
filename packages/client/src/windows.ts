@@ -34,10 +34,11 @@ try {
    $acl.SetSecurityDescriptorSddlForm('O:' + $sid.Value + 'D:P(A;;FA;;;' + $sid.Value + ')')
   }
   $stage = 'SET_ACL'
-  $item.SetAccessControl($acl)
+  if ($item.PSIsContainer) { [IO.Directory]::SetAccessControl($item.FullName,$acl) } else { [IO.File]::SetAccessControl($item.FullName,$acl) }
  }
  $stage = 'VERIFY_ACL'
- $acl = $item.GetAccessControl()
+ $sections = [Security.AccessControl.AccessControlSections]::Access -bor [Security.AccessControl.AccessControlSections]::Owner
+ $acl = if ($item.PSIsContainer) { [IO.Directory]::GetAccessControl($item.FullName,$sections) } else { [IO.File]::GetAccessControl($item.FullName,$sections) }
  if ($acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne $sid.Value) { $stage = 'WRONG_OWNER'; throw 'Wrong owner' }
  $found = $false
  foreach ($rule in $acl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier])) {
