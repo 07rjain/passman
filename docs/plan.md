@@ -19,7 +19,7 @@ An [Agent37 Ubuntu VM run](agent37-verification.md) passed public installation, 
 
 [feature.md](feature.md) is the maintained regression catalogue. New features extend it and record actual automated/live results. Clerk production cutover requires verified domain/DNS, matching production frontend/issuer/public verifier, and a review of existing development-user vault bindings before any environment change. The prior Agent37 test remains development-instance evidence.
 
-On the former Keyman deployment, the configuration cutover completed on 2026-10-31: production frontend/issuer/public verifier now match, Clerk DNS/TLS and live denial checks passed, preview configuration and existing data were preserved, and the owner confirmed only disposable development test accounts existed. See [the setup record](history/legacy-hosted-setup.md#production-clerk-cutover--2026-10-31). Actual production inbox/browser authentication and the full authenticated client journey remain open.
+On the former Keyman deployment, the configuration cutover completed on 2026-10-31: production frontend/issuer/public verifier now match, Clerk DNS/TLS and live denial checks passed, preview configuration and existing data were preserved, and the owner confirmed only disposable development test accounts existed. See [the setup record](history/legacy-hosted-setup.md#production-clerk-cutover--2026-10-31). That historical record predates the replacement instance. Targeted current production inbox/browser acceptance is recorded in the 2026-11-01 manual report.
 
 ## Standalone repository transition
 
@@ -30,8 +30,9 @@ On the former Keyman deployment, the configuration cutover completed on 2026-10-
 
 ## Remaining release work
 
-- [ ] Finish the replacement Vercel deployment from this repository (`apps/web`) using the owner-selected previous MVP database and its restricted runtime role, preserving existing data and identity bindings. The replacement Clerk production instance, domain DNS, public verifier and restricted database connection are configured. Health, published-client setup and API denial checks pass; genuine signup/verification and the full vault journey remain pending. See [live-setup.md](live-setup.md).
-- [ ] Rehearse human email signup/login, local-machine approval, project creation, encrypted upload, SDK retrieval and revocation against the hosted service. Test optional browser input on supported browsers.
+- [x] Deploy the replacement Vercel app with matched Clerk configuration and the preserved database/restricted runtime role. Preserve existing identities/data; see [live-setup.md](live-setup.md).
+- [x] Complete targeted two-account real inbox/browser/VM login, approval, uploads, retrieval, reverification and revocation; see [manual evidence](manual-security-test-2026-11-01.md).
+- [ ] Complete new-user signup, Mac acceptance, wider browser coverage and operational drills; previous targeted checks do not establish these.
 - [ ] Independently review cryptographic/authentication contracts and the documented base-HPKE/hosted-code/client-compromise limits.
 - [ ] Set edge/IP abuse protection, monitoring, spending limits and encrypted backup/restore operations; current database counters are a baseline.
 - [ ] Complete production key/session configuration rotation and production client-support procedures. npm-registry publication and separate commercial licensing remain future work; the noncommercial GitHub client release is available.
@@ -66,3 +67,7 @@ The current SDK/CLI version is 0.1.1. Distribution includes the installer/privat
 - [ ] Stronger agent isolation through a restricted executor if protection from arbitrary agent code is required.
 
 The detailed TODOs and acceptance evidence remain in [simplified-design.md](simplified-design.md). Avoid duplicating the prior root-recovery/machine-delegation architecture in the MVP. Any production deployment or migration is a separate delivery step after implementation and tests.
+
+## Audit trail
+
+The [audit guide](audit.md) defines metadata-only event coverage, transaction/failure behavior, account-scoped activity, signed session webhooks and maintenance retention. Migration 2, restricted runtime grants and separate webhook configuration are required for rollout. Local decryption, provider usage and Clerk failed-sign-in details are outside the application event stream. Immutable external export and automated alert delivery remain follow-up work.

@@ -10,6 +10,20 @@ CREATE TABLE IF NOT EXISTS keyman_mvp.devices(id uuid PRIMARY KEY,public_key jso
 CREATE TABLE IF NOT EXISTS keyman_mvp.limits(subject text NOT NULL,bucket bigint NOT NULL,count integer NOT NULL,PRIMARY KEY(subject,bucket));
 INSERT INTO keyman_mvp.migrations(version) VALUES(1) ON CONFLICT DO NOTHING;
 `;
+export const auditMigration = `
+CREATE TABLE IF NOT EXISTS keyman_mvp.audit_events(
+ sequence bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+ event_id uuid NOT NULL UNIQUE, request_id uuid NOT NULL,
+ occurred_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ account_id uuid, actor_id text, credential_id uuid, resource_id uuid,
+ action text NOT NULL, outcome text NOT NULL CHECK(outcome IN ('success','denied','error')),
+ reason text NOT NULL, dedupe_key text UNIQUE
+);
+CREATE INDEX IF NOT EXISTS audit_account_sequence ON keyman_mvp.audit_events(account_id,sequence DESC);
+CREATE INDEX IF NOT EXISTS audit_actor_sequence ON keyman_mvp.audit_events(actor_id,sequence DESC);
+CREATE INDEX IF NOT EXISTS audit_retention ON keyman_mvp.audit_events(occurred_at);
+INSERT INTO keyman_mvp.migrations(version) VALUES(2) ON CONFLICT DO NOTHING;
+`;
 export function database(url: string) {
   return new Pool({
     connectionString: url,
@@ -40,5 +54,6 @@ export async function migrate(pool: Pool) {
   await transaction(pool, async (client) => {
     await client.query("SELECT pg_advisory_xact_lock(74125902)");
     await client.query(migration);
+    await client.query(auditMigration);
   });
 }

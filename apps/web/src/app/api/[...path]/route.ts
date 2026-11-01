@@ -1,9 +1,11 @@
 import { database } from "../../../server/database";
 import { createApi, failure } from "../../../server/api";
+import { clerkWebhook } from "../../../server/clerk-webhook";
 import { clerkAuthentication } from "../../../server/auth";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
+let webhook: ReturnType<typeof clerkWebhook> | undefined;
 let api: ReturnType<typeof createApi> | undefined;
 async function handle(request: Request) {
   if (
@@ -17,6 +19,16 @@ async function handle(request: Request) {
     const publicOrigin = new URL(process.env.APP_ORIGIN);
     if (request.headers.get("host") !== publicOrigin.host)
       return failure("INVALID_REQUEST", 400);
+    if (
+      new URL(request.url).pathname === "/api/webhooks/clerk" &&
+      request.method === "POST"
+    ) {
+      webhook ??= clerkWebhook(
+        database(process.env.DATABASE_URL),
+        process.env.CLERK_WEBHOOK_SIGNING_SECRET,
+      );
+      return await webhook(request);
+    }
     api ??= createApi({
       pool: database(process.env.DATABASE_URL),
       origin: process.env.APP_ORIGIN,

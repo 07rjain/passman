@@ -14,7 +14,16 @@ import {
   type Vault,
 } from "@keyman-mvp/core";
 import type { Human } from "./auth";
-import { transaction } from "./database";
+import { transaction as databaseTransaction } from "./database";
+import {
+  actionFor,
+  actionSchema,
+  auditContext,
+  auditFailure,
+  identify,
+  recordAudit,
+  type AuditContext,
+} from "./audit";
 const hash = (value: string) =>
   createHash("sha256").update(value).digest("hex");
 const time = () => Math.floor(Date.now() / 1000);
@@ -72,6 +81,53 @@ export function createApi(options: {
       !/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin))
   )
     throw new Error("Invalid configured origin");
+  async function transaction<T>(
+    db: Pool,
+    fn: (client: PoolClient) => Promise<T>,
+  ): Promise<T> {
+    return databaseTransaction(db, async (client) => {
+      const result = await fn(client);
+      const context = auditContext.getStore();
+      if (
+        result instanceof Response &&
+        result.ok &&
+        context &&
+        !context.recorded
+      ) {
+        await recordAudit(
+          client,
+          context,
+          "success",
+          result.status === 202 ? "PENDING" : "OK",
+        );
+        // Mark only after COMMIT succeeds in the caller below.
+      }
+      return result;
+    }).then((result) => {
+      const context = auditContext.getStore();
+      if (result instanceof Response && result.ok && context)
+        context.recorded = true;
+      return result;
+    });
+  }
+  async function mutation(sql: string, values: unknown[]) {
+    return transaction(pool, async (client) => {
+      const result = await client.query(sql, values);
+      if (!result.rowCount)
+        throw new ApiError(
+          auditContext.getStore()?.action === "credential.revoke"
+            ? "NOT_FOUND"
+            : "CONFLICT",
+          auditContext.getStore()?.action === "credential.revoke" ? 404 : 409,
+        );
+      const context = auditContext.getStore()!;
+      await recordAudit(client, context, "success", "OK");
+      return result;
+    }).then((result) => {
+      auditContext.getStore()!.recorded = true;
+      return result;
+    });
+  }
   async function body(req: Request): Promise<unknown> {
     if (
       req.headers.get("content-type")?.split(";")[0] !== "application/json" ||
@@ -122,6 +178,7 @@ export function createApi(options: {
     } catch {
       throw new ApiError("UNAUTHORIZED", 401);
     }
+    identify({ actorId: user.id });
     if (recent && !user.recent) throw new RecentRequired();
     return user;
   }
@@ -133,6 +190,7 @@ export function createApi(options: {
       )
     ).rows[0];
     if (!row) throw new ApiError("NOT_FOUND", 404);
+    identify({ accountId: row.id });
     return row;
   }
   function vault(row: Account): Vault {
@@ -157,12 +215,27 @@ export function createApi(options: {
       // Failed authentication rolls back this counter; edge/IP abuse limits are required.
       await limit(client, "credential:" + digest);
       const row = (
-        await client.query<{ account_id: string; project_id: string | null }>(
-          "SELECT account_id,project_id FROM keyman_mvp.credentials WHERE hash=$1 AND kind=$2 AND revoked=false AND expires_at>$3",
-          [digest, kind, time()],
+        await client.query<{
+          id: string;
+          account_id: string;
+          project_id: string | null;
+          expires_at: string;
+          revoked: boolean;
+        }>(
+          "SELECT id,account_id,project_id,expires_at,revoked FROM keyman_mvp.credentials WHERE hash=$1 AND kind=$2",
+          [digest, kind],
         )
       ).rows[0];
       if (!row) throw new ApiError("UNAUTHORIZED", 401);
+      identify({ accountId: row.account_id, credentialId: row.id });
+      if (row.revoked || Number(row.expires_at) <= time()) {
+        const context = auditContext.getStore();
+        if (context)
+          context.denialReason = row.revoked
+            ? "CREDENTIAL_REVOKED"
+            : "CREDENTIAL_EXPIRED";
+        throw new ApiError("UNAUTHORIZED", 401);
+      }
       return { accountId: row.account_id, kind, projectId: row.project_id };
     });
   }
@@ -180,6 +253,7 @@ export function createApi(options: {
     ).rows[0];
     if (!row || (allowed && row.id !== allowed))
       throw new ApiError("NOT_FOUND", 404);
+    identify({ resourceId: row.id });
     return row;
   }
   async function dispatch(req: Request): Promise<Response> {
@@ -190,7 +264,7 @@ export function createApi(options: {
       if (url.origin !== origin) throw new ApiError("INVALID_REQUEST", 400);
       if (path === "/api/health" && method === "GET") {
         const result = await pool.query(
-          "SELECT version FROM keyman_mvp.migrations WHERE version=1",
+          "SELECT version FROM keyman_mvp.migrations WHERE version=2",
         );
         if (!result.rowCount) throw new ApiError("UNAVAILABLE", 503);
         return Response.json({ status: "ready" });
@@ -209,7 +283,8 @@ export function createApi(options: {
         await pool.query("DELETE FROM keyman_mvp.devices WHERE expires_at<$1", [
           time() - 600,
         ]);
-        await pool.query(
+        identify({ resourceId: id });
+        await mutation(
           "INSERT INTO keyman_mvp.devices(id,public_key,key_id,device_hash,code_hash,expires_at) VALUES($1,$2,$3,$4,$5,$6)",
           [
             id,
@@ -256,6 +331,7 @@ export function createApi(options: {
             throw new ApiError("EXPIRED", 410);
           if (!row.approved || !row.account_id)
             return Response.json({ status: "pending" }, { status: 202 });
+          identify({ accountId: row.account_id, resourceId: row.id });
           const token = "kmu_" + randomBytes(32).toString("base64url"),
             expiresAt = time() + 1200;
           await client.query(
@@ -339,6 +415,7 @@ export function createApi(options: {
               [user.id],
             )
           ).rows[0]!;
+          identify({ accountId: owner.id, resourceId: input.id });
           if (
             owner.key_id !== row.key_id ||
             JSON.stringify(publicKeySchema.parse(owner.public_key)) !==
@@ -474,6 +551,7 @@ export function createApi(options: {
                 entries: [],
                 credentials: [],
               });
+            identify({ accountId: owner.id });
             const projects = (
               await client.query(
                 "SELECT id,name FROM keyman_mvp.projects WHERE account_id=$1 ORDER BY name",
@@ -502,14 +580,46 @@ export function createApi(options: {
           });
         }
         const owner = await transaction(pool, (c) => account(c, user));
+        if (path === "/api/console/activity" && method === "GET") {
+          const before = z
+            .string()
+            .regex(/^[1-9][0-9]{0,18}$/)
+            .refine((value) => BigInt(value) <= 9223372036854775807n)
+            .optional()
+            .parse(url.searchParams.get("before") ?? undefined);
+          const action = actionSchema
+            .optional()
+            .parse(url.searchParams.get("action") ?? undefined);
+          const outcome = z
+            .enum(["success", "denied", "error"])
+            .optional()
+            .parse(url.searchParams.get("outcome") ?? undefined);
+          const rows = (
+            await pool.query(
+              "SELECT sequence::text,event_id,request_id,occurred_at,action,outcome,reason,credential_id,resource_id FROM keyman_mvp.audit_events WHERE (account_id=$1 OR (account_id IS NULL AND actor_id=$2)) AND ($3::bigint IS NULL OR sequence<$3) AND ($4::text IS NULL OR action=$4) AND ($5::text IS NULL OR outcome=$5) ORDER BY keyman_mvp.audit_events.sequence DESC LIMIT 51",
+              [
+                owner.id,
+                user.id,
+                before ?? null,
+                action ?? null,
+                outcome ?? null,
+              ],
+            )
+          ).rows;
+          return Response.json({
+            items: rows.slice(0, 50),
+            nextCursor: rows.length > 50 ? rows[49]!.sequence : null,
+          });
+        }
         if (path === "/api/console/projects" && method === "POST") {
           const input = z
             .object({ name: projectNameSchema })
             .strict()
             .parse(await body(req));
           const id = randomUUID();
+          identify({ resourceId: id });
           try {
-            await pool.query(
+            await mutation(
               "INSERT INTO keyman_mvp.projects(id,account_id,name) VALUES($1,$2,$3)",
               [id, owner.id, input.name],
             );
@@ -542,7 +652,8 @@ export function createApi(options: {
           const token = "kmr_" + randomBytes(32).toString("base64url"),
             id = randomUUID(),
             expiresAt = time() + input.days * 86400;
-          await pool.query(
+          identify({ resourceId: id });
+          await mutation(
             "INSERT INTO keyman_mvp.credentials(id,account_id,hash,label,kind,project_id,expires_at) VALUES($1,$2,$3,$4,'read',$5,$6)",
             [
               id,
@@ -560,7 +671,8 @@ export function createApi(options: {
             .object({ id: idSchema })
             .strict()
             .parse(await body(req));
-          const r = await pool.query(
+          identify({ resourceId: input.id });
+          const r = await mutation(
             "UPDATE keyman_mvp.credentials SET revoked=true WHERE id=$1 AND account_id=$2 RETURNING id",
             [input.id, owner.id],
           );
@@ -578,7 +690,8 @@ export function createApi(options: {
             })
             .strict()
             .parse(await body(req));
-          const r = await pool.query(
+          identify({ resourceId: input.projectId });
+          const r = await mutation(
             "DELETE FROM keyman_mvp.secrets WHERE account_id=$1 AND project_id=$2 AND name=$3 AND revision=$4 RETURNING name",
             [owner.id, input.projectId, input.name, input.expectedRevision],
           );
@@ -600,10 +713,59 @@ export function createApi(options: {
     }
   }
   return async (request: Request) => {
-    const response = await dispatch(request);
-    response.headers.set("cache-control", "private, no-store");
-    response.headers.set("x-content-type-options", "nosniff");
-    return response;
+    const context: AuditContext = {
+      requestId: randomUUID(),
+      action: actionFor(request.method, new URL(request.url).pathname),
+    };
+    return auditContext.run(context, async () => {
+      let response = await dispatch(request);
+      if (
+        new URL(request.url).pathname !== "/api/health" &&
+        !context.recorded
+      ) {
+        try {
+          if (context.actorId && !context.accountId) {
+            const row = (
+              await pool.query<{ id: string }>(
+                "SELECT id FROM keyman_mvp.accounts WHERE clerk_id=$1",
+                [context.actorId],
+              )
+            ).rows[0];
+            context.accountId = row?.id;
+          }
+          const result = response.ok
+            ? undefined
+            : await response
+                .clone()
+                .json()
+                .catch(() => undefined);
+          const reason = response.ok
+            ? "OK"
+            : (context.denialReason ??
+              result?.error?.code ??
+              (response.status === 403
+                ? "REVERIFICATION_REQUIRED"
+                : "UNAVAILABLE"));
+          await recordAudit(
+            pool,
+            context,
+            response.ok
+              ? "success"
+              : response.status >= 500
+                ? "error"
+                : "denied",
+            reason,
+          );
+        } catch {
+          auditFailure(context.requestId);
+          response = failure("UNAVAILABLE", 503);
+        }
+      }
+      response.headers.set("x-request-id", context.requestId);
+      response.headers.set("cache-control", "private, no-store");
+      response.headers.set("x-content-type-options", "nosniff");
+      return response;
+    });
   };
   async function upload(req: Request, accountId: string) {
     const input = z
@@ -615,6 +777,7 @@ export function createApi(options: {
       })
       .strict()
       .parse(await body(req));
+    identify({ accountId, resourceId: input.projectId });
     return await transaction(pool, async (client) => {
       const owner = (
         await client.query<Account>(

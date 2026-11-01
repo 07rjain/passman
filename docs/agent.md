@@ -1,4 +1,4 @@
-# Keyman — Engineering and Contributor Instructions
+# Passman — Engineering and Contributor Instructions
 
 These instructions apply to agents and contributors working anywhere in this repository. Read [PRD.md](PRD.md) for product requirements and [plan.md](plan.md) for architecture, delivery milestones, and security acceptance criteria. Current user instructions take precedence when they explicitly change the intended work; keep the documents aligned with accepted decisions.
 
@@ -107,13 +107,39 @@ Use semantic versioning for published packages. Treat breaking API/protocol/conf
 
 - The current target is Next.js on Vercel, Clerk and a separate Neon PostgreSQL database. In this standalone repository select `apps/web` as Vercel's Root Directory; follow [deployment.md](deployment.md).
 - Keep runtime database privileges restricted, require TLS for remote connections and retain a separate migration owner. Never run destructive integration tests against deployed data.
+- Before a push that triggers automatic deployment, check migration and privilege prerequisites. The audit-enabled API requires additive migration 2 and audit grants before rollout; a code push alone does not apply them. Preserve data, account bindings and older-client compatibility. Configure webhook secrets, scheduled retention and alerting separately and record actual rollout status.
 - Keep deployment/admin secrets in the provider's secret facilities. Customer private decryption keys and provider plaintext must not be uploaded at all.
 - Recreating Clerk changes user IDs; replacing infrastructure is not a vault/account migration. Never merge by email or silently reset keys/data.
 - Untrusted contributor workflows must not receive production credentials or release publishing rights. Ordinary checks use synthetic credentials and a disposable database.
 - Use the manual immutable release workflow with least privilege. Never replace assets of an existing SDK release. Keep install/upgrade integrity checks and local-vault preservation tests.
 - Establish monitoring, spending/abuse controls and encrypted backup/restore drills before production approval. Passing a build or recreating an instance does not establish successful live signup.
 
-## 8. Definition of done
+## 8. Audit requirements for every feature
+
+Read [audit.md](audit.md) before changing API operations, authentication, setup, credentials, secret handling or database migrations. Extend the existing typed audit interface and account activity API rather than adding a parallel logger.
+
+- Cover new user/security operations with stable action names, generated request/event IDs, verified actor/account identity when known, applicable resource/credential IDs, outcome and safe reason codes. Never trust caller-supplied identity for attribution.
+- Persist successful mutation events in the same transaction as the mutation. Audit persistence failure must roll back the mutation. Persist denials after rollback, and preserve the documented fail-closed behavior for audited reads.
+- Use explicit allowed fields. Never log provider values, private keys, passphrases, usable credentials, authorization headers, verification codes, full URLs/query strings, request/response bodies, ciphertext or raw exceptions. Keep diagnostics fixed and redacted.
+- Preserve request isolation under concurrency, account-scoped activity access, validated filters/cursors and bounded anonymous events. Anonymous representative events are not complete traffic counts; edge abuse protection remains necessary.
+- Runtime audit privileges are SELECT/INSERT plus identity-sequence USAGE, never UPDATE/DELETE/TRUNCATE. Retention uses a separate maintenance owner and defaults to 90 days. Provider diagnostic retention is configured separately (30-day target).
+- Verify Clerk webhooks with the established SDK, enforce body limits and deduplicate delivery IDs atomically. Retry storage failures. Only supported session lifecycle events are ingested; failed Clerk sign-ins/Protect decisions remain in Clerk Application Logs unless a separately designed ingestion path is implemented.
+- Record only what the service observes. Ciphertext retrieval is not proof of network delivery, local decryption or provider usage. Operator reporting commands do not perform or verify backup/deployment/restore operations.
+- Do not call database audit history tamper-proof: administrators can alter it. External immutable export, actual alert delivery, scheduling and production webhook acceptance must be explicitly configured and verified before claiming them.
+- Add meaningful regression coverage for new events and affected failure paths: redaction, tenant isolation, atomic rollback, durable denials, concurrent attribution, filtering/pagination, webhook retries/signatures, retention and restricted privileges. Use the AUD cases in [feature.md](feature.md).
+
+## 9. Documentation and changelog upkeep
+
+Use [the documentation index](README.md) as the reader entry point. Maintain task-oriented installation/quickstart, CLI/SDK reference, troubleshooting, key-loss, security, audit, deployment/operations and contribution/testing/release guides. Update the index when adding or moving a maintained guide; keep links and examples valid.
+
+- After checks pass, reconcile affected guides, [PRD.md](PRD.md), [plan.md](plan.md) and [feature.md](feature.md) with the actual final implementation. Keep current setup status distinct from dated historical test reports; preserve evidence rather than rewriting it as new verification.
+- Distinguish implemented source, deployed configuration, observed test results and planned features. Never imply a passing build establishes production webhook delivery, browser behavior, backup restoration or an independent security review.
+- Make key-loss instructions prominent: losing every usable private-key copy is unrecoverable through Passman. Neither account login nor database backups provide client-key recovery. Preserve existing identities and never propose deletion/reset as a repair for connectivity or configuration errors.
+- Every user-visible website/API/security/operations change needs an Unreleased entry in [CHANGELOG.md](CHANGELOG.md). SDK/CLI changes belong in [SDK_CHANGELOG.md](SDK_CHANGELOG.md), with semantic versioning and immutable release artifacts. Server-only changes do not require an invented SDK version.
+- Release entries include version/date or dated server rollout, user impact, compatibility/migration requirements, upgrade instructions and known limitations. Record deployed server commit/deployment references only when verified.
+- Run `npm run docs:check`, formatting and diff checks for documentation changes. Public examples must use synthetic placeholders and match supported interfaces. Disposable output and private operational notes stay in ignored `ignore-docs/`.
+
+## 10. Definition of done
 
 A change is complete when its intended behavior and relevant failure cases are covered, the implementation preserves the architecture and security invariants, required checks pass, affected documentation reflects the tested behavior, and the final diff contains no unrelated changes or exposed credentials.
 

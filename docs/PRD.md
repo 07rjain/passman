@@ -1,6 +1,6 @@
 # Passman product requirements
 
-Status: experimental standalone implementation, extracted from the former Keyman MVP into [07rjain/passman](https://github.com/07rjain/passman). The implementation and vault/API/database formats are preserved. Replacement Vercel/Clerk/database configuration is deployed and basic setup checks pass; fresh browser and full vault acceptance remain pending. Follow the [design decisions](simplified-design.md), [plan](plan.md) and [current setup checklist](live-setup.md). Historical infrastructure and VM checks do not establish acceptance for a newly created Clerk instance.
+Status: experimental standalone implementation, extracted from the former Keyman MVP into [07rjain/passman](https://github.com/07rjain/passman). The implementation and vault/API/database formats are preserved. Replacement Vercel/Clerk/database configuration is deployed and basic setup checks pass; targeted two-account browser/VM acceptance is recorded in the manual security report; wider release validation remains open. Follow the [design decisions](simplified-design.md), [plan](plan.md) and [current setup checklist](live-setup.md). Historical infrastructure and VM checks do not establish acceptance for a newly created Clerk instance.
 
 ## Purpose
 
@@ -42,3 +42,7 @@ A future Node.js 26.x upgrade is tracked in the [implementation plan](plan.md). 
 Maintain and execute the applicable cases in [feature.md](feature.md) for every new feature. The hosted production target must use the verified Clerk production instance; development-mode acceptance is not evidence of real production email/browser behavior. Before switching instances, preserve any existing account/vault bindings through an explicit migration decision.
 
 Before release, verify the encryption/credential/authorization/loss/agent-output cases in [simplified-design.md](simplified-design.md), document the supported interfaces and demonstrate a clean setup-to-retrieval workflow. A migration from the earlier application requires its own explicit plan and data-preservation checks.
+
+## Audit trail
+
+The [audit guide](audit.md) defines metadata-only event coverage, transaction/failure behavior, account-scoped activity, signed session webhooks and maintenance retention. Migration 2, restricted runtime grants and separate webhook configuration are required for rollout. Local decryption, provider usage and Clerk failed-sign-in details are outside the application event stream. Immutable external export and automated alert delivery remain follow-up work.

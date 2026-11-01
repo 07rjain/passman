@@ -223,6 +223,7 @@ function Workspace() {
         <span className="eyebrow">YOUR WORKSPACE</span>
         <a href="#projects">▦ Projects</a>
         <a href="#entries">◇ Secrets</a>
+        <a href="#activity">◷ Activity</a>
         <a href="#credentials">⚿ Service keys</a>
         <div className="aside-note">
           Provider values stay encrypted on the service.
@@ -555,6 +556,7 @@ function Workspace() {
                   </p>
                 )}
               </section>
+              <Activity call={call} />
               <section id="credentials" className="panel">
                 <h2>Read-only service keys</h2>
                 <p className="muted">
@@ -661,5 +663,126 @@ function Workspace() {
         </div>
       </main>
     </div>
+  );
+}
+
+const activitySchema = z.object({
+  items: z.array(
+    z.object({
+      sequence: z.string(),
+      event_id: z.string(),
+      request_id: z.string(),
+      occurred_at: z.string(),
+      action: z.string(),
+      outcome: z.string(),
+      reason: z.string(),
+      resource_id: z.string().nullable(),
+      credential_id: z.string().nullable(),
+    }),
+  ),
+  nextCursor: z.string().nullable(),
+});
+function Activity({ call }: { call: (path: string) => Promise<unknown> }) {
+  const [events, setEvents] = useState<z.infer<typeof activitySchema>>();
+  const [outcome, setOutcome] = useState("");
+  const [action, setAction] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  async function load(before?: string) {
+    setLoading(true);
+    setError("");
+    try {
+      const query = new URLSearchParams();
+      if (before) query.set("before", before);
+      if (outcome) query.set("outcome", outcome);
+      if (action) query.set("action", action);
+      setEvents(
+        activitySchema.parse(await call("/api/console/activity?" + query)),
+      );
+    } catch {
+      setError("Activity unavailable. Sign in again or retry.");
+    } finally {
+      setLoading(false);
+    }
+  }
+  return (
+    <section id="activity" className="panel">
+      <h2>Account activity</h2>
+      <p>
+        Server operations only. Retrieval means ciphertext was prepared for
+        return; local decryption and provider use are not observed.
+      </p>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          void load();
+        }}
+      >
+        <label>
+          Action{" "}
+          <select value={action} onChange={(e) => setAction(e.target.value)}>
+            <option value="">All actions</option>
+            {[
+              "setup.start",
+              "setup.inspect",
+              "setup.approve",
+              "setup.claim",
+              "workspace.list",
+              "project.create",
+              "credential.create",
+              "credential.revoke",
+              "secret.write",
+              "secret.delete",
+              "secret.retrieve",
+              "secret.search",
+              "secret.exists",
+              "upload.context",
+              "activity.list",
+              "session.created",
+              "session.ended",
+              "session.removed",
+              "session.revoked",
+            ].map((a) => (
+              <option key={a}>{a}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Outcome{" "}
+          <select value={outcome} onChange={(e) => setOutcome(e.target.value)}>
+            <option value="">All outcomes</option>
+            {["success", "denied", "error"].map((o) => (
+              <option key={o}>{o}</option>
+            ))}
+          </select>
+        </label>
+        <button disabled={loading}>Load activity</button>
+      </form>
+      {error && <p role="alert">{error}</p>}
+      {events?.items.map((event) => (
+        <div className="entry" key={event.event_id}>
+          <div>
+            <strong>{event.action}</strong>
+            <small>
+              {new Date(event.occurred_at).toLocaleString()} · {event.outcome} ·{" "}
+              {event.reason}
+            </small>
+            <small>
+              Request: {event.request_id}
+              {event.resource_id ? " · Resource: " + event.resource_id : ""}
+            </small>
+          </div>
+        </div>
+      ))}
+      {events && !events.items.length && <p>No matching events.</p>}
+      {events?.nextCursor && (
+        <button
+          disabled={loading}
+          onClick={() => void load(events.nextCursor!)}
+        >
+          Older events
+        </button>
+      )}
+    </section>
   );
 }

@@ -22,11 +22,11 @@ Configure a separate test PostgreSQL database and Clerk settings using [deployme
 
 Import `07rjain/passman` and select **`apps/web`** as the Root Directory with the Next.js preset and Node.js 24. Include source files outside the Root Directory. The checked-in settings run `cd ../.. && npm ci` for installation and `npm run build` for the app, compiling its shared core prerequisite automatically.
 
-The replacement Vercel project and custom domain are deployed; Clerk/database configuration and live acceptance remain pending. Follow [the fresh setup checklist](docs/deployment.md#fresh-standalone-deployment) and record new live results in [live-setup.md](docs/live-setup.md). Earlier provider/test evidence is historical and does not establish that a replacement Clerk instance can complete signup.
+The replacement Vercel/Clerk/database configuration and targeted two-account live acceptance are recorded in the setup and manual-test reports. Broader platform checks, operational drills and independent review remain open. Follow [the fresh setup checklist](docs/deployment.md#fresh-standalone-deployment) and record new live results in [live-setup.md](docs/live-setup.md). Earlier provider/test evidence is historical and does not establish that a replacement Clerk instance can complete signup.
 
 ## Install the released client
 
-After the service has been redeployed at its stable origin:
+For the currently hosted service:
 
 ```sh
 curl -fsSL https://passman.subdomain.wtf/install.sh | sh
@@ -36,6 +36,8 @@ curl -fsSL https://passman.subdomain.wtf/install.sh | sh
 The CLI/SDK release is **0.1.1**, distributed publicly from `07rjain/passman`. The installer uses that repository because the earlier release repository is now private. Existing local vaults and earlier immutable assets are preserved. See [releases.md](docs/releases.md).
 
 ## Documentation
+
+Start with the [documentation index](docs/README.md), [quickstart](docs/quickstart.md), [troubleshooting](docs/troubleshooting.md) and [key-loss policy](docs/key-loss.md).
 
 - [Product requirements](docs/PRD.md) and [implementation plan](docs/plan.md)
 - [Design decisions](docs/simplified-design.md) and [security profile](docs/security.md)

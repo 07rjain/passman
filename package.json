@@ -28,7 +28,9 @@
     "release:version": "node distribution/version.mjs",
     "test:distribution": "node distribution/check.mjs",
     "format": "prettier --write .",
-    "docs:check": "node scripts/check-docs.mjs"
+    "docs:check": "node scripts/check-docs.mjs",
+    "audit:prune": "node --env-file-if-exists=.env.migrate --import tsx scripts/audit-prune.ts",
+    "audit:operation": "node --env-file-if-exists=.env.migrate --import tsx scripts/audit-operation.ts"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

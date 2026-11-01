@@ -1,6 +1,6 @@
 # Run and test the MVP
 
-Status: experimental. Local verification and hosted Vercel/Neon API checks passed; a fresh live Clerk browser login and the full user-owned machine workflow remain unverified. Use synthetic values. See [live-setup.md](live-setup.md), [deployment.md](deployment.md) and [security.md](security.md).
+Status: experimental. Local verification and hosted Vercel/Neon API checks passed; targeted two-account production browser/VM acceptance is recorded in the manual report, with wider platform and operational checks still open. Use synthetic values. See [live-setup.md](live-setup.md), [deployment.md](deployment.md) and [security.md](security.md).
 
 The maintained [feature/regression catalogue](feature.md) is the checklist for every future feature and release.
 
@@ -134,3 +134,15 @@ A separate temporary PostgreSQL 16 cluster on loopback ran the real built-Next.j
 GitHub private vulnerability reporting was enabled for `07rjain/passman`. Package source metadata and future release publication point to that repository; existing immutable 0.1.0 downloads intentionally retain their original location. No SDK release was published.
 
 The install audit reported eleven moderate advisories in existing development-tool dependencies (ESLint/TypeScript-ESLint/minimatch), with no high/critical findings. Their versions were preserved and the upgrade review is tracked in [plan.md](plan.md). These local results do not establish macOS CI success, replacement Vercel/Clerk deployment, actual inbox/browser signup or independent security approval.
+
+## Audit trail
+
+The [audit guide](audit.md) defines metadata-only event coverage, transaction/failure behavior, account-scoped activity, signed session webhooks and maintenance retention. Migration 2, restricted runtime grants and separate webhook configuration are required for rollout. Local decryption, provider usage and Clerk failed-sign-in details are outside the application event stream. Immutable external export and automated alert delivery remain follow-up work.
+
+## Audit implementation verification — 2026-11-01
+
+On Linux/Node.js 24, `npm run check` passed formatting, production build, types, lint, six unit tests, installed-package checks and documentation validation. `npm run test:distribution` passed the artifact/installer preservation checks. `npm run test:integration` passed all four tests/subtests against a separate local PostgreSQL 16 database, including the built Next.js API and actual CLI subprocesses.
+
+New audit coverage exercises tenant isolation, payload/token/private-key exclusion, denied-event durability, rollback when audit INSERT is unavailable, read failure on audit outage, concurrent request context, filtered numeric cursor pagination, anonymous event bounding, forbidden runtime UPDATE/DELETE, retention, forged/stale webhook rejection, concurrent delivery deduplication and retry after storage failure. Fixed diagnostic events in the test output are intentionally induced audit outages.
+
+The first integration run exposed lexical rather than numeric cursor ordering; the SQL was corrected and the full integration run passed. Production migration/grants, actual Clerk webhook delivery, scheduled retention/alerts and native browser activity interaction were not performed by these local checks. No client version or ciphertext/vault format changed.

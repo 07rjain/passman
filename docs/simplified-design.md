@@ -1,6 +1,6 @@
 # Simplified Keyman design decisions
 
-Status: accepted replacement direction, implemented experimentally in this standalone repository, with redeployment to Vercel/Neon pending; see [live-setup.md](live-setup.md). The earlier application remains in the separate [Keyman repository](https://github.com/07rjain/keyman). This decision record describes the product boundary; [security.md](security.md) defines the implemented profile and [testing.md](testing.md) records verification limits. Passman client archives are distributed through GitHub Releases; npm-registry publication remains deferred.
+Status: accepted replacement direction, implemented experimentally in this standalone repository, with Vercel/Neon deployed and targeted acceptance recorded; see [live-setup.md](live-setup.md). The earlier application remains in the separate [Keyman repository](https://github.com/07rjain/keyman). This decision record describes the product boundary; [security.md](security.md) defines the implemented profile and [testing.md](testing.md) records verification limits. Passman client archives are distributed through GitHub Releases; npm-registry publication remains deferred.
 
 ## Core model
 
@@ -59,3 +59,7 @@ An authorized receiving application can always copy the value. Provider-side rev
 - Migration/upgrade/rollback behavior preserving existing customer data, plus tests matching the finalized replacement wire format.
 
 These decisions supersede conflicting target-product requirements in the older multi-machine/root-recovery design. They do not modify the earlier running application or migrate its data.
+
+## Audit trail
+
+The [audit guide](audit.md) defines metadata-only event coverage, transaction/failure behavior, account-scoped activity, signed session webhooks and maintenance retention. Migration 2, restricted runtime grants and separate webhook configuration are required for rollout. Local decryption, provider usage and Clerk failed-sign-in details are outside the application event stream. Immutable external export and automated alert delivery remain follow-up work.

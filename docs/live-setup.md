@@ -74,3 +74,9 @@ See [the detailed report](manual-security-test-2026-11-01.md) for two existing a
 ## Historical evidence
 
 [The previous hosted setup and Clerk investigation](history/legacy-hosted-setup.md) records infrastructure/API checks and a Protect policy rejection on the former deployment. [Agent37 verification](agent37-verification.md) records the older development-instance CLI/SDK run. These records remain evidence for those particular runs; they are not passes for the replacement production application.
+
+## Audit migration prepared — 2026-11-01
+
+Applied additive migration 2 to the existing production MVP database before pushing the audit-enabled API. Verified the existing restricted runtime role has audit SELECT/INSERT and sequence USAGE, without UPDATE/DELETE/TRUNCATE. No existing identities, ciphertext or account bindings were reset. The existing production acceptance report predates this API change.
+
+Configure and verify the production Clerk session webhook, scheduled retention and monitoring using [audit.md](audit.md). Local build/integration results are recorded in [testing.md](testing.md); they do not establish production webhook or native activity-page acceptance. A source push may trigger automatic deployment; confirm its actual deployment result separately.

@@ -115,3 +115,7 @@ These settings have passed local production builds and the hosted infrastructure
 - Keep the stable service origin before creating user vaults. The initial CLI does not silently change stored origins, reset a key or migrate earlier application data.
 
 Hosting does not strengthen optional hosted input against malicious JavaScript or isolate an arbitrary-code agent from its local vault. Read [security.md](security.md) before claiming production guarantees.
+
+## Audit rollout
+
+Before deploying the audit-enabled API, run additive migration 2 with the separate owner and grant the existing runtime role the audit privileges listed in [audit.md](audit.md). Health requires version 2. Configure production-only session webhooks, daily maintenance retention and alerts separately. Do not infer these are configured from a successful build.

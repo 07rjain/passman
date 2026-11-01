@@ -184,3 +184,19 @@ Migrations / compatibility / rollback:
 Test data and infrastructure cleanup:
 Changelog and documentation updates:
 ```
+
+## Audit regression cases
+
+| ID | Required behavior | Evidence |
+| --- | --- | --- |
+| AUD-01 | Successful changes and audit rows commit together; audit failure rolls back the change | PostgreSQL integration |
+| AUD-02 | Denial survives transaction rollback and exposes only a safe reason | PostgreSQL integration |
+| AUD-03 | Accounts cannot view one another's activity; read tokens cannot administer it | API integration |
+| AUD-04 | Activity and server diagnostics contain no values, private keys or bearer credentials | Redaction assertions |
+| AUD-05 | Concurrent requests retain separate actor/resource/request identities | PostgreSQL integration |
+| AUD-06 | Pagination/filtering have no overlapping IDs across older pages; invalid cursor rejected | API integration |
+| AUD-07 | Signed session webhook retries deduplicate; forged/stale signatures fail | Signature + PostgreSQL integration |
+| AUD-08 | Runtime cannot alter/delete audit history; maintenance retention deletes only expired events | PostgreSQL integration |
+| AUD-09 | Anonymous attack events are bounded; audit outage returns unavailable | PostgreSQL integration |
+| AUD-10 | Native browser activity filtering and pagination work on supported browsers | Manual browser acceptance pending |
+| AUD-11 | Production webhook delivery, scheduled pruning and operator alerts work | Deployment acceptance pending |

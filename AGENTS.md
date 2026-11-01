@@ -21,3 +21,9 @@ Read the repository-wide engineering standards in [docs/agent.md](docs/agent.md)
 - SDK and CLI share the version in `packages/client/package.json`. Record user-visible changes in `docs/SDK_CHANGELOG.md` under Unreleased as part of every relevant change.
 - Prepare versions with `npm run release:version -- patch|minor|major`, then review the manifest/lockfile/changelog diff. For 0.x, breaking public behavior requires a minor bump; after 1.0 use a major bump. Never replace assets of an existing release.
 - Before publication run `npm run check`, `npm run test:distribution`, and relevant database integration tests. Use `docs/releases.md` for the manual release procedure. Keep package versions distinct from vault/wire versions and preserve existing user identities on update.
+
+## Audit and documentation requirements
+
+- Follow the audit and documentation/changelog sections of [docs/agent.md](docs/agent.md) for every feature. Read [docs/audit.md](docs/audit.md) when changing operations or their instrumentation and maintain [the documentation index](docs/README.md).
+- Preserve atomic mutation auditing, durable denials, redaction, tenant isolation and limited runtime privileges. Report local verification separately from production migration, webhook, retention and alert configuration.
+- Website/API changes update [docs/CHANGELOG.md](docs/CHANGELOG.md); SDK/CLI changes update [docs/SDK_CHANGELOG.md](docs/SDK_CHANGELOG.md). Check deployment prerequisites before pushing to an automatically deployed branch.
