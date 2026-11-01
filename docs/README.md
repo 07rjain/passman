@@ -10,6 +10,8 @@ Passman is an experimental, source-available encrypted secret store. Start with 
 4. [Understand key loss and respond to exposure](key-loss.md).
 5. [Understand account activity and audit coverage](audit.md).
 
+- [Use Passman with an agent skill](skills.md); MCP is deferred.
+
 ## Understand the security model
 
 - [Security profile and encryption](security.md).

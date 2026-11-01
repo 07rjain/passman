@@ -46,3 +46,9 @@ Before release, verify the encryption/credential/authorization/loss/agent-output
 ## Audit trail
 
 The [audit guide](audit.md) defines metadata-only event coverage, transaction/failure behavior, account-scoped activity, signed session webhooks and maintenance retention. Migration 2, restricted runtime grants and separate webhook configuration are required for rollout. Local decryption, provider usage and Clerk failed-sign-in details are outside the application event stream. Immutable external export and automated alert delivery remain follow-up work.
+
+## Agent skill and deferred MCP
+
+The [Passman skill](skills.md) provides portable instructions for local CLI metadata lookup and SDK retrieval/use without printing values. Public GitHub distribution uses the skills.sh discovery/install workflow; instructions do not grant access or create an unlocked session. Keep private credentials outside skill content/model output. Skill metadata is versioned separately from the client.
+
+MCP remains future work: a local stdio adapter may wrap the SDK after login with privately configured service credentials and manual local unlock. Search/existence/status are metadata-only; raw retrieval/decryption would expose plaintext to the MCP client/model and requires explicit opt-in, disabled by default. Preserve read-only credentials, separate management authorization and the same local-key/OS-user limitations. See [the detailed scope](skills.md#future-mcp-integration).

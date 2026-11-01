@@ -15,6 +15,7 @@ async function collect(directory) {
   }
 }
 await collect("docs");
+await collect("skills");
 for (const file of files) {
   const content = await readFile(path.join(root, file), "utf8");
   assert.ok(content.endsWith("\n"), `${file}: missing final newline`);

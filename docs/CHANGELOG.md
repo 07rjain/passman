@@ -6,6 +6,8 @@ This file records website/API/security and operational changes. Installable clie
 
 ### Added
 
+- Add a portable Passman agent skill for existing CLI/SDK workflows, with private-configuration guidance and skills.sh installation/discovery instructions. Track the local MCP adapter as future work; no client/API/vault behavior changes.
+
 - Require future contributors/agents to preserve audit guarantees, maintain task-oriented documentation and changelogs, and verify migration prerequisites before automatically deployed pushes.
 
 - Metadata-only audit history for setup, projects, credentials, secret operations and denials; no secret payloads or usable tokens are recorded.

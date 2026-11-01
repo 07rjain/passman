@@ -35,6 +35,16 @@ curl -fsSL https://passman.subdomain.wtf/install.sh | sh
 
 The CLI/SDK release is **0.1.1**, distributed publicly from `07rjain/passman`. The installer uses that repository because the earlier release repository is now private. Existing local vaults and earlier immutable assets are preserved. See [releases.md](docs/releases.md).
 
+## Agent skill
+
+Install portable instructions for agents with shell/code access:
+
+```sh
+npx skills add 07rjain/passman --skill passman
+```
+
+The skill uses the existing local CLI/SDK; it does not install Passman, unlock a vault or receive credentials. See [agent setup and registry discovery](docs/skills.md). MCP integration is future work.
+
 ## Documentation
 
 Start with the [documentation index](docs/README.md), [quickstart](docs/quickstart.md), [troubleshooting](docs/troubleshooting.md) and [key-loss policy](docs/key-loss.md).

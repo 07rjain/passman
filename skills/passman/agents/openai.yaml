@@ -1,0 +1,4 @@
+interface:
+  display_name: "Passman"
+  short_description: "Use encrypted Passman secrets in local applications"
+  default_prompt: "Use $passman to find and use a project secret locally without printing its value."

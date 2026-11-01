@@ -139,6 +139,10 @@ Use [the documentation index](README.md) as the reader entry point. Maintain tas
 - Release entries include version/date or dated server rollout, user impact, compatibility/migration requirements, upgrade instructions and known limitations. Record deployed server commit/deployment references only when verified.
 - Run `npm run docs:check`, formatting and diff checks for documentation changes. Public examples must use synthetic placeholders and match supported interfaces. Disposable output and private operational notes stay in ignored `ignore-docs/`.
 
+## Agent skill maintenance
+
+The portable Passman skill lives in `skills/passman/`. Keep installed references self-contained and consistent with actual SDK/CLI behavior. Its metadata version is separate from the client version. Validate changes with the skill validator, `gh skill publish --dry-run`, documentation checks and an isolated skills CLI installation. Never embed real credentials or claim that login creates a shared unlocked session. MCP remains deferred; preserve the explicit raw-value disclosure decision in [skills.md](skills.md).
+
 ## 10. Definition of done
 
 A change is complete when its intended behavior and relevant failure cases are covered, the implementation preserves the architecture and security invariants, required checks pass, affected documentation reflects the tested behavior, and the final diff contains no unrelated changes or exposed credentials.

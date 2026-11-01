@@ -200,3 +200,13 @@ Changelog and documentation updates:
 | AUD-09 | Anonymous attack events are bounded; audit outage returns unavailable | PostgreSQL integration |
 | AUD-10 | Native browser activity filtering and pagination work on supported browsers | Manual browser acceptance pending |
 | AUD-11 | Production webhook delivery, scheduled pruning and operator alerts work | Deployment acceptance pending |
+
+## Agent skill checks
+
+| ID | Required behavior | Evidence |
+| --- | --- | --- |
+| SKILL-01 | Skill frontmatter, naming and portable references validate | Skill validator, GitHub dry-run and docs checks |
+| SKILL-02 | Public repository skill is discoverable/installable without credentials | Isolated skills CLI installation |
+| SKILL-03 | Instructions match actual CLI/SDK permissions, pagination and unlock behavior | Review against current implementation and existing SDK/CLI regression evidence |
+| SKILL-04 | No supplied private credentials enter skill files or publication | Changed-file credential scan |
+| SKILL-05 | Agent uses a secret for an approved task without printing it | Client-specific live acceptance pending; instructions are not isolation |
