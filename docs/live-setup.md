@@ -1,6 +1,6 @@
 # Standalone deployment status
 
-The standalone source is hosted in [07rjain/passman](https://github.com/07rjain/passman). The replacement Vercel project, custom domain, Clerk production configuration and preserved database connection are configured. Health, published-client login setup and negative authorization checks pass as recorded below. Real browser signup/verification, approval and the complete authenticated vault workflow remain pending. The old Clerk resource was deleted at the owner's request and replaced with a directly configured Passman instance.
+The standalone source is hosted in [07rjain/passman](https://github.com/07rjain/passman). The replacement Vercel project, custom domain, Clerk production configuration and preserved database connection are configured. Health, published-client login setup and negative authorization checks pass as recorded below. Two-account production browser sign-in/email verification, CLI approval, encrypted lifecycle and targeted security acceptance are now recorded in [the manual report](manual-security-test-2026-11-01.md). Ordinary new-user signup, broader operational drills and independent review remain pending. The old Clerk resource was deleted at the owner's request and replaced with a directly configured Passman instance.
 
 ## Replacement setup checklist
 
@@ -9,8 +9,8 @@ The standalone source is hosted in [07rjain/passman](https://github.com/07rjain/
 - [x] Configure the replacement Clerk production instance for the intended stable origin, with matched frontend, issuer and public RSA verifier settings and a matching backend credential.
 - [x] Obtain the replacement instance's exact DNS targets, verify public DNS and Frontend API TLS, and preserve unrelated websites. Clerk dashboard deployment/verification status and ordinary browser acceptance remain separate checks.
 - [ ] Complete ordinary browser email signup/verification and sign-in without a testing token. Inspect Protect decisions if blocked; recreating infrastructure does not guarantee a policy rejection disappears.
-- [ ] Confirm health and denied-request behavior, then perform CLI approval, local encrypted upload, exact SDK retrieval, read-only enforcement and revocation.
-- [ ] Record commits, client version, environment/platform, feature case IDs, actual results, cleanup and unresolved cases here.
+- [x] Confirm health and denied-request behavior, then perform CLI approval, local encrypted upload, exact SDK retrieval, read-only enforcement and revocation.
+- [x] Record commits, client version, environment/platform, feature cases, actual results, cleanup and unresolved cases in [the production manual report](manual-security-test-2026-11-01.md).
 
 See [deployment.md](deployment.md#fresh-standalone-deployment) for the concrete setup sequence and [feature.md](feature.md) for the full acceptance catalogue. Do not paste credentials, private keys or provider values into this record.
 
@@ -66,6 +66,10 @@ The initial private credential requests expired without submission. Subsequent C
 - Deployment `dpl_BHp3Ys7qmVEiQz5Q9ibPbfbB7p9c` reached Ready with aliases assigned. The live health endpoint returned 200. Downloaded the public 0.1.1 archive and used its actual SDK to initialize a disposable local vault, start login against the custom domain and confirm the approval origin/fingerprint checks and pending polling state. This verifies the setup stage that previously failed; no human approval, fake session or testing token was supplied.
 - Live negative checks returned 401 for missing/forged owner sessions, 403 for a foreign browser origin and 401 for an invalid service credential. Deleted only the test's pending device record and its polling counter, then removed the temporary local vault. Persistent counts remained unchanged: 2 accounts, 3 projects, 0 secrets and 4 credentials. Ordinary global rate counters were not reset.
 - The user's existing Mac vault can be reused with the same passphrase. Genuine browser signup/sign-in, approval, encrypted upload/retrieval and revocation remain acceptance work; healthy infrastructure is not an independent security audit.
+
+## Production manual acceptance — 2026-11-01
+
+See [the detailed report](manual-security-test-2026-11-01.md) for two existing accounts signing in with real inbox verification, browser/VM setup, local and browser encryption, two-host and cross-account attacks, restart, expiry, revocation and cleanup. Both temporary VMs were deleted, all synthetic values removed and test credentials revoked. Existing accounts and their encrypted test-vault backups were preserved. Production Clerk keys are now scoped only to Production; Preview must be configured separately. The documented hostile-server substitution/rollback boundary was reproduced without recovering any existing secret. No application code or client version changed.
 
 ## Historical evidence
 

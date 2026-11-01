@@ -1,6 +1,6 @@
 # Passman implementation plan
 
-Status: experimental standalone source prepared for [07rjain/passman](https://github.com/07rjain/passman). The new Vercel project/domain are deployed; Clerk/database configuration, health, published-client login setup and authorization denial checks pass; fresh browser and complete vault acceptance remain pending. Follow the [PRD](PRD.md), [design decisions](simplified-design.md) and [working instructions](../AGENTS.md). See [testing.md](testing.md) for commands and [live-setup.md](live-setup.md) for the new deployment checklist.
+Status: experimental standalone source prepared for [07rjain/passman](https://github.com/07rjain/passman). The new Vercel project/domain are deployed; Clerk/database configuration, health, published-client login setup and authorization denial checks pass; targeted two-account production browser/VM acceptance is recorded in [the manual report](manual-security-test-2026-11-01.md); wider release validation remains pending. Follow the [PRD](PRD.md), [design decisions](simplified-design.md) and [working instructions](../AGENTS.md). See [testing.md](testing.md) for commands and [live-setup.md](live-setup.md) for the new deployment checklist.
 
 ## Implemented and verified locally
 
@@ -51,6 +51,10 @@ On the former Keyman deployment, the configuration cutover completed on 2026-10-
 The current SDK/CLI version is 0.1.1. Distribution includes the installer/private runtime, a self-contained npm archive with bundled locked dependencies, default hosted login, artifact/installer tests, and manual immutable GitHub Releases. Follow [releases.md](releases.md) and [SDK_CHANGELOG.md](SDK_CHANGELOG.md) for future versions. Windows, Homebrew and npm-registry publication remain follow-up work.
 
 ## Future TODO
+
+- [ ] Review whether sender authenticity and independently checked record freshness are required: the manual hostile-response experiments demonstrated the documented HPKE base-mode substitution/rollback limits. Any change needs an explicit protocol decision and compatibility review, rather than importing the old multi-machine architecture.
+- [ ] Improve safe UI error messages for wrong approval codes, conflicts, expiration and service unavailability; maintain redaction.
+- [ ] Specify supported deletion/purge and test-vault retention procedures without silently resetting immutable account keys.
 
 - [ ] Review the existing development-tool dependency advisories: the standalone install reported 11 moderate findings in the ESLint/TypeScript-ESLint/minimatch toolchain and no high/critical findings. Dependency versions were preserved during extraction; evaluate upgrades separately with regression checks.
 
