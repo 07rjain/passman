@@ -184,9 +184,10 @@ function Workspace() {
             </code>
           </pre>
           <p>
-            Then run <code>~/.local/bin/passman login</code>. macOS and Linux;
-            no source checkout required.
+            Then run <code>~/.local/bin/passman login</code> on macOS/Linux. No
+            source checkout required.
           </p>
+          <WindowsInstall />
         </div>
         <div className="features">
           <article>
@@ -314,6 +315,7 @@ function Workspace() {
                 </code>
               </pre>
               <code>~/.local/bin/passman login</code>
+              <WindowsInstall />
               <p className="muted">
                 The installer includes a private Node.js runtime. Your vault
                 stays on this machine; updates do not reset it.
@@ -784,5 +786,29 @@ function Activity({ call }: { call: (path: string) => Promise<unknown> }) {
         </button>
       )}
     </section>
+  );
+}
+
+function WindowsInstall() {
+  return (
+    <details>
+      <summary>Windows PowerShell installation</summary>
+      <p>
+        Windows x64/arm64, local NTFS storage. Download and review the installer
+        before running it; no administrator access is needed.
+      </p>
+      <pre>
+        <code>
+          {
+            'Invoke-WebRequest -Uri https://passman.subdomain.wtf/install.ps1 -OutFile "$env:TEMP\\passman-install.ps1"\n& "$env:TEMP\\passman-install.ps1"\n& "$env:LOCALAPPDATA\\Passman\\bin\\passman.cmd" login'
+          }
+        </code>
+      </pre>
+      <p>
+        Follow your organization’s script execution policy. Updates preserve the
+        existing local vault; a new machine cannot recover another machine’s
+        private key.
+      </p>
+    </details>
   );
 }

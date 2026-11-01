@@ -123,7 +123,11 @@ async function main() {
     if (!args.includes("--no-browser")) {
       const child = spawn(
         process.platform === "win32"
-          ? "rundll32.exe"
+          ? path.join(
+              process.env.SystemRoot ?? "C:\\Windows",
+              "System32",
+              "rundll32.exe",
+            )
           : process.platform === "darwin"
             ? "open"
             : "xdg-open",

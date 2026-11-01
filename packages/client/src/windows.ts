@@ -10,30 +10,36 @@ export async function windowsPrivatePath(location: string, createAcl = false) {
   ).toString("base64");
   const script = `
 $ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
+$stage = 'PATH'
 try {
  $p = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${payload}')) | ConvertFrom-Json
  $item = Get-Item -LiteralPath $p.location -Force
- $drive = New-Object System.IO.DriveInfo ([IO.Path]::GetPathRoot($item.FullName))
+ $drive = [System.IO.DriveInfo]::new([IO.Path]::GetPathRoot($item.FullName))
  if ($drive.DriveType -ne 'Fixed' -or $drive.DriveFormat -ne 'NTFS') { throw 'Unsupported filesystem' }
  $current = $item
  while ($null -ne $current) {
   if (($current.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Reparse points are unsupported' }
   if ($current -is [IO.FileInfo]) { $current = $current.Directory } else { $current = $current.Parent }
  }
+ $stage = 'IDENTITY'
  $sid = [Security.Principal.WindowsIdentity]::GetCurrent().User
+ $stage = 'CREATE_ACL'
  if ($p.createAcl) {
   if ($item.PSIsContainer) {
-   $acl = New-Object Security.AccessControl.DirectorySecurity
-   $rule = New-Object Security.AccessControl.FileSystemAccessRule($sid,'FullControl','ContainerInherit,ObjectInherit','None','Allow')
+   $acl = [Security.AccessControl.DirectorySecurity]::new()
+   $rule = [Security.AccessControl.FileSystemAccessRule]::new($sid,'FullControl','ContainerInherit,ObjectInherit','None','Allow')
   } else {
-   $acl = New-Object Security.AccessControl.FileSecurity
-   $rule = New-Object Security.AccessControl.FileSystemAccessRule($sid,'FullControl','Allow')
+   $acl = [Security.AccessControl.FileSecurity]::new()
+   $rule = [Security.AccessControl.FileSystemAccessRule]::new($sid,'FullControl','Allow')
   }
   $acl.SetOwner($sid)
   $acl.SetAccessRuleProtection($true,$false)
   $acl.AddAccessRule($rule)
+  $stage = 'SET_ACL'
   Set-Acl -LiteralPath $item.FullName -AclObject $acl
  }
+ $stage = 'VERIFY_ACL'
  $acl = Get-Acl -LiteralPath $item.FullName
  if ($acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne $sid.Value) { throw 'Wrong owner' }
  $found = $false
@@ -44,7 +50,7 @@ try {
   }
  }
  if (!$found) { throw 'Missing owner access' }
-} catch { exit 1 }
+} catch { [Console]::Error.WriteLine('WINDOWS_ACL_' + $stage + '_' + $_.Exception.GetType().Name); exit 1 }
 `;
   await execute(
     path.join(
