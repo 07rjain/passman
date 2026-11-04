@@ -17,6 +17,7 @@ Store generic named secret values encrypted on a service and retrieve/decrypt th
 - Organize entries by project/name. Projects are organizational namespaces; account isolation and endpoint authorization remain security requirements.
 - Support website project creation, entry replacement/deletion and read-credential issuance/revocation. Local `login` issues a 20-minute upload-only credential; CLI `put` and the separately exported administrative `uploadValue` helper use it. The runtime `KeymanClient` has no mutation method; read credentials never receive write privileges implicitly.
 - Issue high-entropy, read-only bearer service credentials with expiry/revocation; persist only hashes. The API receives usable tokens during authentication and must redact them.
+- Commit bearer attempt quotas independently of authentication outcomes, bound rotating candidates before credential lookup, and retain bounded attributed evidence of repeated expired/revoked denials. See [security.md](security.md) for thresholds and shared-quota availability limits.
 - Support programmatic search, retrieval, local decryption and typed/redacted errors. Application code receives plaintext; avoid returning it to model-facing tool results.
 - Keep credentials, private keys and sensitive errors out of model prompts, logs, telemetry and source control.
 - Provide no account-only recovery, support override or private-key sharing in the MVP. Loss of every usable private-key copy makes affected ciphertext unrecoverable.

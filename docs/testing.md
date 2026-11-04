@@ -139,6 +139,12 @@ The install audit reported eleven moderate advisories in existing development-to
 
 The [audit guide](audit.md) defines metadata-only event coverage, transaction/failure behavior, account-scoped activity, signed session webhooks and maintenance retention. Migration 2, restricted runtime grants and separate webhook configuration are required for rollout. Local decryption, provider usage and Clerk failed-sign-in details are outside the application event stream. Immutable external export and automated alert delivery remain follow-up work.
 
+## Bearer denial quota regression — 2026-11-04
+
+The workflow integration suite now includes API/PostgreSQL coverage for TOKEN-08 and AUD-12: unknown, expired, revoked and active read/upload tokens reach 429 on attempt 121, including across API instances, and recover in the next minute. Repeated dead-token denials retain representative attributed audit events, while successful authenticated requests retain individual events. A mix of rotating and malformed bearer candidates exhausts the shared 1,200-attempt quota despite changing forwarding headers; a known revoked token is then rejected before account attribution.
+
+The source fix was prepared against `e5a942efe4f8c10529b07797fea372f4b05de039`. Execution of the regression and the full required checks remains blocked in the editing environment: no dependency installation is present, Docker is unavailable, and a sandbox satisfying the security review execution controls could not be established. No passing runtime or baseline-failure result is claimed. Run `npm run check`, `npm run test:distribution` and the disposable PostgreSQL `npm run test:integration` command above in an appropriately isolated Node.js 24/npm 11 environment before merge. No live service or production database was exercised.
+
 ## Audit implementation verification — 2026-11-01
 
 On Linux/Node.js 24, `npm run check` passed formatting, production build, types, lint, six unit tests, installed-package checks and documentation validation. `npm run test:distribution` passed the artifact/installer preservation checks. `npm run test:integration` passed all four tests/subtests against a separate local PostgreSQL 16 database, including the built Next.js API and actual CLI subprocesses.

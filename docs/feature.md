@@ -132,6 +132,7 @@ Never point integration tests at the deployed Neon database. `npm run check` cov
 | TOKEN-05 | Temporary upload credentials expire/revoke and cannot obtain read/admin powers | Integration + lifecycle rehearsal |
 | TOKEN-06 | Valid read key alone can fetch permitted ciphertext from another host, but does not supply a decryption private key. An unlinked SDK identity rejects retrieval; a wrong key cannot decrypt | Crypto/integration + live raw-response/SDK cases; no server machine-signature claim |
 | TOKEN-07 | Revocation stops future authentication but cannot erase copied plaintext/ciphertext or revoke an exported provider key at its provider | Live API + documented threat boundary |
+| TOKEN-08 | Unknown, expired, revoked and active bearer attempts consume durable per-token quota; rotating/malformed tokens share a bounded pre-lookup quota; forwarding headers cannot split it | Workflow PostgreSQL regression; execution pending, see testing record |
 | TOKEN-08 | Credentials/values do not enter argv, normal logs, model-facing output or unredacted errors | CLI/transport inspection + negative-path checks |
 
 ## 7. Hosting, failures and operations
@@ -200,6 +201,7 @@ Changelog and documentation updates:
 | AUD-09 | Anonymous attack events are bounded; audit outage returns unavailable | PostgreSQL integration |
 | AUD-10 | Native browser activity filtering and pagination work on supported browsers | Manual browser acceptance pending |
 | AUD-11 | Production webhook delivery, scheduled pruning and operator alerts work | Deployment acceptance pending |
+| AUD-12 | Expired/revoked bearer denials retain one attributed representative per credential/minute/action/reason; successful authenticated events remain individual | Workflow PostgreSQL regression; execution pending, see testing record |
 
 ## Agent skill checks
 

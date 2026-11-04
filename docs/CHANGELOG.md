@@ -4,6 +4,10 @@ This file records website/API/security and operational changes. Installable clie
 
 ## Unreleased
 
+### Fixed
+
+- Commit bearer attempt quotas before authentication so unknown, expired and revoked tokens cannot undo their counters. Read/upload endpoints now share a baseline 1,200-attempt minute quota before lookup and retain the 120-attempt per-token quota. Aggregate repeated expired/revoked denial audit events while keeping account attribution. Quota exhaustion returns 429, including for valid callers when the shared quota is saturated; edge abuse controls remain required. No schema, vault format or SDK version change is needed. Runtime regression execution remains pending; see [testing.md](testing.md#bearer-denial-quota-regression--2026-11-04).
+
 ### Added
 
 - Add Windows client/installer support, current-user NTFS ACL enforcement, native Windows CI and hosted `install.ps1`. Client changes are versioned separately as 0.2.0; see the SDK changelog.
