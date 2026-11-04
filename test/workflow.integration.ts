@@ -936,4 +936,166 @@ await test("MVP: built Next.js, real JWT verification/PostgreSQL enrollment, enc
       );
     },
   );
+  await t.test(
+    "bearer abuse: durable denial quotas, bounded attributed audits and rotating-token quota",
+    async (t) => {
+      let now = Math.floor(Date.now() / 60000) * 60000 + 120000;
+      t.mock.method(Date, "now", () => now);
+      const direct = createApi({
+        pool,
+        origin,
+        authenticate: async () => {
+          throw new Error("Bearer routes must not use human authentication");
+        },
+      });
+      const invoke = (token: string, kind: "read" | "upload") =>
+        direct(
+          new Request(
+            origin +
+              (kind === "read"
+                ? "/api/v1/search?project=production"
+                : "/api/upload/context"),
+            {
+              method: kind === "read" ? "GET" : "POST",
+              headers: {
+                authorization: "Bearer " + token,
+                "content-type": "application/json",
+              },
+              ...(kind === "upload"
+                ? {
+                    body: JSON.stringify({
+                      project: "production",
+                      name: "PROVIDER_KEY",
+                    }),
+                  }
+                : {}),
+            },
+          ),
+        );
+      const accountId = (
+        await owner.query<{ id: string }>(
+          "SELECT id FROM keyman_mvp.accounts WHERE clerk_id='user_alice'",
+        )
+      ).rows[0]!.id;
+      for (const kind of ["read", "upload"] as const) {
+        for (const state of [
+          "unknown",
+          "expired",
+          "revoked",
+          "active",
+        ] as const) {
+          now += 60000;
+          const token =
+            (kind === "read" ? "kmr_" : "kmu_") +
+            randomUUID().replaceAll("-", "").padEnd(43, "a");
+          const digest = createHash("sha256").update(token).digest("hex");
+          const credentialId = randomUUID();
+          if (state !== "unknown")
+            await owner.query(
+              "INSERT INTO keyman_mvp.credentials(id,account_id,hash,label,kind,expires_at,revoked) VALUES($1,$2,$3,'Synthetic abuse fixture',$4,$5,$6)",
+              [
+                credentialId,
+                accountId,
+                digest,
+                kind,
+                state === "expired" ? 1 : Math.floor(now / 1000) + 3600,
+                state === "revoked",
+              ],
+            );
+          for (let i = 0; i < 120; i++) {
+            const response = await invoke(token, kind);
+            assert.equal(
+              response.status,
+              state === "active" ? 200 : 401,
+              `${kind}/${state} attempt ${i + 1}`,
+            );
+          }
+          // A second API instance must observe the same PostgreSQL quota.
+          const other = createApi({
+            pool,
+            origin,
+            authenticate: async () => {
+              throw new Error("Unexpected human authentication");
+            },
+          });
+          const limited = await other(
+            new Request(
+              origin + (kind === "read" ? "/api/v1/exists" : "/api/upload"),
+              {
+                method: kind === "read" ? "GET" : "POST",
+                headers: { authorization: "Bearer " + token },
+              },
+            ),
+          );
+          assert.equal(limited.status, 429, `${kind}/${state} attempt 121`);
+          assert.equal((await limited.json()).error.code, "RATE_LIMITED");
+          assert.equal((await invoke(token, kind)).status, 429);
+          const events = (
+            await owner.query<{
+              account_id: string;
+              reason: string;
+              outcome: string;
+            }>(
+              "SELECT account_id,reason,outcome FROM keyman_mvp.audit_events WHERE credential_id=$1",
+              [credentialId],
+            )
+          ).rows;
+          if (state === "expired" || state === "revoked") {
+            assert.equal(events.length, 1);
+            assert.equal(events[0]!.account_id, accountId);
+            assert.equal(
+              events[0]!.reason,
+              state === "expired" ? "CREDENTIAL_EXPIRED" : "CREDENTIAL_REVOKED",
+            );
+          } else if (state === "active") {
+            assert.equal(events.length, 120);
+            assert.ok(events.every((event) => event.outcome === "success"));
+          }
+          // The next minute admits attempts again, and keeps a new representative denial.
+          now += 60000;
+          assert.equal(
+            (await invoke(token, kind)).status,
+            state === "active" ? 200 : 401,
+          );
+          if (state === "expired" || state === "revoked")
+            assert.equal(
+              (
+                await owner.query(
+                  "SELECT count(*)::int AS n FROM keyman_mvp.audit_events WHERE credential_id=$1",
+                  [credentialId],
+                )
+              ).rows[0].n,
+              2,
+            );
+        }
+      }
+      now += 60000;
+      // Caller-controlled forwarding headers cannot split the fixed shared bucket.
+      for (let i = 0; i < 1200; i++) {
+        const response = await direct(
+          new Request(origin + "/api/v1/search", {
+            headers: {
+              authorization:
+                i % 10 === 0
+                  ? "Bearer malformed"
+                  : "Bearer kmr_" + String(i).padStart(43, "a"),
+              "x-forwarded-for": `192.0.2.${i % 255}`,
+            },
+          }),
+        );
+        assert.equal(response.status, 401);
+      }
+      // No lookup or attribution after exhaustion, even for a known revoked token.
+      const blocked = await invoke(read.token, "read");
+      assert.equal(blocked.status, 429);
+      assert.equal((await blocked.json()).error.code, "RATE_LIMITED");
+      const event = (
+        await owner.query(
+          "SELECT account_id,credential_id FROM keyman_mvp.audit_events WHERE request_id=$1",
+          [blocked.headers.get("x-request-id")],
+        )
+      ).rows[0];
+      assert.deepEqual(event, { account_id: null, credential_id: null });
+    },
+  );
 });

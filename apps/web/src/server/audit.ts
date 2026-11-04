@@ -105,11 +105,19 @@ export async function recordAudit(
   const action = actionSchema.parse(context.action);
   const safeReason = reasonSchema.parse(reason);
   const anonymous = !context.actorId && !context.accountId;
+  const deadCredential =
+    outcome === "denied" &&
+    context.credentialId &&
+    (safeReason === "CREDENTIAL_EXPIRED" ||
+      safeReason === "CREDENTIAL_REVOKED");
+  const minute = Math.floor(Date.now() / 60000);
   const key =
     dedupe ??
-    (anonymous
-      ? `anonymous:${Math.floor(Date.now() / 60000)}:${action}:${outcome}:${safeReason}`
-      : null);
+    (deadCredential
+      ? `credential:${context.credentialId}:${minute}:${action}:${outcome}:${safeReason}`
+      : anonymous
+        ? `anonymous:${minute}:${action}:${outcome}:${safeReason}`
+        : null);
   await client.query(
     `INSERT INTO keyman_mvp.audit_events(event_id,request_id,account_id,actor_id,credential_id,resource_id,action,outcome,reason,dedupe_key) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT(dedupe_key) DO NOTHING`,
     [

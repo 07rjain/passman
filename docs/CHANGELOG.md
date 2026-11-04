@@ -8,6 +8,8 @@ This file records website/API/security and operational changes. Installable clie
 
 - Bound device-poll counter allocation with a shared 1,200-attempt/minute quota before parsing or lookup. Allocate the 30-poll/minute per-device counter only for a verified live, unconsumed device, keyed by its server-generated ID. Rotating unknown codes no longer create individual persistent counters. Existing client/vault formats and schema remain compatible; no migration is needed. Edge/IP controls remain required because shared admission and anonymous audit accounting still use PostgreSQL.
 
+- Commit bearer attempt quotas before authentication so unknown, expired and revoked tokens cannot undo their counters. Read/upload endpoints now share a baseline 1,200-attempt minute quota before lookup and retain the 120-attempt per-token quota. Aggregate repeated expired/revoked denial audit events while keeping account attribution. Quota exhaustion returns 429, including for valid callers when the shared quota is saturated; edge abuse controls remain required. No schema, vault format or SDK version change is needed. Runtime regression execution remains pending; see [testing.md](testing.md#bearer-denial-quota-regression--2026-11-04).
+
 ### Added
 
 - Add Windows client/installer support, current-user NTFS ACL enforcement, native Windows CI and hosted `install.ps1`. Client changes are versioned separately as 0.2.0; see the SDK changelog.

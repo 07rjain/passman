@@ -18,6 +18,8 @@ An [Agent37 Ubuntu VM run](agent37-verification.md) passed public installation, 
 
 ## Regression and production-auth follow-up
 
+The bearer denial quota fix commits attempt counters before credential validation, adds a shared pre-lookup quota and aggregates repeated dead-token audits. TOKEN-08/AUD-12 regression coverage is added; execution remains pending in an isolated environment as recorded in [testing.md](testing.md#bearer-denial-quota-regression--2026-11-04). Existing schema and client/vault formats are preserved.
+
 [feature.md](feature.md) is the maintained regression catalogue. New features extend it and record actual automated/live results. Clerk production cutover requires verified domain/DNS, matching production frontend/issuer/public verifier, and a review of existing development-user vault bindings before any environment change. The prior Agent37 test remains development-instance evidence.
 
 On the former Keyman deployment, the configuration cutover completed on 2026-10-31: production frontend/issuer/public verifier now match, Clerk DNS/TLS and live denial checks passed, preview configuration and existing data were preserved, and the owner confirmed only disposable development test accounts existed. See [the setup record](history/legacy-hosted-setup.md#production-clerk-cutover--2026-10-31). That historical record predates the replacement instance. Targeted current production inbox/browser acceptance is recorded in the 2026-11-01 manual report.
