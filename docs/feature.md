@@ -235,3 +235,5 @@ Changelog and documentation updates:
 | VAULT-05 | Custom directory symlink retargeting and writable parents cannot redirect a vault save or private input read | POSIX regression |
 | WIN-07 | Private input under a replaceable parent fails; ACL verification and read use the same file handle | Native Windows regression |
 | DIST-10 | Untrusted checksum plus archive, invalid signatures and unsigned archives fail before execution while preserving installation/vault | HTTPS distribution regression and native Windows fixture |
+
+| DIST-11 | Production promotion fails when the public client is old, unavailable, unsigned or differs from its signed archive; verified publication permits promotion | Distribution release-gate regression |

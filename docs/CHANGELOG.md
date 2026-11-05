@@ -8,6 +8,7 @@ This file records website/API/security and operational changes. Installable clie
 
 - Restrict runtime database writes to required tables/columns. Account vault bindings, project names and migration state cannot be rewritten by the runtime role. Apply `npm run db:grants` with the migration owner and `MVP_RUNTIME_ROLE` after deploying the matching API; no user data or schema format is reset.
 - Admit public setup/poll/bearer requests by a platform-verified client address before spending shared quota. One address cannot exhaust the enrollment bucket; arbitrary forwarding headers grant no identity. Non-Vercel HTTPS deployments fail closed until a trusted deployment adapter is supplied.
+- Gate production promotion on a publicly available client whose pinned publisher signature and archive verify, preserving the previous healthy deployment until publication.
 - Protect client publication with pinned publisher signatures and a protected signing environment; local path/ACL fixes are recorded in the SDK changelog.
 
 - Bound device-poll counter allocation with a shared 1,200-attempt/minute quota before parsing or lookup. Allocate the 30-poll/minute per-device counter only for a verified live, unconsumed device, keyed by its server-generated ID. Rotating unknown codes no longer create individual persistent counters. Existing client/vault formats and schema remain compatible; no migration is needed. Edge/IP controls remain required because shared admission and anonymous audit accounting still use PostgreSQL.

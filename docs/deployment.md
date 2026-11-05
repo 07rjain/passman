@@ -103,6 +103,10 @@ These settings have passed local production builds and the hosted infrastructure
 - Retry using the newest `main` commit rather than redeploying an earlier failed commit. The default app build was tested in a fresh independent source snapshot with a new dependency install and no generated artifacts or repository-parent dependencies. CI also builds the web workspace first, before any other package build, to catch this regression.
 - A Clerk signup security screen with a reference code requires investigation in the production instance's Application Logs / Protect dashboard. Correlate `sign_up.failed` and `protect.sign_up.blocked` for that reference before changing protections. A sensitive `CLERK_SECRET_KEY` setting's existence does not establish that its hidden value belongs to the right instance; validate a replacement against the production JWKS, keep it server-only and redeploy when changing it. The browser's signup request uses the public Frontend API; updating a backend credential alone does not establish that a Protect policy block is resolved. See the [live investigation record](history/legacy-hosted-setup.md#production-backend-key-and-signup-investigation--2026-10-31).
 
+## Signed client deployment gate
+
+The security update's `prebuild` refuses production promotion (`VERCEL_ENV=production`) until GitHub's public default client is at least the source version and its signature and archive checksum verify against the pinned publisher key. Merge source after CI, publish the signed client through the protected release workflow, then rebuild/deploy Vercel. A blocked build preserves the previously healthy deployment. Local, CI and preview builds do not require public publication. See [the complete rollout](security-remediation.md#verification-and-rollout); apply narrowed database grants only after the matching API is deployed.
+
 ## Operational checks
 
 - `GET /api/health` returns 200 only with required server configuration and the migrated database available. No fake-auth or test-identity production mode exists.

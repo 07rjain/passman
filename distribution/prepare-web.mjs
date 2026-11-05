@@ -1,4 +1,17 @@
-import { cp, mkdir } from "node:fs/promises";
+import { cp, mkdir, readFile } from "node:fs/promises";
+import { assertPublishedClient } from "./public-release.mjs";
+if (process.env.VERCEL_ENV === "production") {
+  const { version } = JSON.parse(
+    await readFile(
+      new URL("../packages/client/package.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  await assertPublishedClient({
+    minimumVersion: version,
+    publicKey: await readFile(new URL("./release-public.pem", import.meta.url)),
+  });
+}
 const target = new URL("../apps/web/public/", import.meta.url);
 await mkdir(target, { recursive: true });
 await cp(

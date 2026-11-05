@@ -9,6 +9,7 @@ import { createServer } from "node:https";
 import { rootCertificates } from "node:tls";
 import { once } from "node:events";
 import { buildDistribution } from "./build.mjs";
+import { assertPublishedClient } from "./public-release.mjs";
 const root = path.resolve(import.meta.dirname, "..");
 const fixture = await mkdtemp(path.join(tmpdir(), "passman-install-"));
 const run = async (command, args, options = {}) => {
@@ -89,6 +90,30 @@ try {
   };
   const release = await buildDistribution(path.join(fixture, "releases"));
   await signManifest(release);
+  let publicFault;
+  const verifyPublic = () =>
+    assertPublishedClient({
+      minimumVersion: release.version,
+      publicKey: keys.publicKey,
+      transport: async (url) => {
+        const name = new URL(url).pathname.split("/").at(-1);
+        if (publicFault === "unavailable")
+          return new globalThis.Response(null, { status: 404 });
+        if (name === "latest.txt" && publicFault === "old")
+          return new globalThis.Response("0.0.0");
+        if (name.endsWith(".sig") && publicFault === "signature")
+          return new globalThis.Response("invalid");
+        if (name.endsWith(".tgz") && publicFault === "archive")
+          return new globalThis.Response("altered");
+        return new globalThis.Response(
+          await readFile(path.join(release.output, name)),
+        );
+      },
+    });
+  await verifyPublic();
+  for (publicFault of ["unavailable", "old", "signature", "archive"])
+    await assert.rejects(verifyPublic());
+  publicFault = undefined;
   const consumer = path.join(fixture, "consumer");
   await mkdir(consumer);
   await writeFile(
