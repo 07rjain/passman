@@ -306,13 +306,13 @@ export function createApi(options: {
         });
       }
       if (path === "/api/device/poll" && method === "POST") {
+        // A fixed shared bucket accounts for all attempts, including rotating
+        // unknown codes. Never allocate durable per-code state before lookup.
+        await transaction(pool, (c) => limit(c, "public-device-poll", 1200));
         const input = z
           .object({ deviceCode: z.string().regex(/^[A-Za-z0-9_-]{43}$/) })
           .strict()
           .parse(await body(req));
-        await transaction(pool, (c) =>
-          limit(c, "poll:" + hash(input.deviceCode), 30),
-        );
         return await transaction(pool, async (client) => {
           const row = (
             await client.query<{
@@ -329,6 +329,7 @@ export function createApi(options: {
           if (!row || row.consumed) throw new ApiError("UNAUTHORIZED", 401);
           if (Number(row.expires_at) <= time())
             throw new ApiError("EXPIRED", 410);
+          await limit(client, "poll:" + row.id, 30);
           if (!row.approved || !row.account_id)
             return Response.json({ status: "pending" }, { status: 202 });
           identify({ accountId: row.account_id, resourceId: row.id });

@@ -92,6 +92,7 @@ Never point integration tests at the deployed Neon database. `npm run check` cov
 | SETUP-06 | Interrupted approval/claim retries with the same vault; a completed claim cannot be reused | Workflow + interruption rehearsal |
 | SETUP-07 | Re-login with the same key preserves account/vault identity and renews upload authorization | Workflow + live CLI |
 | SETUP-08 | A fresh key under an existing account is rejected; Clerk login alone does not replace/recover the old private key | Workflow + Agent37/live API |
+| SETUP-09 | Rotating unknown poll codes create only one shared counter per minute; the shared 1,200-attempt quota persists across denials and API instances; verified live devices retain a 30-poll quota that resets next minute; consumed/expired devices get no counter | Device-poll PostgreSQL integration |
 
 ## 4. Local vault and encryption
 

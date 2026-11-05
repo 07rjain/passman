@@ -18,7 +18,7 @@
     "dev": "npm run build -w @keyman-mvp/core && npm run dev -w @keyman-mvp/web",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p apps/web/tsconfig.json",
     "test": "node --import tsx --test test/*.test.ts",
-    "test:integration": "node --import tsx --test test/*.integration.ts",
+    "test:integration": "node --import tsx --test --test-concurrency=1 test/*.integration.ts",
     "test:package": "node scripts/check-package.mjs",
     "db:migrate": "node --env-file-if-exists=.env.migrate --import tsx scripts/migrate.ts",
     "lint": "eslint packages apps test scripts examples distribution",

@@ -8,6 +8,7 @@ Status: experimental standalone source prepared for [07rjain/passman](https://gi
 - App-level Node.js 24 pin, committed Vercel commands and an npm prebuild lifecycle that compiles core before Next.js even with the default app build command. The clean default build passed in an independent source snapshot; CI builds the web workspace first to cover the missing-core regression.
 - Application-owned CLI/browser approval bound to the exact public key and a one-time claim secret. Clerk JWT verification pins issuer, authorized origin, session identity, expiry and recent authentication for administrative changes.
 - Separate PostgreSQL schema/migration, account/project isolation, hashed/expiring/revocable read and short-lived upload credentials, encrypted value storage and optimistic revision checks.
+- Device polling uses a shared attempt quota before lookup and allocates per-device cadence counters only for verified live devices; edge/IP protection before PostgreSQL remains an operational prerequisite.
 - Next.js dashboard for setup approval, projects, secret metadata, optional browser-encrypted replacement/deletion and credential management.
 - Real built-Next.js/PostgreSQL integration using signed synthetic session JWTs, actual CLI subprocesses, encrypted uploads, SDK decryption and denial cases. Crypto, local-vault, JWT and installed-package checks pass locally. Linux/macOS CI is configured, not certified by a local run.
 

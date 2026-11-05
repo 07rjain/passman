@@ -4,6 +4,10 @@ This file records website/API/security and operational changes. Installable clie
 
 ## Unreleased
 
+### Fixed
+
+- Bound device-poll counter allocation with a shared 1,200-attempt/minute quota before parsing or lookup. Allocate the 30-poll/minute per-device counter only for a verified live, unconsumed device, keyed by its server-generated ID. Rotating unknown codes no longer create individual persistent counters. Existing client/vault formats and schema remain compatible; no migration is needed. Edge/IP controls remain required because shared admission and anonymous audit accounting still use PostgreSQL.
+
 ### Added
 
 - Add Windows client/installer support, current-user NTFS ACL enforcement, native Windows CI and hosted `install.ps1`. Client changes are versioned separately as 0.2.0; see the SDK changelog.
