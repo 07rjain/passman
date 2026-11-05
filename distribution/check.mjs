@@ -1,5 +1,6 @@
+import { Buffer } from "node:buffer";
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
+import { createHash, generateKeyPairSync, sign } from "node:crypto";
 import { mkdtemp, readFile, writeFile, mkdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -8,6 +9,7 @@ import { createServer } from "node:https";
 import { rootCertificates } from "node:tls";
 import { once } from "node:events";
 import { buildDistribution } from "./build.mjs";
+import { assertPublishedClient } from "./public-release.mjs";
 const root = path.resolve(import.meta.dirname, "..");
 const fixture = await mkdtemp(path.join(tmpdir(), "passman-install-"));
 const run = async (command, args, options = {}) => {
@@ -61,7 +63,57 @@ try {
     "patch",
   ]);
   assert.notEqual(empty.code, 0);
+  const keys = generateKeyPairSync("rsa", { modulusLength: 3072 });
+  const installerFile = path.join(fixture, "install.sh");
+  const pinnedKey = await readFile(
+    path.join(root, "distribution/release-public.pem"),
+    "utf8",
+  );
+  const installerSource = await readFile(
+    path.join(root, "distribution/install.sh"),
+    "utf8",
+  );
+  assert.ok(installerSource.includes(pinnedKey.trim()));
+  await writeFile(
+    installerFile,
+    installerSource.replace(
+      pinnedKey.trim(),
+      keys.publicKey.export({ type: "spki", format: "pem" }).toString().trim(),
+    ),
+  );
+  const signManifest = async (release) => {
+    const manifest = path.join(release.output, release.filename + ".sha256");
+    await writeFile(
+      manifest + ".sig",
+      sign("sha256", await readFile(manifest), keys.privateKey),
+    );
+  };
   const release = await buildDistribution(path.join(fixture, "releases"));
+  await signManifest(release);
+  let publicFault;
+  const verifyPublic = () =>
+    assertPublishedClient({
+      minimumVersion: release.version,
+      publicKey: keys.publicKey,
+      transport: async (url) => {
+        const name = new URL(url).pathname.split("/").at(-1);
+        if (publicFault === "unavailable")
+          return new globalThis.Response(null, { status: 404 });
+        if (name === "latest.txt" && publicFault === "old")
+          return new globalThis.Response("0.0.0");
+        if (name.endsWith(".sig") && publicFault === "signature")
+          return new globalThis.Response("invalid");
+        if (name.endsWith(".tgz") && publicFault === "archive")
+          return new globalThis.Response("altered");
+        return new globalThis.Response(
+          await readFile(path.join(release.output, name)),
+        );
+      },
+    });
+  await verifyPublic();
+  for (publicFault of ["unavailable", "old", "signature", "archive"])
+    await assert.rejects(verifyPublic());
+  publicFault = undefined;
   const consumer = path.join(fixture, "consumer");
   await mkdir(consumer);
   await writeFile(
@@ -171,6 +223,8 @@ try {
     rootCertificates.join("\n") + "\n" + cert,
   );
   let tamper = false;
+  let forgeManifest = false;
+  let tamperSignature = false;
   let unavailable = false;
   server = createServer(
     { key: await readFile(path.join(fixture, "key.pem")), cert },
@@ -191,14 +245,30 @@ try {
           ".sha256"
       )
         filename = release.filename + ".sha256";
+      if (
+        req.url ===
+        "/download/passman-v" +
+          release.version +
+          "/" +
+          release.filename +
+          ".sha256.sig"
+      )
+        filename = release.filename + ".sha256.sig";
       if (!filename || unavailable) {
         res.writeHead(404).end();
         return;
       }
       res.end(
-        tamper && filename.endsWith(".tgz")
-          ? "corrupted"
-          : await readFile(path.join(release.output, filename)),
+        forgeManifest && filename.endsWith(".sha256")
+          ? createHash("sha256").update("corrupted").digest("hex") +
+              "  " +
+              release.filename +
+              "\n"
+          : tamperSignature && filename.endsWith(".sig")
+            ? Buffer.alloc(384)
+            : tamper && filename.endsWith(".tgz")
+              ? "corrupted"
+              : await readFile(path.join(release.output, filename)),
       );
     },
   );
@@ -220,8 +290,7 @@ try {
     PASSMAN_BIN_DIR: path.join(home, "command directory"),
     CURL_CA_BUNDLE: path.join(fixture, "ca.pem"),
   };
-  const install = () =>
-    run("sh", [path.join(root, "distribution/install.sh")], { env });
+  const install = () => run("sh", [installerFile], { env });
   const first = await install();
   assert.equal(first.code, 0, first.output);
   const launcher = path.join(env.PASSMAN_BIN_DIR, "passman");
@@ -267,6 +336,7 @@ try {
     path.join(release.output, "latest.txt"),
     release.version + "\n",
   );
+  await signManifest(release);
   const upgraded = await install();
   assert.equal(upgraded.code, 0, upgraded.output);
   assert.equal(
@@ -303,6 +373,17 @@ try {
     (await run(launcher, ["--version"])).output.trim(),
     release.version,
   );
+  forgeManifest = true;
+  const forged = await install();
+  assert.notEqual(forged.code, 0);
+  assert.match(forged.output, /signature invalid/);
+  forgeManifest = false;
+  tamper = false;
+  tamperSignature = true;
+  const unsigned = await install();
+  assert.notEqual(unsigned.code, 0);
+  assert.match(unsigned.output, /signature invalid/);
+  tamperSignature = false;
   unavailable = true;
   const missing = await install();
   assert.notEqual(missing.code, 0);

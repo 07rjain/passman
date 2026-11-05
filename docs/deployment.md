@@ -38,14 +38,12 @@ The migration creates only the `keyman_mvp` schema and version 1 objects inside 
 
 Create the runtime login through your database administration facility using a generated password, then grant the following, replacing the example role name with your actual role. Keep owner credentials outside the Vercel runtime:
 
-```sql
-GRANT USAGE ON SCHEMA keyman_mvp TO keyman_mvp_runtime;
-GRANT SELECT, INSERT, UPDATE, DELETE ON
-  keyman_mvp.accounts, keyman_mvp.projects, keyman_mvp.secrets,
-  keyman_mvp.credentials, keyman_mvp.devices, keyman_mvp.limits
-TO keyman_mvp_runtime;
-GRANT SELECT ON keyman_mvp.migrations TO keyman_mvp_runtime;
+```sh
+# Supply the owner connection through the protected .env.migrate file.
+MVP_RUNTIME_ROLE=keyman_mvp_runtime npm run db:grants
 ```
+
+Set `MVP_RUNTIME_ROLE` to that restricted role name and run `npm run db:grants` with the separate migration-owner connection in `.env.migrate`. This explicitly revokes previous table/sequence grants, then grants SELECT, required INSERTs, narrowly scoped UPDATE columns, DELETE only for secrets/devices/counters, and audit sequence USAGE. Accounts and projects have no runtime UPDATE/DELETE; migration state is SELECT-only. The command rejects inherited owner/privileged grants rather than reporting success. Remove unsafe role memberships separately. Deploy the matching API first, then apply these grants: the new API uses an advisory lock instead of an account-row update lock. Older APIs need account UPDATE permission for their row lock and must not remain active after tightening grants. No schema migration or ciphertext/account reset is required.
 
 Confirm that the runtime role cannot create/drop schema objects or alter other application tables. The integration test checks the restricted role separately. Future migrations may add grants explicitly; using the database owner as the permanent runtime is not the recommended setup.
 
@@ -105,12 +103,17 @@ These settings have passed local production builds and the hosted infrastructure
 - Retry using the newest `main` commit rather than redeploying an earlier failed commit. The default app build was tested in a fresh independent source snapshot with a new dependency install and no generated artifacts or repository-parent dependencies. CI also builds the web workspace first, before any other package build, to catch this regression.
 - A Clerk signup security screen with a reference code requires investigation in the production instance's Application Logs / Protect dashboard. Correlate `sign_up.failed` and `protect.sign_up.blocked` for that reference before changing protections. A sensitive `CLERK_SECRET_KEY` setting's existence does not establish that its hidden value belongs to the right instance; validate a replacement against the production JWKS, keep it server-only and redeploy when changing it. The browser's signup request uses the public Frontend API; updating a backend credential alone does not establish that a Protect policy block is resolved. See the [live investigation record](history/legacy-hosted-setup.md#production-backend-key-and-signup-investigation--2026-10-31).
 
+## Signed client deployment gate
+
+The security update's `prebuild` refuses production promotion (`VERCEL_ENV=production`) until GitHub's public default client is at least the source version and its signature and archive checksum verify against the pinned publisher key. Merge source after CI, publish the signed client through the protected release workflow, then rebuild/deploy Vercel. A blocked build preserves the previously healthy deployment. Local, CI and preview builds do not require public publication. See [the complete rollout](security-remediation.md#verification-and-rollout); apply narrowed database grants only after the matching API is deployed.
+
 ## Operational checks
 
 - `GET /api/health` returns 200 only with required server configuration and the migrated database available. No fake-auth or test-identity production mode exists.
 - Run CLI login at the exact configured public origin, compare the fingerprint/code, approve through real Clerk, create a project, upload a synthetic value and retrieve it locally through the SDK.
 - Exercise browser input, wrong credentials, another account, credential expiry/revocation and a conflicting update. Confirm private responses have `Cache-Control: private, no-store`.
-- Configure edge/IP abuse limits and spending alerts before a public rollout. Database-backed counters cover authenticated subjects and baseline public setup/poll buckets. Device polling admits at most 1,200 attempts per minute across instances before device lookup; unknown codes do not allocate individual counters. The shared public-start and poll buckets can aggregate users and are not a complete distributed abuse policy. Rejected polls still require shared counter and audit database work. Failed credential attempts and connection floods need platform protection before database work.
+- On Vercel, enable system environment variables (`VERCEL=1`); the API uses only Vercel-overwritten `x-vercel-forwarded-for` for client admission. Requests with a missing/invalid platform address fail closed. Local HTTP loopback development uses one local peer and ignores forwarding headers. Other HTTPS hosts require a reviewed trusted-address adapter; do not point it at arbitrary caller headers.
+- Configure edge/IP abuse limits and spending alerts before a public rollout. Database-backed counters cover authenticated subjects and baseline public setup/poll buckets. Each client address gets 10 setup starts, 120 polls and 240 bearer attempts per minute, before shared ceilings of 300 starts and 1,200 poll/bearer attempts. Device polling admits at most 1,200 attempts per minute across instances before device lookup; unknown codes do not allocate individual counters. The shared public-start and poll buckets can aggregate users and are not a complete distributed abuse policy. Rejected polls still require shared counter and audit database work. Failed credential attempts and connection floods need platform protection before database work.
 - Use separate preview/production databases, TLS, least-privilege credentials, controlled migrations, metadata-only observability, monitoring and encrypted off-server backups with an exercised restore.
 - Keep the stable service origin before creating user vaults. The initial CLI does not silently change stored origins, reset a key or migrate earlier application data.
 

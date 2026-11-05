@@ -18,6 +18,8 @@ An [Agent37 Ubuntu VM run](agent37-verification.md) passed public installation, 
 
 ## Regression and production-auth follow-up
 
+The bearer denial quota fix commits attempt counters before credential validation, adds a shared pre-lookup quota and aggregates repeated dead-token audits. TOKEN-09/AUD-12 regression coverage is added; execution remains pending in an isolated environment as recorded in [testing.md](testing.md#bearer-denial-quota-regression--2026-11-04). Existing schema and client/vault formats are preserved.
+
 [feature.md](feature.md) is the maintained regression catalogue. New features extend it and record actual automated/live results. Clerk production cutover requires verified domain/DNS, matching production frontend/issuer/public verifier, and a review of existing development-user vault bindings before any environment change. The prior Agent37 test remains development-instance evidence.
 
 On the former Keyman deployment, the configuration cutover completed on 2026-10-31: production frontend/issuer/public verifier now match, Clerk DNS/TLS and live denial checks passed, preview configuration and existing data were preserved, and the owner confirmed only disposable development test accounts existed. See [the setup record](history/legacy-hosted-setup.md#production-clerk-cutover--2026-10-31). That historical record predates the replacement instance. Targeted current production inbox/browser acceptance is recorded in the 2026-11-01 manual report.
@@ -50,7 +52,7 @@ On the former Keyman deployment, the configuration cutover completed on 2026-10-
 
 ## Client distribution
 
-The current SDK/CLI version is 0.2.0. Distribution includes the installer/private runtime, a self-contained npm archive with bundled locked dependencies, default hosted login, artifact/installer tests, and manual immutable GitHub Releases. Follow [releases.md](releases.md) and [SDK_CHANGELOG.md](SDK_CHANGELOG.md) for future versions. Windows support is documented in [windows.md](windows.md); Homebrew and npm-registry publication remain follow-up work.
+The public SDK/CLI release is 0.2.0; source prepares security release 0.3.0 pending CI/publication. Distribution includes the installer/private runtime, a self-contained npm archive with bundled locked dependencies, default hosted login, artifact/installer tests, and manual immutable GitHub Releases. Follow [releases.md](releases.md) and [SDK_CHANGELOG.md](SDK_CHANGELOG.md) for future versions. Windows support is documented in [windows.md](windows.md); Homebrew and npm-registry publication remain follow-up work.
 
 ## Future TODO
 
@@ -86,3 +88,7 @@ MCP remains future work: a local stdio adapter may wrap the SDK after login with
 - [x] Publish client 0.2.0 with a per-user PowerShell installer, private Node runtime, browser URL handler and explicit current-user NTFS ACL checks, without changing vault/API encryption formats.
 - [x] Pass Windows x64/macOS/Linux/PostgreSQL CI and actual public Windows installer/SDK acceptance; see [evidence](windows.md#verified-release--2026-11-01).
 - [ ] Complete native ARM64 and interactive Windows production login/terminal acceptance. These are not established by x64 CI or synthetic encrypted responses.
+
+## Security scan remediation — 2026-11-05
+
+Address the seven findings against `e5a942e` on the security branch: durable bearer denial quotas, bounded device polling, per-client public admission, least-privilege runtime grants, publisher signatures/protected release authority, Windows handle-bound reads, and POSIX path preservation. Regression IDs are TOKEN-09, AUD-12, SETUP-09/10, OPS-12, VAULT-05, WIN-08 and DIST-12. Preserve vault/wire/schema formats and existing accounts. Source checks, external protections and production rollout evidence are tracked separately in [security-remediation.md](security-remediation.md).

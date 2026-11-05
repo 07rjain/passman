@@ -8,6 +8,9 @@ import {
   chmod,
   stat,
   writeFile,
+  mkdir,
+  symlink,
+  unlink,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -18,7 +21,57 @@ import {
   KeymanClient,
   KeymanError,
   request,
+  saveIdentity,
+  readPrivateFile,
 } from "@keyman-mvp/client";
+await test(
+  "POSIX rejects retargetable vault aliases and writable input parents without altering either vault",
+  { skip: process.platform === "win32" },
+  async (t) => {
+    const root = await mkdtemp(path.join(tmpdir(), "passman-path-regression-"));
+    t.after(() => rm(root, { recursive: true, force: true }));
+    const first = path.join(root, "first"),
+      second = path.join(root, "second"),
+      alias = path.join(root, "alias");
+    const identity = await initializeIdentity(
+      first,
+      "synthetic-first-passphrase",
+      "https://passman.test",
+    );
+    await initializeIdentity(
+      second,
+      "synthetic-second-passphrase",
+      "https://passman.test",
+    );
+    const before = await readFile(path.join(second, "vault.json"));
+    await symlink(first, alias);
+    await assert.rejects(
+      unlockIdentity(alias, "synthetic-first-passphrase"),
+      LocalVaultError,
+    );
+    await unlink(alias);
+    await symlink(second, alias);
+    await assert.rejects(
+      saveIdentity(alias, "synthetic-first-passphrase", identity),
+      LocalVaultError,
+    );
+    assert.deepEqual(await readFile(path.join(second, "vault.json")), before);
+    const shared = path.join(root, "shared");
+    await mkdir(shared, { mode: 0o777 });
+    await chmod(shared, 0o777);
+    const input = path.join(shared, "input");
+    await writeFile(input, "synthetic-input", { mode: 0o600 });
+    await assert.rejects(readPrivateFile(input), LocalVaultError);
+    await assert.rejects(
+      initializeIdentity(
+        path.join(shared, "new"),
+        "synthetic-passphrase",
+        "https://passman.test",
+      ),
+      LocalVaultError,
+    );
+  },
+);
 await test("local identity is encrypted, never overwritten, and rejects wrong passwords/tamper/permissions", async (t) => {
   const dir = await mkdtemp(path.join(tmpdir(), "keyman-mvp-unit-"));
   t.after(() => rm(dir, { recursive: true, force: true }));

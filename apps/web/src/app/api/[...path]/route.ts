@@ -2,6 +2,7 @@ import { database } from "../../../server/database";
 import { createApi, failure } from "../../../server/api";
 import { clerkWebhook } from "../../../server/clerk-webhook";
 import { clerkAuthentication } from "../../../server/auth";
+import { deploymentClientAddress } from "../../../server/admission";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -32,6 +33,7 @@ async function handle(request: Request) {
     api ??= createApi({
       pool: database(process.env.DATABASE_URL),
       origin: process.env.APP_ORIGIN,
+      clientAddress: deploymentClientAddress,
       authenticate: clerkAuthentication({
         jwtKey: process.env.CLERK_JWT_KEY.replaceAll("\\n", "\n"),
         issuer: process.env.CLERK_ISSUER,

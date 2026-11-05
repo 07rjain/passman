@@ -30,7 +30,9 @@
     "format": "prettier --write .",
     "docs:check": "node scripts/check-docs.mjs",
     "audit:prune": "node --env-file-if-exists=.env.migrate --import tsx scripts/audit-prune.ts",
-    "audit:operation": "node --env-file-if-exists=.env.migrate --import tsx scripts/audit-operation.ts"
+    "audit:operation": "node --env-file-if-exists=.env.migrate --import tsx scripts/audit-operation.ts",
+    "db:grants": "node --env-file-if-exists=.env.migrate --import tsx scripts/runtime-grants.ts",
+    "release:sign": "node distribution/sign.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

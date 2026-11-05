@@ -34,7 +34,11 @@ import { z, projectSchema } from "@keyman-mvp/core";
 import { createApi } from "../apps/web/src/server/api";
 import { recordAudit, pruneAudit } from "../apps/web/src/server/audit";
 import { clerkWebhook } from "../apps/web/src/server/clerk-webhook";
-import { database, migrate } from "../apps/web/src/server/database";
+import {
+  database,
+  migrate,
+  grantRuntime,
+} from "../apps/web/src/server/database";
 const connection = process.env.MVP_TEST_DATABASE_URL;
 if (!connection || new URL(connection).pathname !== "/keyman_mvp_test")
   throw new Error(
@@ -48,8 +52,9 @@ await test("MVP: built Next.js, real JWT verification/PostgreSQL enrollment, enc
     "TRUNCATE keyman_mvp.audit_events,keyman_mvp.accounts,keyman_mvp.devices,keyman_mvp.limits CASCADE",
   );
   await owner.query(
-    "DO $$ BEGIN IF NOT EXISTS(SELECT FROM pg_roles WHERE rolname='keyman_mvp_test_runtime') THEN CREATE ROLE keyman_mvp_test_runtime LOGIN PASSWORD 'synthetic-mvp-test-password'; END IF; END $$; GRANT USAGE ON SCHEMA keyman_mvp TO keyman_mvp_test_runtime; GRANT SELECT,INSERT,UPDATE,DELETE ON keyman_mvp.accounts,keyman_mvp.projects,keyman_mvp.secrets,keyman_mvp.credentials,keyman_mvp.devices,keyman_mvp.limits TO keyman_mvp_test_runtime; GRANT SELECT ON keyman_mvp.migrations TO keyman_mvp_test_runtime; GRANT SELECT,INSERT ON keyman_mvp.audit_events TO keyman_mvp_test_runtime; GRANT USAGE ON SEQUENCE keyman_mvp.audit_events_sequence_seq TO keyman_mvp_test_runtime;",
+    "DO $$ BEGIN IF NOT EXISTS(SELECT FROM pg_roles WHERE rolname='keyman_mvp_test_runtime') THEN CREATE ROLE keyman_mvp_test_runtime LOGIN PASSWORD 'synthetic-mvp-test-password'; END IF; END $$",
   );
+  await grantRuntime(owner, "keyman_mvp_test_runtime");
   const runtimeUrl = new URL(connection);
   runtimeUrl.username = "keyman_mvp_test_runtime";
   runtimeUrl.password = "synthetic-mvp-test-password";
@@ -58,6 +63,17 @@ await test("MVP: built Next.js, real JWT verification/PostgreSQL enrollment, enc
   await assert.rejects(
     pool.query("CREATE TABLE keyman_mvp.forbidden(id integer)"),
   );
+  for (const sql of [
+    "UPDATE keyman_mvp.accounts SET key_id=key_id WHERE false",
+    "DELETE FROM keyman_mvp.accounts WHERE false",
+    "UPDATE keyman_mvp.projects SET name=name WHERE false",
+    "UPDATE keyman_mvp.credentials SET hash=hash WHERE false",
+    "UPDATE keyman_mvp.devices SET public_key=public_key WHERE false",
+    "INSERT INTO keyman_mvp.migrations VALUES(999)",
+    "DELETE FROM keyman_mvp.migrations WHERE false",
+    "TRUNCATE keyman_mvp.audit_events",
+  ])
+    await assert.rejects(pool.query(sql), { code: "42501" });
   const reservation = createServer();
   reservation.listen(0, "127.0.0.1");
   await once(reservation, "listening");
@@ -685,6 +701,7 @@ await test("MVP: built Next.js, real JWT verification/PostgreSQL enrollment, enc
         pool.query("UPDATE keyman_mvp.audit_events SET reason='OK'"),
       );
       const direct = createApi({
+        clientAddress: () => "192.0.2.1",
         pool,
         origin,
         authenticate: async (request) => ({
@@ -934,6 +951,172 @@ await test("MVP: built Next.js, real JWT verification/PostgreSQL enrollment, enc
         (await owner.query("SELECT 1 FROM keyman_mvp.audit_events LIMIT 1"))
           .rowCount,
       );
+    },
+  );
+  await t.test(
+    "bearer abuse: durable denial quotas, bounded attributed audits and rotating-token quota",
+    async (t) => {
+      let now = Math.floor(Date.now() / 60000) * 60000 + 120000;
+      t.mock.method(Date, "now", () => now);
+      let peer = "192.0.2.1";
+      const direct = createApi({
+        clientAddress: () => peer,
+        pool,
+        origin,
+        authenticate: async () => {
+          throw new Error("Bearer routes must not use human authentication");
+        },
+      });
+      const invoke = (token: string, kind: "read" | "upload") =>
+        direct(
+          new Request(
+            origin +
+              (kind === "read"
+                ? "/api/v1/search?project=production"
+                : "/api/upload/context"),
+            {
+              method: kind === "read" ? "GET" : "POST",
+              headers: {
+                authorization: "Bearer " + token,
+                "content-type": "application/json",
+              },
+              ...(kind === "upload"
+                ? {
+                    body: JSON.stringify({
+                      project: "production",
+                      name: "PROVIDER_KEY",
+                    }),
+                  }
+                : {}),
+            },
+          ),
+        );
+      const accountId = (
+        await owner.query<{ id: string }>(
+          "SELECT id FROM keyman_mvp.accounts WHERE clerk_id='user_alice'",
+        )
+      ).rows[0]!.id;
+      for (const kind of ["read", "upload"] as const) {
+        for (const state of [
+          "unknown",
+          "expired",
+          "revoked",
+          "active",
+        ] as const) {
+          now += 60000;
+          const token =
+            (kind === "read" ? "kmr_" : "kmu_") +
+            randomUUID().replaceAll("-", "").padEnd(43, "a");
+          const digest = createHash("sha256").update(token).digest("hex");
+          const credentialId = randomUUID();
+          if (state !== "unknown")
+            await owner.query(
+              "INSERT INTO keyman_mvp.credentials(id,account_id,hash,label,kind,expires_at,revoked) VALUES($1,$2,$3,'Synthetic abuse fixture',$4,$5,$6)",
+              [
+                credentialId,
+                accountId,
+                digest,
+                kind,
+                state === "expired" ? 1 : Math.floor(now / 1000) + 3600,
+                state === "revoked",
+              ],
+            );
+          for (let i = 0; i < 120; i++) {
+            const response = await invoke(token, kind);
+            assert.equal(
+              response.status,
+              state === "active" ? 200 : 401,
+              `${kind}/${state} attempt ${i + 1}`,
+            );
+          }
+          // A second API instance must observe the same PostgreSQL quota.
+          const other = createApi({
+            clientAddress: () => peer,
+            pool,
+            origin,
+            authenticate: async () => {
+              throw new Error("Unexpected human authentication");
+            },
+          });
+          const limited = await other(
+            new Request(
+              origin + (kind === "read" ? "/api/v1/exists" : "/api/upload"),
+              {
+                method: kind === "read" ? "GET" : "POST",
+                headers: { authorization: "Bearer " + token },
+              },
+            ),
+          );
+          assert.equal(limited.status, 429, `${kind}/${state} attempt 121`);
+          assert.equal((await limited.json()).error.code, "RATE_LIMITED");
+          assert.equal((await invoke(token, kind)).status, 429);
+          const events = (
+            await owner.query<{
+              account_id: string;
+              reason: string;
+              outcome: string;
+            }>(
+              "SELECT account_id,reason,outcome FROM keyman_mvp.audit_events WHERE credential_id=$1",
+              [credentialId],
+            )
+          ).rows;
+          if (state === "expired" || state === "revoked") {
+            assert.equal(events.length, 1);
+            assert.equal(events[0]!.account_id, accountId);
+            assert.equal(
+              events[0]!.reason,
+              state === "expired" ? "CREDENTIAL_EXPIRED" : "CREDENTIAL_REVOKED",
+            );
+          } else if (state === "active") {
+            assert.equal(events.length, 120);
+            assert.ok(events.every((event) => event.outcome === "success"));
+          }
+          // The next minute admits attempts again, and keeps a new representative denial.
+          now += 60000;
+          assert.equal(
+            (await invoke(token, kind)).status,
+            state === "active" ? 200 : 401,
+          );
+          if (state === "expired" || state === "revoked")
+            assert.equal(
+              (
+                await owner.query(
+                  "SELECT count(*)::int AS n FROM keyman_mvp.audit_events WHERE credential_id=$1",
+                  [credentialId],
+                )
+              ).rows[0].n,
+              2,
+            );
+        }
+      }
+      now += 60000;
+      // Caller-controlled forwarding headers cannot split the fixed shared bucket.
+      for (let i = 0; i < 1200; i++) {
+        peer = `192.0.2.${Math.floor(i / 100) + 2}`;
+        const response = await direct(
+          new Request(origin + "/api/v1/search", {
+            headers: {
+              authorization:
+                i % 10 === 0
+                  ? "Bearer malformed"
+                  : "Bearer kmr_" + String(i).padStart(43, "a"),
+              "x-forwarded-for": `192.0.2.${i % 255}`,
+            },
+          }),
+        );
+        assert.equal(response.status, 401);
+      }
+      // No lookup or attribution after exhaustion, even for a known revoked token.
+      const blocked = await invoke(read.token, "read");
+      assert.equal(blocked.status, 429);
+      assert.equal((await blocked.json()).error.code, "RATE_LIMITED");
+      const event = (
+        await owner.query(
+          "SELECT account_id,credential_id FROM keyman_mvp.audit_events WHERE request_id=$1",
+          [blocked.headers.get("x-request-id")],
+        )
+      ).rows[0];
+      assert.deepEqual(event, { account_id: null, credential_id: null });
     },
   );
 });

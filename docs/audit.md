@@ -17,7 +17,7 @@ Status: implemented in source with migration 2. Production migration and restric
 
 Outcome is `success`, `denied` or `error`, with a safe reason code. Known revoked/expired credentials record `CREDENTIAL_REVOKED`/`CREDENTIAL_EXPIRED` internally while preserving the generic public 401 response. Events have an ID, generated request ID, server timestamp, verified actor/account when known, and applicable credential/resource UUID. Names, full URLs, query strings, request/response bodies, ciphertext, tokens, private keys, passwords, session IDs, verification codes and raw errors are excluded. Resource IDs identify projects, credentials or setup requests; secret names are not duplicated. `secret.write` covers both creation and replacement.
 
-A successful retrieval means ciphertext was prepared for return, not proof of network delivery, local decryption or provider usage. Health checks and pre-dispatch Host/configuration failures are excluded; provider logs/monitoring cover those boundaries. Failed authentication cannot always be attributed to an account. Anonymous traffic is represented by at most one event per minute/action/outcome/reason across the deployment, not a complete count; edge protection is required before DB work. Authenticated events are not sampled. No historical events are backfilled.
+A successful retrieval means ciphertext was prepared for return, not proof of network delivery, local decryption or provider usage. Health checks and pre-dispatch Host/configuration failures are excluded; provider logs/monitoring cover those boundaries. Failed authentication cannot always be attributed to an account. Anonymous traffic is represented by at most one event per minute/action/outcome/reason across the deployment, not a complete count; edge protection is required before DB work. Repeated expired/revoked bearer denials retain one representative event per credential/minute/action/reason, including the verified account and credential IDs. Attempts rejected by a quota before lookup are anonymous `RATE_LIMITED` events. Successful authenticated events are not sampled. No historical events are backfilled.
 
 ## Storage and failure policy
 
@@ -37,7 +37,7 @@ Failed Clerk sign-ins/Protect decisions are **not** session webhooks. They remai
 
 ## Migration and retention
 
-Run `npm run db:migrate` using the separate migration owner before deploying this API. Health requires migration 2. After migration, replace `YOUR_RUNTIME_ROLE` with the existing restricted role:
+Run `npm run db:migrate` and `npm run db:grants` (with `MVP_RUNTIME_ROLE`) using the separate migration owner. Existing migration prerequisites precede deployment; apply the tightened grants after the matching API rollout, as explained in [deployment.md](deployment.md). The grant helper also restricts non-audit application tables; the SQL below describes only audit privileges. Health requires migration 2. After migration, replace `YOUR_RUNTIME_ROLE` with the existing restricted role:
 
 ```sql
 GRANT SELECT, INSERT ON keyman_mvp.audit_events TO YOUR_RUNTIME_ROLE;

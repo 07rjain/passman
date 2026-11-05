@@ -54,7 +54,7 @@ node packages/client/dist/cli.js put --project production --name TEST_PROVIDER_K
 
 Enter an obviously synthetic value into the hidden local prompt. The CLI encrypts before upload and prints only the stored revision. Names are readable metadata. Existing names require explicit `--replace`; concurrent/stale changes fail with a conflict instead of silently overwriting.
 
-An explicitly supplied `--value-file PATH` reads the exact contents of an owner-only regular file, up to 65,536 bytes; it does not trim or execute the file. Passphrases can likewise come from `--passphrase-file PATH` for controlled automation. These files must have restricted permissions (`600`) and ownership. Storing a plaintext passphrase beside the encrypted vault weakens protection; interactive entry is the normal user path, and automation fixtures are not a hardware-backed key store.
+An explicitly supplied `--value-file PATH` reads the exact contents of an owner-only regular file, up to 65,536 bytes; it does not trim or execute the file. Passphrases can likewise come from `--passphrase-file PATH` for controlled automation. These files must have restricted permissions (`600`) and ownership, inside a private (`700`) directory with safe ancestors. Storing a plaintext passphrase beside the encrypted vault weakens protection; interactive entry is the normal user path, and automation fixtures are not a hardware-backed key store.
 
 The optional website-entry form encrypts using the public key before its normal request. It intentionally warns that a compromised page could capture the input. It never asks for the private key or reveals an existing value. The browser must support the selected Web Crypto/X25519 profile; unsupported encryption fails rather than uploading plaintext. Cross-browser live acceptance remains a release check.
 
@@ -141,6 +141,12 @@ The install audit reported eleven moderate advisories in existing development-to
 
 The [audit guide](audit.md) defines metadata-only event coverage, transaction/failure behavior, account-scoped activity, signed session webhooks and maintenance retention. Migration 2, restricted runtime grants and separate webhook configuration are required for rollout. Local decryption, provider usage and Clerk failed-sign-in details are outside the application event stream. Immutable external export and automated alert delivery remain follow-up work.
 
+## Bearer denial quota regression — 2026-11-04
+
+The workflow integration suite now includes API/PostgreSQL coverage for TOKEN-09 and AUD-12: unknown, expired, revoked and active read/upload tokens reach 429 on attempt 121, including across API instances, and recover in the next minute. Repeated dead-token denials retain representative attributed audit events, while successful authenticated requests retain individual events. A mix of rotating and malformed bearer candidates exhausts the shared 1,200-attempt quota despite changing forwarding headers; a known revoked token is then rejected before account attribution.
+
+The source fix was prepared against `e5a942efe4f8c10529b07797fea372f4b05de039`. Execution of the regression and the full required checks remains blocked in the editing environment: no dependency installation is present, Docker is unavailable, and a sandbox satisfying the security review execution controls could not be established. No passing runtime or baseline-failure result is claimed. Run `npm run check`, `npm run test:distribution` and the disposable PostgreSQL `npm run test:integration` command above in an appropriately isolated Node.js 24/npm 11 environment before merge. No live service or production database was exercised.
+
 ## Audit implementation verification — 2026-11-01
 
 On Linux/Node.js 24, `npm run check` passed formatting, production build, types, lint, six unit tests, installed-package checks and documentation validation. `npm run test:distribution` passed the artifact/installer preservation checks. `npm run test:integration` passed all four tests/subtests against a separate local PostgreSQL 16 database, including the built Next.js API and actual CLI subprocesses.
@@ -156,3 +162,7 @@ Use [windows.md](windows.md) for native Windows prerequisites and security bound
 ### Windows 0.2.0 results — 2026-11-01
 
 [Native cross-platform CI](https://github.com/07rjain/passman/actions/runs/41320353014) passed all Windows x64/macOS/Linux checks and disposable PostgreSQL integration. [Public Windows acceptance](https://github.com/07rjain/passman/actions/runs/41320715002) passed using the real hosted installer/public archive, with synthetic local vault data and SDK retrieval/decryption, repeat installation and unavailable-release preservation. See [release evidence](releases.md#020-verification-record--2026-11-01) for the tested checksum and cross-version vault compatibility. No real Windows Clerk login, native ARM64 or independent audit is established by these runs.
+
+## Seven-finding remediation verification
+
+See [security-remediation.md](security-remediation.md) for regression IDs and production sequencing. Local Linux unit/build/type/lint/distribution and disposable PostgreSQL 16 integration passed during preparation. The latter includes explicit denied SQL under the restricted runtime role, normal encrypted CLI/SDK operations, setup isolation by trusted client address, and durable denial quotas. Distribution tests use an isolated fixture signing key patched into a fixture installer only, with no production key in CI; forged matching checksums and invalid signatures fail before execution. Native Windows tests also reject private input under replaceable parents and exercise handle-based ACL reads. Final native CI results and production acceptance remain separate evidence.

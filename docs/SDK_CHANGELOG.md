@@ -4,6 +4,12 @@ The SDK and CLI share one semantic version. This changelog covers the installabl
 
 ## Unreleased
 
+## 0.3.0 — 2026-11-05
+
+- Prevent vault overwrite through custom directory symlinks or writable/untrusted parent directories. POSIX private input files now require a private containing directory; administrator-owned macOS system aliases remain supported.
+- Bind Windows ACL validation and reading to the same open file handle, disallow concurrent write/delete sharing, and reject replaceable ancestor paths.
+- Require an independently pinned RSA-SHA256 publisher signature before installer extraction or client execution. Existing unsigned release assets remain unchanged; use the next signed release with the new installers. Vault/encryption formats and account identities are preserved.
+
 ## 0.2.0 — 2026-11-01
 
 - Add Windows x64/arm64 installation with a private Node.js runtime, HTTPS/checksum verification, version selection and a managed per-user command. Windows requires local NTFS storage and Windows PowerShell 5.1+; no administrator installation is needed.

@@ -58,6 +58,17 @@ function Checksum([string]$File, [string]$Manifest, [string]$Name) {
     if ((Get-FileHash -LiteralPath $File -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) { throw 'Checksum mismatch; active installation was not changed.' }
     return $expected
 }
+function VerifyPublisher([string]$Manifest, [string]$Signature) {
+    # Pinned RSA publisher; no download or environment variable can replace it.
+    $rsa = [Security.Cryptography.RSACryptoServiceProvider]::new()
+    try {
+        $parameters = [Security.Cryptography.RSAParameters]::new()
+        $parameters.Modulus = [Convert]::FromBase64String('nPLpCJD2ykTyatVd/PygMVPazSgF96JQWx72jUnLfCU65WUJaXil9B+ke99HY/Qpme5raYUAaPySCSk9TnaP6aBVeYiI+BGPRrud9e1sROlugR5eWHSzl04nVzs46A/iFt6xnGPdanYus2pfZ7djb0VEdoZrF4Web9FgXNEtrXUmCj75twiZv8JwRuKHP6EgzCuOn/jAq5evJ/ms4SMmlIathoaT2g9CaoS6wIS+CJuCONdOSWSViNPVhUJTryxVh6e2mEFisvBJnCcQn0eyPqCiOljeejfM2Uw2TaAfO8B5GKLtSIZC8CDJtz2PeKgJf613rbLK77hm8kPxmGBbXT63woN8RilgM0B8DCQa6gi78Jy+2OE3IrvjjuQQQ2N//8gJzhX4TRKmQzyV3N1Nn1Cx4vVtz8NzPCllAzL4+UGxqBEVpt4DXdC49SCZiwZxPSCE30oXweCfRnelvie8jKylJaY9F7pPNgUuZ66g5e5RH7pxYgJrNbxyb58giBVv')
+        $parameters.Exponent = [Convert]::FromBase64String('AQAB')
+        $rsa.ImportParameters($parameters)
+        if (!$rsa.VerifyData([IO.File]::ReadAllBytes($Manifest),'SHA256',[IO.File]::ReadAllBytes($Signature))) { throw 'Invalid publisher signature.' }
+    } finally { $rsa.Dispose() }
+}
 $work = $null
 $stage = 'INITIALIZE'
 try {
@@ -97,6 +108,8 @@ try {
     $manifest = Join-Path $work 'package.sha256'
     Download "$base/download/passman-v$version/$archive" $package
     Download "$base/download/passman-v$version/$archive.sha256" $manifest
+    Download "$base/download/passman-v$version/$archive.sha256.sig" (Join-Path $work 'package.sig')
+    VerifyPublisher $manifest (Join-Path $work 'package.sig')
     $stage = 'VERIFY_RELEASE'
     $expected = Checksum $package $manifest $archive
     $release = Join-Path $versions $version

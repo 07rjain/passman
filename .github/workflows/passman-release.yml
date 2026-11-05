@@ -53,6 +53,10 @@ jobs:
           NEXT_TELEMETRY_DISABLED: "1"
       - run: npm run test:distribution
       - run: npm run release:build
+      - name: Sign release manifest with protected publisher key
+        env:
+          PASSMAN_RELEASE_PRIVATE_KEY: ${{ secrets.PASSMAN_RELEASE_PRIVATE_KEY }}
+        run: node distribution/sign.mjs
       - name: Publish immutable release assets
         env:
           GH_TOKEN: ${{ github.token }}

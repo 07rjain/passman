@@ -4,7 +4,7 @@ umask 077
 fail() { printf '%s\n' "Passman: $*" >&2; exit 1; }
 base=${PASSMAN_DOWNLOAD_BASE:-https://github.com/07rjain/passman/releases}
 case "$base" in https://*) ;; *) fail 'Downloads must use HTTPS.';; esac
-for tool in curl tar mktemp uname awk grep cat mv mkdir; do command -v "$tool" >/dev/null 2>&1 || fail "Missing required tool: $tool"; done
+for tool in curl tar mktemp uname awk grep cat mv mkdir openssl; do command -v "$tool" >/dev/null 2>&1 || fail "Missing required tool: $tool"; done
 if command -v sha256sum >/dev/null 2>&1; then hash() { sha256sum "$1" | awk '{print $1}'; }; else command -v shasum >/dev/null 2>&1 || fail 'SHA-256 verification requires shasum or sha256sum.'; hash() { shasum -a 256 "$1" | awk '{print $1}'; }; fi
 fetch() { curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' --connect-timeout 15 --max-time 180 "$1" -o "$2" || fail 'Download failed. Check your connection and that the selected release is publicly available. The active installation was not changed.'; }
 case "$(uname -s)" in Darwin) platform=darwin;; Linux) platform=linux;; *) fail 'Use macOS/Linux here; Windows requires https://passman.subdomain.wtf/install.ps1 in PowerShell.';; esac
@@ -25,6 +25,22 @@ printf '%s\n' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || fail 'Invalid 
 archive="passman-$version.tgz"
 fetch "$base/download/passman-v$version/$archive" "$work/package.tgz"
 fetch "$base/download/passman-v$version/$archive.sha256" "$work/package.sha256"
+fetch "$base/download/passman-v$version/$archive.sha256.sig" "$work/package.sig"
+cat > "$work/publisher.pem" <<'PASSMAN_PUBLISHER'
+-----BEGIN PUBLIC KEY-----
+MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAnPLpCJD2ykTyatVd/Pyg
+MVPazSgF96JQWx72jUnLfCU65WUJaXil9B+ke99HY/Qpme5raYUAaPySCSk9TnaP
+6aBVeYiI+BGPRrud9e1sROlugR5eWHSzl04nVzs46A/iFt6xnGPdanYus2pfZ7dj
+b0VEdoZrF4Web9FgXNEtrXUmCj75twiZv8JwRuKHP6EgzCuOn/jAq5evJ/ms4SMm
+lIathoaT2g9CaoS6wIS+CJuCONdOSWSViNPVhUJTryxVh6e2mEFisvBJnCcQn0ey
+PqCiOljeejfM2Uw2TaAfO8B5GKLtSIZC8CDJtz2PeKgJf613rbLK77hm8kPxmGBb
+XT63woN8RilgM0B8DCQa6gi78Jy+2OE3IrvjjuQQQ2N//8gJzhX4TRKmQzyV3N1N
+n1Cx4vVtz8NzPCllAzL4+UGxqBEVpt4DXdC49SCZiwZxPSCE30oXweCfRnelvie8
+jKylJaY9F7pPNgUuZ66g5e5RH7pxYgJrNbxyb58giBVvAgMBAAE=
+-----END PUBLIC KEY-----
+PASSMAN_PUBLISHER
+openssl dgst -sha256 -verify "$work/publisher.pem" -signature "$work/package.sig" "$work/package.sha256" >/dev/null 2>&1 || fail 'Publisher signature invalid; current installation was not changed.'
+
 expected=$(awk -v file="$archive" '$2 == file {print $1}' "$work/package.sha256")
 printf '%s\n' "$expected" | grep -Eq '^[0-9a-f]{64}$' || fail 'Invalid release checksum.'
 [ "$(hash "$work/package.tgz")" = "$expected" ] || fail 'Release checksum mismatch; current installation was not changed.'

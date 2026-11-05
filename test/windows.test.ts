@@ -33,6 +33,27 @@ test(
     await writeFile(file, "synthetic-local-value");
     await windowsPrivatePath(file, true);
     assert.equal(await readPrivateFile(file), "synthetic-local-value");
+    const unsafeParent = path.join(root, "replaceable-parent");
+    await mkdir(unsafeParent);
+    await windowsPrivatePath(unsafeParent, true);
+    const unsafeInput = path.join(unsafeParent, "input.txt");
+    await writeFile(unsafeInput, "synthetic-protected-input");
+    await windowsPrivatePath(unsafeInput, true);
+    const parentPayload = Buffer.from(unsafeParent).toString("base64");
+    const grant = `$p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${parentPayload}'));$acl=[IO.Directory]::GetAccessControl($p);$acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new([Security.Principal.SecurityIdentifier]::new('S-1-1-0'),'DeleteSubdirectoriesAndFiles','Allow'));[IO.Directory]::SetAccessControl($p,$acl)`;
+    execFileSync(
+      path.join(
+        process.env.SystemRoot ?? "C:\\Windows",
+        "System32/WindowsPowerShell/v1.0/powershell.exe",
+      ),
+      [
+        "-NoProfile",
+        "-NonInteractive",
+        "-EncodedCommand",
+        Buffer.from(grant, "utf16le").toString("base64"),
+      ],
+    );
+    await assert.rejects(readPrivateFile(unsafeInput));
     const payload = Buffer.from(file).toString("base64");
     const script = `$ErrorActionPreference='Stop'; $file=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${payload}')); $item=Get-Item -LiteralPath $file -Force; $acl=$item.GetAccessControl(); $acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new([Security.Principal.SecurityIdentifier]::new('S-1-1-0'),'Read','Allow')); $item.SetAccessControl($acl)`;
     execFileSync(

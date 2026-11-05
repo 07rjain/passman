@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
+import { createHash, verify } from "node:crypto";
 const root = path.resolve(import.meta.dirname, "..");
 const { version } = JSON.parse(
   await readFile(path.join(root, "packages/client/package.json"), "utf8"),
@@ -17,6 +18,22 @@ const notes =
 const body = path.join(root, "ignore-docs/releases/release-notes.md");
 await writeFile(body, notes);
 const directory = path.join(root, "ignore-docs/releases");
+const manifest = path.join(directory, "passman-" + version + ".tgz.sha256");
+const archive = "passman-" + version + ".tgz";
+const checksum = createHash("sha256")
+  .update(await readFile(path.join(directory, archive)))
+  .digest("hex");
+if ((await readFile(manifest, "utf8")) !== `${checksum}  ${archive}\n`)
+  throw Error("Published archive must match its signed manifest");
+if (
+  !verify(
+    "sha256",
+    await readFile(manifest),
+    await readFile(path.join(root, "distribution/release-public.pem")),
+    await readFile(manifest + ".sig"),
+  )
+)
+  throw Error("A valid publisher signature is required before publication");
 execFileSync(
   "gh",
   [
@@ -33,6 +50,7 @@ execFileSync(
     body,
     path.join(directory, "passman-" + version + ".tgz"),
     path.join(directory, "passman-" + version + ".tgz.sha256"),
+    manifest + ".sig",
     path.join(directory, "latest.txt"),
     path.join(root, "distribution/install.sh"),
     path.join(root, "distribution/install.ps1"),
