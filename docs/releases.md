@@ -1,6 +1,6 @@
 # Passman installation and releases
 
-Passman SDK and CLI share version **0.2.0**. The command is `passman`; the previous `keyman-mvp` command remains available. Packages use PolyForm Noncommercial 1.0.0; third-party licenses are included. This remains an experimental vault, not production security approval.
+The public Passman SDK and CLI release is **0.2.0**. Source prepares **0.3.0**, pending native CI and signed publication. The command is `passman`; the previous `keyman-mvp` command remains available. Packages use PolyForm Noncommercial 1.0.0; third-party licenses are included. This remains an experimental vault, not production security approval.
 
 ## Repository transition
 
@@ -15,7 +15,7 @@ curl -fsSL https://passman.subdomain.wtf/install.sh | sh
 ~/.local/bin/passman login
 ```
 
-The installer downloads the versioned client and an official pinned Node.js 24 runtime, verifies SHA-256 checksums, and activates the installation under `~/.local/share/passman`. It needs curl, tar and a SHA-256 tool; it does not need existing Node/npm or sudo. The launcher is `~/.local/bin/passman`. Add that directory to your shell PATH to use the shorter command:
+The installer downloads the versioned client and an official pinned Node.js 24 runtime, verifies SHA-256 checksums, and activates the installation under `~/.local/share/passman`. The prepared signed installer needs curl, tar, OpenSSL and a SHA-256 tool; it does not need existing Node/npm or sudo. The launcher is `~/.local/bin/passman`. Add that directory to your shell PATH to use the shorter command:
 
 ```sh
 export PATH="$HOME/.local/bin:$PATH"
@@ -76,13 +76,13 @@ Use patch for compatible fixes, minor for new functionality and pre-1.0 breaking
 
 Release artifacts are created in ignored `ignore-docs/releases`. The npm archive includes only the built client, bundled runtime dependency trees, license and notices; it does not need server credentials or a database. `test:distribution` installs that archive offline in an independent consumer, checks runtime/types/version output and tests HTTPS installation, repeat installation, corrupted-package rejection and preservation of an existing vault. The installer test downloads the pinned official Node runtime and requires network access plus OpenSSL.
 
-The manually dispatched **Passman release** workflow validates the requested version, runs checks and publishes `passman-vVERSION` at the workflow commit. Configure required reviewers on the `passman-release` GitHub environment to enforce a maintainer approval gate; the environment name alone does not enforce review. Ordinary pushes and pull requests do not publish releases. A maintainer may instead run `RELEASE_COMMIT=FULL_SHA node distribution/publish.mjs` after local checks with GitHub CLI authorization.
+The manually dispatched **Passman release** workflow validates the requested version, runs checks and publishes `passman-vVERSION` at the workflow commit. Configure required reviewers on the `passman-release` GitHub environment to enforce a maintainer approval gate; the environment name alone does not enforce review. Ordinary pushes and pull requests do not publish releases. The next signed release additionally requires `npm run release:sign` with the protected publisher private key; `publish.mjs` refuses missing/invalid signatures. Direct GitHub release write access alone cannot create archives accepted by the new installers. Do not copy the signing key into repository secrets, ordinary CI, local examples or pull-request workflows.
 
-GitHub Releases stores the archive, checksum, version pointer and installer; the website serves the maintained installer. Never overwrite a release tag or its assets: publish a new version for corrections. Keep release credentials out of contributor/PR workflows. Native binaries, Homebrew, Windows, npm trusted publishing, signatures/provenance and an automated server-version compatibility matrix remain future work.
+GitHub Releases stores the archive, checksum, version pointer and installer; the website serves the maintained installer. Never overwrite a release tag or its assets: publish a new version for corrections. Keep release credentials out of contributor/PR workflows. Native binaries, Homebrew, Windows, npm trusted publishing, OS executable signing, provenance and an automated server-version compatibility matrix remain future work.
 
 ## Security boundary
 
-Checksums detect corruption and mismatched files; a checksum downloaded from the same origin is not independent publisher authentication. This flow trusts the HTTPS website, GitHub release account and official Node distribution. A compromised installer/client update can read local secrets when used; this does not strengthen protection against client supply-chain compromise. No claim of code signing or OS-user isolation is made. Review the script or pin a reviewed version when appropriate.
+The public 0.2.0 installer uses checksums only. The prepared security update adds a pinned RSA-SHA256 publisher signature over each versioned checksum manifest, checked before extraction/execution. A checksum downloaded from the same origin is not independent publisher authentication; the signing key must remain separate from ordinary release-write authority. This flow trusts the HTTPS website, GitHub release account and official Node distribution. A compromised installer/client update can read local secrets when used; this does not strengthen protection against client supply-chain compromise. The new archive publisher signature does not imply OS-user isolation, OS executable signing, or protection from owner-approved malicious updates. Review the script or pin a reviewed version when appropriate.
 
 ## 0.1.0 verification record
 
@@ -109,3 +109,9 @@ Archive SHA-256: `477a953b06b331f1760bb0f552c872c0647a8485cffd18d61802199f91e84f
 Actual public 0.1.1 and 0.2.0 SDK archives were also exercised in an isolated Linux process: 0.1.1 created a synthetic vault; 0.2.0 unlocked/saved it with the original key; 0.1.1 could unlock the resulting file. No account, key or ciphertext migration is introduced. This is format compatibility evidence, not recovery or machine-sharing support.
 
 Native ARM64, interactive Windows production login/hidden prompts and independent security review remain distinct gates. See [windows.md](windows.md). The manual `Windows published client acceptance` workflow can repeat the actual public-download checks after future releases; it uses synthetic local data and no Clerk/provider credentials.
+
+## Signed-release transition
+
+Follow [the remediation rollout](security-remediation.md). Publish the new signed archive before deploying signed-only hosted installers; older unsigned releases stay immutable and are intentionally rejected by the new installers. The default GitHub release pointer is not an authentication mechanism: it selects a version whose exact manifest must independently verify. Review/pin a version when installing; the pointer can still be withheld or redirected to an already signed version by a release writer. Existing installed clients are not silently updated.
+
+Protect the signing environment with an owner reviewer and main-only deployment policy, and protect main/bootstrap changes with CODEOWNERS plus required review/checks. The environment name by itself enforces nothing. Administrators who can change these policies remain trusted. The publisher key cannot protect a bootstrap installer replaced outside this reviewed boundary.

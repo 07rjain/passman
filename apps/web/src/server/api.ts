@@ -1,6 +1,7 @@
 import { reverificationError } from "@clerk/shared/authorization-errors";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
+import { isIP } from "node:net";
 import {
   z,
   publicKeySchema,
@@ -73,6 +74,7 @@ export function createApi(options: {
   pool: Pool;
   origin: string;
   authenticate: (req: Request) => Promise<Human>;
+  clientAddress: (req: Request) => string | undefined;
 }) {
   const { pool, origin } = options;
   if (
@@ -168,6 +170,30 @@ export function createApi(options: {
     ).rows[0];
     if (!row || row.count > max) throw new ApiError("RATE_LIMITED", 429);
   }
+  async function admit(req: Request, kind: "start" | "poll" | "bearer") {
+    const supplied = options.clientAddress(req);
+    if (!supplied || !isIP(supplied)) throw new ApiError("UNAVAILABLE", 503);
+    // URL canonicalization prevents alternate IPv6 spellings splitting quotas.
+    const address =
+      isIP(supplied) === 6
+        ? new URL(`http://[${supplied}]`).hostname
+        : supplied;
+    // Commit this first: excess requests from one caller never spend shared quota.
+    await transaction(pool, (c) =>
+      limit(
+        c,
+        `client:${kind}:${address}`,
+        kind === "start" ? 10 : kind === "poll" ? 120 : 240,
+      ),
+    );
+    await transaction(pool, (c) =>
+      limit(
+        c,
+        `public-${kind === "bearer" ? "bearer-attempt" : "device-" + kind}`,
+        kind === "start" ? 300 : 1200,
+      ),
+    );
+  }
   async function human(req: Request, recent = false) {
     const suppliedOrigin = req.headers.get("origin");
     if (suppliedOrigin && suppliedOrigin !== origin)
@@ -207,9 +233,7 @@ export function createApi(options: {
   ): Promise<Credential> {
     // A fixed deployment-wide bucket bounds rotating/malformed candidates before
     // lookup. It complements edge limits without trusting caller-supplied IPs.
-    await transaction(pool, (client) =>
-      limit(client, "public-bearer-attempt", 1200),
-    );
+    await admit(req, "bearer");
     const header = req.headers.get("authorization") ?? "",
       prefix = kind === "read" ? "kmr_" : "kmu_";
     if (!new RegExp(`^Bearer ${prefix}[A-Za-z0-9_-]{43}$`).test(header))
@@ -272,12 +296,11 @@ export function createApi(options: {
         return Response.json({ status: "ready" });
       }
       if (path === "/api/device/start" && method === "POST") {
+        await admit(req, "start");
         const input = z
           .object({ publicKey: publicKeySchema })
           .strict()
           .parse(await body(req));
-        // The global public-start bucket is a baseline; deploy an edge/IP limit as well.
-        await transaction(pool, (c) => limit(c, "public-device-start", 30));
         const deviceCode = randomBytes(32).toString("base64url"),
           userCode = randomBytes(6).toString("hex"),
           id = randomUUID(),
@@ -310,7 +333,7 @@ export function createApi(options: {
       if (path === "/api/device/poll" && method === "POST") {
         // A fixed shared bucket accounts for all attempts, including rotating
         // unknown codes. Never allocate durable per-code state before lookup.
-        await transaction(pool, (c) => limit(c, "public-device-poll", 1200));
+        await admit(req, "poll");
         const input = z
           .object({ deviceCode: z.string().regex(/^[A-Za-z0-9_-]{43}$/) })
           .strict()
@@ -414,7 +437,7 @@ export function createApi(options: {
           );
           const owner = (
             await client.query<Account>(
-              "SELECT * FROM keyman_mvp.accounts WHERE clerk_id=$1 FOR UPDATE",
+              "SELECT * FROM keyman_mvp.accounts WHERE clerk_id=$1",
               [user.id],
             )
           ).rows[0]!;
@@ -782,9 +805,13 @@ export function createApi(options: {
       .parse(await body(req));
     identify({ accountId, resourceId: input.projectId });
     return await transaction(pool, async (client) => {
+      await client.query(
+        "SELECT pg_advisory_xact_lock(hashtextextended($1,0))",
+        [accountId],
+      );
       const owner = (
         await client.query<Account>(
-          "SELECT * FROM keyman_mvp.accounts WHERE id=$1 FOR UPDATE",
+          "SELECT * FROM keyman_mvp.accounts WHERE id=$1",
           [accountId],
         )
       ).rows[0];

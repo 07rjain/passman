@@ -29,7 +29,16 @@ try {
     }
     # Replace the download function only in this isolated fixture. Production script is unchanged.
     $text = $text.Replace('function Download([string]$Url, [string]$Destination) {','function RealDownload([string]$Url, [string]$Destination) {')
-    if (!$Published) { $installer = [scriptblock]::Create($text.Replace('Download "','DownloadFixture "')) }
+    if (!$Published) {
+        $signer = [Security.Cryptography.RSACryptoServiceProvider]::new(3072)
+        try {
+            $manifest = Join-Path $repo "ignore-docs/releases/passman-$version.tgz.sha256"
+            [IO.File]::WriteAllBytes($manifest + '.sig', $signer.SignData([IO.File]::ReadAllBytes($manifest),'SHA256'))
+            $modulus = [Convert]::ToBase64String($signer.ExportParameters($false).Modulus)
+            $text = [Regex]::Replace($text, "parameters.Modulus = \[Convert\]::FromBase64String\('[^']+'\)", "parameters.Modulus = [Convert]::FromBase64String('$modulus')")
+        } finally { $signer.Dispose() }
+        $installer = [scriptblock]::Create($text.Replace('Download "','DownloadFixture "'))
+    }
     & $installer
     $launcher = Join-Path $env:PASSMAN_INSTALL_DIR 'bin/passman.cmd'
     $actual = & $launcher --version

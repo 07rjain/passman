@@ -6,6 +6,10 @@ This file records website/API/security and operational changes. Installable clie
 
 ### Fixed
 
+- Restrict runtime database writes to required tables/columns. Account vault bindings, project names and migration state cannot be rewritten by the runtime role. Apply `npm run db:grants` with the migration owner and `MVP_RUNTIME_ROLE` after deploying the matching API; no user data or schema format is reset.
+- Admit public setup/poll/bearer requests by a platform-verified client address before spending shared quota. One address cannot exhaust the enrollment bucket; arbitrary forwarding headers grant no identity. Non-Vercel HTTPS deployments fail closed until a trusted deployment adapter is supplied.
+- Protect client publication with pinned publisher signatures and a protected signing environment; local path/ACL fixes are recorded in the SDK changelog.
+
 - Bound device-poll counter allocation with a shared 1,200-attempt/minute quota before parsing or lookup. Allocate the 30-poll/minute per-device counter only for a verified live, unconsumed device, keyed by its server-generated ID. Rotating unknown codes no longer create individual persistent counters. Existing client/vault formats and schema remain compatible; no migration is needed. Edge/IP controls remain required because shared admission and anonymous audit accounting still use PostgreSQL.
 
 - Commit bearer attempt quotas before authentication so unknown, expired and revoked tokens cannot undo their counters. Read/upload endpoints now share a baseline 1,200-attempt minute quota before lookup and retain the 120-attempt per-token quota. Aggregate repeated expired/revoked denial audit events while keeping account attribution. Quota exhaustion returns 429, including for valid callers when the shared quota is saturated; edge abuse controls remain required. No schema, vault format or SDK version change is needed. Runtime regression execution remains pending; see [testing.md](testing.md#bearer-denial-quota-regression--2026-11-04).

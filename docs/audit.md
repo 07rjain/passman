@@ -37,7 +37,7 @@ Failed Clerk sign-ins/Protect decisions are **not** session webhooks. They remai
 
 ## Migration and retention
 
-Run `npm run db:migrate` using the separate migration owner before deploying this API. Health requires migration 2. After migration, replace `YOUR_RUNTIME_ROLE` with the existing restricted role:
+Run `npm run db:migrate` and `npm run db:grants` (with `MVP_RUNTIME_ROLE`) using the separate migration owner. Existing migration prerequisites precede deployment; apply the tightened grants after the matching API rollout, as explained in [deployment.md](deployment.md). The grant helper also restricts non-audit application tables; the SQL below describes only audit privileges. Health requires migration 2. After migration, replace `YOUR_RUNTIME_ROLE` with the existing restricted role:
 
 ```sql
 GRANT SELECT, INSERT ON keyman_mvp.audit_events TO YOUR_RUNTIME_ROLE;

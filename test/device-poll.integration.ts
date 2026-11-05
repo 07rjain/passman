@@ -21,6 +21,7 @@ await test("device polling bounds unknown-code state and enforces shared and per
   const options = {
     pool,
     origin,
+    clientAddress: () => "192.0.2.1",
     authenticate: async (): Promise<never> => {
       throw new Error("Polling must not require a human session");
     },
@@ -45,8 +46,12 @@ await test("device polling bounds unknown-code state and enforces shared and per
     assert.equal(response.status, 401);
   }
   assert.deepEqual(
-    (await pool.query("SELECT subject,bucket,count FROM keyman_mvp.limits"))
-      .rows,
+    (
+      await pool.query(
+        "SELECT subject,bucket,count FROM keyman_mvp.limits WHERE subject=$1",
+        [sharedKey],
+      )
+    ).rows,
     [{ subject: sharedKey, bucket: String(bucket()), count: 64 }],
     "Rotating unknown codes may allocate only the shared counter",
   );
@@ -87,7 +92,7 @@ await test("device polling bounds unknown-code state and enforces shared and per
         "SELECT count(*)::integer AS count FROM keyman_mvp.limits",
       )
     ).rows[0].count,
-    1,
+    2,
   );
 
   // A new minute admits the real device; its own cadence is still capped.
@@ -102,9 +107,10 @@ await test("device polling bounds unknown-code state and enforces shared and per
   assert.equal((await poll(pendingCode, 1)).status, 202);
 
   // Rejected lifecycle states never allocate another per-device counter.
-  await pool.query("DELETE FROM keyman_mvp.limits WHERE subject<>$1", [
-    sharedKey,
-  ]);
+  await pool.query(
+    "DELETE FROM keyman_mvp.limits WHERE subject<>$1 AND subject<>$2",
+    [sharedKey, digest("client:poll:192.0.2.1")],
+  );
   await pool.query("UPDATE keyman_mvp.devices SET consumed=true WHERE id=$1", [
     pendingId,
   ]);
@@ -117,10 +123,45 @@ await test("device polling bounds unknown-code state and enforces shared and per
   assert.equal(
     (
       await pool.query(
-        "SELECT count(*)::integer AS count FROM keyman_mvp.limits WHERE subject<>$1",
-        [sharedKey],
+        "SELECT count(*)::integer AS count FROM keyman_mvp.limits WHERE subject<>$1 AND subject<>$2",
+        [sharedKey, digest("client:poll:192.0.2.1")],
       )
     ).rows[0].count,
     0,
+  );
+  await t.test(
+    "one enrollment caller cannot spend another caller's admission quota",
+    async () => {
+      t.mock.timers.tick(60000);
+      let peer: string | undefined = "192.0.2.10";
+      const startApi = createApi({ ...options, clientAddress: () => peer });
+      const start = (forwarded: string) =>
+        startApi(
+          new Request(origin + "/api/device/start", {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              "x-forwarded-for": forwarded,
+            },
+            body: JSON.stringify({
+              publicKey: { kty: "OKP", crv: "X25519", x: "A".repeat(43) },
+            }),
+          }),
+        );
+      for (let i = 0; i < 40; i++)
+        assert.equal(
+          (await start(`192.0.2.${i + 30}`)).status,
+          i < 10 ? 200 : 429,
+        );
+      peer = "192.0.2.11";
+      assert.equal((await start("192.0.2.10")).status, 200);
+      const shared = await pool.query(
+        "SELECT count FROM keyman_mvp.limits WHERE subject=$1 AND bucket=$2",
+        [digest("public-device-start"), bucket()],
+      );
+      assert.equal(shared.rows[0].count, 11);
+      peer = undefined;
+      assert.equal((await start("192.0.2.12")).status, 503);
+    },
   );
 });

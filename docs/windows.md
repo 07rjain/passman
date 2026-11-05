@@ -23,7 +23,7 @@ passman --version
 passman login
 ```
 
-For future terminals, add `%LOCALAPPDATA%\Passman\bin` to your **user** Path through Windows Environment Variables, then reopen the terminal. The installer does not modify your profile or persistent Path. Rerun it to update. `PASSMAN_VERSION` selects a released version (0.2.0+); `PASSMAN_INSTALL_DIR` selects an absolute local installation root. `PASSMAN_BIN_DIR` is Unix-only.
+For future terminals, add `%LOCALAPPDATA%\Passman\bin` to your **user** Path through Windows Environment Variables, then reopen the terminal. The installer does not modify your profile or persistent Path. Rerun it to update. `PASSMAN_VERSION` selects a released version; the prepared signed-only installer requires a signed release (0.3.0+), while the existing public 0.2.0 installer remains checksum-only; `PASSMAN_INSTALL_DIR` selects an absolute local installation root. `PASSMAN_BIN_DIR` is Unix-only.
 
 The CLI opens browser approval using Windows' URL handler. Compare the full fingerprint, enter the terminal's code in the website and acknowledge key loss. `--no-browser` leaves browser opening to you. Every new process still needs manual local unlock; login is not a shared unlocked session.
 
@@ -36,6 +36,8 @@ The SDK's versioned npm archive works with Node.js 24 on Windows; see [releases.
 ## Local protection and compatibility
 
 Vaults remain at `%USERPROFILE%\.keyman-mvp\vault.json`, with the same encrypted format as macOS/Linux. New vault directories receive a protected current-user-only ACL inherited by vault files. Existing directories/files must be owned by the current user's SID and have no Allow entries for other identities. The client rejects overly broad ACLs rather than silently fixing an existing directory. It invokes built-in Windows PowerShell without profiles to inspect ACLs; policy restrictions or unavailable ACL support fail closed.
+
+ACL validation and reading use the same open file handle without write/delete sharing. Ancestors that unprivileged identities can delete or control are rejected.
 
 Private passphrase/value files must use the same owner-only ACL protection. Use a dedicated private directory, never a shared repository folder. POSIX `chmod 600` is not a Windows protection mechanism. FAT/exFAT, network shares, reparse points/junctions and redirected/synchronized vault locations are unsupported. Windows administrators and equivalent-user malware can still take over the machine; ACLs do not provide that isolation. The installer rejects command metacharacters in custom installation paths.
 

@@ -92,7 +92,7 @@ Never point integration tests at the deployed Neon database. `npm run check` cov
 | SETUP-06 | Interrupted approval/claim retries with the same vault; a completed claim cannot be reused | Workflow + interruption rehearsal |
 | SETUP-07 | Re-login with the same key preserves account/vault identity and renews upload authorization | Workflow + live CLI |
 | SETUP-08 | A fresh key under an existing account is rejected; Clerk login alone does not replace/recover the old private key | Workflow + Agent37/live API |
-| SETUP-09 | Rotating unknown poll codes create only one shared counter per minute; the shared 1,200-attempt quota persists across denials and API instances; verified live devices retain a 30-poll quota that resets next minute; consumed/expired devices get no counter | Device-poll PostgreSQL integration |
+| SETUP-09 | Rotating unknown poll codes create only shared/client counters per minute; the shared 1,200-attempt quota persists across denials and API instances; verified live devices retain a 30-poll quota that resets next minute; consumed/expired devices get no counter | Device-poll PostgreSQL integration |
 
 ## 4. Local vault and encryption
 
@@ -133,7 +133,7 @@ Never point integration tests at the deployed Neon database. `npm run check` cov
 | TOKEN-05 | Temporary upload credentials expire/revoke and cannot obtain read/admin powers | Integration + lifecycle rehearsal |
 | TOKEN-06 | Valid read key alone can fetch permitted ciphertext from another host, but does not supply a decryption private key. An unlinked SDK identity rejects retrieval; a wrong key cannot decrypt | Crypto/integration + live raw-response/SDK cases; no server machine-signature claim |
 | TOKEN-07 | Revocation stops future authentication but cannot erase copied plaintext/ciphertext or revoke an exported provider key at its provider | Live API + documented threat boundary |
-| TOKEN-08 | Unknown, expired, revoked and active bearer attempts consume durable per-token quota; rotating/malformed tokens share a bounded pre-lookup quota; forwarding headers cannot split it | Workflow PostgreSQL regression; execution pending, see testing record |
+| TOKEN-09 | Unknown, expired, revoked and active bearer attempts consume durable per-token quota; rotating/malformed tokens share a bounded pre-lookup quota; forwarding headers cannot split it | Workflow PostgreSQL regression; see testing record |
 | TOKEN-08 | Credentials/values do not enter argv, normal logs, model-facing output or unredacted errors | CLI/transport inspection + negative-path checks |
 
 ## 7. Hosting, failures and operations
@@ -202,7 +202,7 @@ Changelog and documentation updates:
 | AUD-09 | Anonymous attack events are bounded; audit outage returns unavailable | PostgreSQL integration |
 | AUD-10 | Native browser activity filtering and pagination work on supported browsers | Manual browser acceptance pending |
 | AUD-11 | Production webhook delivery, scheduled pruning and operator alerts work | Deployment acceptance pending |
-| AUD-12 | Expired/revoked bearer denials retain one attributed representative per credential/minute/action/reason; successful authenticated events remain individual | Workflow PostgreSQL regression; execution pending, see testing record |
+| AUD-12 | Expired/revoked bearer denials retain one attributed representative per credential/minute/action/reason; successful authenticated events remain individual | Workflow PostgreSQL regression; see testing record |
 
 ## Agent skill checks
 
@@ -225,3 +225,13 @@ Changelog and documentation updates:
 | WIN-05 | Installed SDK encrypts/unlocks, rejects wrong passphrase and preserves vault format | Native installed-client checks |
 | WIN-06 | Production browser approval and interactive hidden prompts work on Windows | Live acceptance pending |
 | WIN-07 | Native ARM64 installer/runtime passes equivalent checks | ARM64 acceptance pending |
+
+## Security remediation cases
+
+| ID | Test and expected result | Verification |
+| --- | --- | --- |
+| SETUP-10 | One platform-verified client cannot spend another client's setup quota; spoofed forwarding headers cannot split identity; missing trusted identity fails closed | PostgreSQL admission regression + adapter unit tests |
+| OPS-12 | Runtime cannot alter account vault bindings, project names, credential hashes or device public keys, or mutate migration/audit control data; normal workflow still works | Restricted-role PostgreSQL workflow |
+| VAULT-05 | Custom directory symlink retargeting and writable parents cannot redirect a vault save or private input read | POSIX regression |
+| WIN-07 | Private input under a replaceable parent fails; ACL verification and read use the same file handle | Native Windows regression |
+| DIST-10 | Untrusted checksum plus archive, invalid signatures and unsigned archives fail before execution while preserving installation/vault | HTTPS distribution regression and native Windows fixture |

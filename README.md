@@ -33,7 +33,7 @@ curl -fsSL https://passman.subdomain.wtf/install.sh | sh
 ~/.local/bin/passman login
 ```
 
-The CLI/SDK release is **0.2.0**, distributed publicly from `07rjain/passman`. The installer uses that repository because the earlier release repository is now private. Existing local vaults and earlier immutable assets are preserved. See [releases.md](docs/releases.md).
+The public CLI/SDK release is **0.2.0** (source prepares security release **0.3.0**, pending signed publication), distributed publicly from `07rjain/passman`. The installer uses that repository because the earlier release repository is now private. Existing local vaults and earlier immutable assets are preserved. See [releases.md](docs/releases.md).
 
 ## Agent skill
 

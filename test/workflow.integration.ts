@@ -34,7 +34,11 @@ import { z, projectSchema } from "@keyman-mvp/core";
 import { createApi } from "../apps/web/src/server/api";
 import { recordAudit, pruneAudit } from "../apps/web/src/server/audit";
 import { clerkWebhook } from "../apps/web/src/server/clerk-webhook";
-import { database, migrate } from "../apps/web/src/server/database";
+import {
+  database,
+  migrate,
+  grantRuntime,
+} from "../apps/web/src/server/database";
 const connection = process.env.MVP_TEST_DATABASE_URL;
 if (!connection || new URL(connection).pathname !== "/keyman_mvp_test")
   throw new Error(
@@ -48,8 +52,9 @@ await test("MVP: built Next.js, real JWT verification/PostgreSQL enrollment, enc
     "TRUNCATE keyman_mvp.audit_events,keyman_mvp.accounts,keyman_mvp.devices,keyman_mvp.limits CASCADE",
   );
   await owner.query(
-    "DO $$ BEGIN IF NOT EXISTS(SELECT FROM pg_roles WHERE rolname='keyman_mvp_test_runtime') THEN CREATE ROLE keyman_mvp_test_runtime LOGIN PASSWORD 'synthetic-mvp-test-password'; END IF; END $$; GRANT USAGE ON SCHEMA keyman_mvp TO keyman_mvp_test_runtime; GRANT SELECT,INSERT,UPDATE,DELETE ON keyman_mvp.accounts,keyman_mvp.projects,keyman_mvp.secrets,keyman_mvp.credentials,keyman_mvp.devices,keyman_mvp.limits TO keyman_mvp_test_runtime; GRANT SELECT ON keyman_mvp.migrations TO keyman_mvp_test_runtime; GRANT SELECT,INSERT ON keyman_mvp.audit_events TO keyman_mvp_test_runtime; GRANT USAGE ON SEQUENCE keyman_mvp.audit_events_sequence_seq TO keyman_mvp_test_runtime;",
+    "DO $$ BEGIN IF NOT EXISTS(SELECT FROM pg_roles WHERE rolname='keyman_mvp_test_runtime') THEN CREATE ROLE keyman_mvp_test_runtime LOGIN PASSWORD 'synthetic-mvp-test-password'; END IF; END $$",
   );
+  await grantRuntime(owner, "keyman_mvp_test_runtime");
   const runtimeUrl = new URL(connection);
   runtimeUrl.username = "keyman_mvp_test_runtime";
   runtimeUrl.password = "synthetic-mvp-test-password";
@@ -58,6 +63,17 @@ await test("MVP: built Next.js, real JWT verification/PostgreSQL enrollment, enc
   await assert.rejects(
     pool.query("CREATE TABLE keyman_mvp.forbidden(id integer)"),
   );
+  for (const sql of [
+    "UPDATE keyman_mvp.accounts SET key_id=key_id WHERE false",
+    "DELETE FROM keyman_mvp.accounts WHERE false",
+    "UPDATE keyman_mvp.projects SET name=name WHERE false",
+    "UPDATE keyman_mvp.credentials SET hash=hash WHERE false",
+    "UPDATE keyman_mvp.devices SET public_key=public_key WHERE false",
+    "INSERT INTO keyman_mvp.migrations VALUES(999)",
+    "DELETE FROM keyman_mvp.migrations WHERE false",
+    "TRUNCATE keyman_mvp.audit_events",
+  ])
+    await assert.rejects(pool.query(sql), { code: "42501" });
   const reservation = createServer();
   reservation.listen(0, "127.0.0.1");
   await once(reservation, "listening");
@@ -685,6 +701,7 @@ await test("MVP: built Next.js, real JWT verification/PostgreSQL enrollment, enc
         pool.query("UPDATE keyman_mvp.audit_events SET reason='OK'"),
       );
       const direct = createApi({
+        clientAddress: () => "192.0.2.1",
         pool,
         origin,
         authenticate: async (request) => ({
@@ -941,7 +958,9 @@ await test("MVP: built Next.js, real JWT verification/PostgreSQL enrollment, enc
     async (t) => {
       let now = Math.floor(Date.now() / 60000) * 60000 + 120000;
       t.mock.method(Date, "now", () => now);
+      let peer = "192.0.2.1";
       const direct = createApi({
+        clientAddress: () => peer,
         pool,
         origin,
         authenticate: async () => {
@@ -1012,6 +1031,7 @@ await test("MVP: built Next.js, real JWT verification/PostgreSQL enrollment, enc
           }
           // A second API instance must observe the same PostgreSQL quota.
           const other = createApi({
+            clientAddress: () => peer,
             pool,
             origin,
             authenticate: async () => {
@@ -1072,6 +1092,7 @@ await test("MVP: built Next.js, real JWT verification/PostgreSQL enrollment, enc
       now += 60000;
       // Caller-controlled forwarding headers cannot split the fixed shared bucket.
       for (let i = 0; i < 1200; i++) {
+        peer = `192.0.2.${Math.floor(i / 100) + 2}`;
         const response = await direct(
           new Request(origin + "/api/v1/search", {
             headers: {

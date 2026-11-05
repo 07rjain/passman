@@ -1,5 +1,5 @@
 import { constants } from "node:fs";
-import { open, mkdir, stat, lstat, rename, unlink } from "node:fs/promises";
+import { open, mkdir, lstat, rename, unlink } from "node:fs/promises";
 import {
   createCipheriv,
   createDecipheriv,
@@ -8,7 +8,8 @@ import {
   createSecretKey,
 } from "node:crypto";
 import path from "node:path";
-import { windowsPrivatePath } from "./windows.js";
+import { windowsPrivatePath, windowsReadPrivateFile } from "./windows.js";
+import { posixPrivateDirectory } from "./paths.js";
 import {
   generateIdentity,
   publicKeySchema,
@@ -67,22 +68,20 @@ export function apiOrigin(value: string) {
   return url.origin;
 }
 async function directory(pathname: string) {
-  const created = await mkdir(pathname, { recursive: true, mode: 0o700 });
   if (process.platform === "win32") {
+    const created = await mkdir(pathname, { recursive: true, mode: 0o700 });
     try {
       await windowsPrivatePath(pathname, created !== undefined);
     } catch {
       throw new LocalVaultError();
     }
-    return;
+    return pathname;
   }
-  const info = await stat(pathname);
-  if (
-    !info.isDirectory() ||
-    info.uid !== process.getuid?.() ||
-    (info.mode & 0o077) !== 0
-  )
+  try {
+    return await posixPrivateDirectory(pathname, true);
+  } catch {
     throw new LocalVaultError();
+  }
 }
 export async function readPrivateFile(
   file: string,
@@ -90,10 +89,15 @@ export async function readPrivateFile(
 ): Promise<string> {
   if (process.platform === "win32") {
     try {
-      await windowsPrivatePath(file);
+      return await windowsReadPrivateFile(file, max);
     } catch {
       throw new LocalVaultError();
     }
+  }
+  try {
+    await posixPrivateDirectory(path.dirname(file));
+  } catch {
+    throw new LocalVaultError();
   }
   const before = await lstat(file);
   if (before.isSymbolicLink()) throw new LocalVaultError();
@@ -105,8 +109,8 @@ export async function readPrivateFile(
     const info = await handle.stat();
     if (
       !info.isFile() ||
-      (process.platform !== "win32" &&
-        (info.uid !== process.getuid?.() || (info.mode & 0o077) !== 0)) ||
+      info.uid !== process.getuid?.() ||
+      (info.mode & 0o077) !== 0 ||
       info.ino !== before.ino ||
       info.dev !== before.dev ||
       info.size > max
@@ -145,7 +149,7 @@ export async function saveIdentity(
   profile: Identity,
   create = false,
 ) {
-  await directory(location);
+  location = await directory(location);
   const salt = randomBytes(16),
     nonce = randomBytes(12),
     cipher = createCipheriv("aes-256-gcm", key(password, salt), nonce);
@@ -207,7 +211,7 @@ export async function unlockIdentity(
   options: { administrative?: boolean } = {},
 ): Promise<Identity> {
   try {
-    await directory(location);
+    location = await directory(location);
     const disk = diskSchema.parse(
       JSON.parse(await readPrivateFile(path.join(location, "vault.json"))),
     );
