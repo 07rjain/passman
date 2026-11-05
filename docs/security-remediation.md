@@ -7,9 +7,9 @@ The security report examined `e5a942efe4f8c10529b07797fea372f4b05de039`. These c
 | Invalid bearer counters roll back | Commit attempts before checking credentials; aggregate dead-token denial events | TOKEN-09, AUD-12 |
 | Broad runtime database writes | Explicit table/column grants; immutable account/project bindings; owner-only migration state | OPS-12 |
 | Shared enrollment starvation | Trusted-client admission before the deployment-wide ceiling | SETUP-10 |
-| Repository writer bypasses release approval | Pinned RSA-SHA256 archive publisher; protected signing environment and source review | DIST-10 |
+| Repository writer bypasses release approval | Pinned RSA-SHA256 archive publisher; protected signing environment and source review | DIST-12 |
 | Arbitrary poll counter allocation | Shared/client counters first; allocate individual counters only for live devices | SETUP-09 |
-| Windows ACL/open race | Validate ACL and read through the same non-write/delete-shared handle; reject replaceable ancestors | WIN-07 |
+| Windows ACL/open race | Validate ACL and read through the same non-write/delete-shared handle; reject replaceable ancestors | WIN-08 |
 | POSIX directory retargeting | Reject user aliases and writable/untrusted ancestors; use canonical validated vault paths | VAULT-05 |
 
 The database finding's migration-state claim was broader than the actual deployment instructions: migrations already had SELECT-only runtime access. Account UPDATE/DELETE permissions were unnecessarily broad and are removed.
@@ -35,3 +35,7 @@ Production rollout, final native CI, signed public-release acceptance and extern
 The `passman-release` environment was configured with required reviewer `07rjain` and a deployment-branch policy limited to `main`. Its environment-only signing secret was installed without exposing key bytes in source/logs. Main now requires a pull request, one approving code-owner review, fresh approval after the last push, and successful Linux/macOS/Windows/integration jobs, with stale reviews dismissed and force-push/deletion disabled. Owner/admin bypass remains deliberately available to the trusted sole maintainer. CODEOWNERS becomes effective when this change is merged. Environment approval permits the owner to approve their own release because no second maintainer exists; ordinary repository writers cannot approve it.
 
 Only `07rjain` held repository write/admin access when inspected. These settings protect future writer separation; they do not claim an independent two-person approval process or protection from a compromised owner/admin account.
+
+## Native CI evidence
+
+[GitHub CI](https://github.com/07rjain/passman/actions/runs/41955334230) passed Linux, macOS, Windows and disposable PostgreSQL integration for `7394f93f647fb4ffd63c4ef24340a1725a84c7d0`, including the native Windows handle/ancestor regressions and installed-client signature fixture. The subsequent production-release gate passed its local distribution regressions and rejected the actual older public release; its combined final CI remains a separate required check before merge. Documentation validation also rejects duplicate stable regression IDs.

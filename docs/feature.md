@@ -233,7 +233,6 @@ Changelog and documentation updates:
 | SETUP-10 | One platform-verified client cannot spend another client's setup quota; spoofed forwarding headers cannot split identity; missing trusted identity fails closed | PostgreSQL admission regression + adapter unit tests |
 | OPS-12 | Runtime cannot alter account vault bindings, project names, credential hashes or device public keys, or mutate migration/audit control data; normal workflow still works | Restricted-role PostgreSQL workflow |
 | VAULT-05 | Custom directory symlink retargeting and writable parents cannot redirect a vault save or private input read | POSIX regression |
-| WIN-07 | Private input under a replaceable parent fails; ACL verification and read use the same file handle | Native Windows regression |
-| DIST-10 | Untrusted checksum plus archive, invalid signatures and unsigned archives fail before execution while preserving installation/vault | HTTPS distribution regression and native Windows fixture |
-
+| WIN-08 | Private input under a replaceable parent fails; ACL verification and read use the same file handle | Native Windows regression |
+| DIST-12 | Untrusted checksum plus archive, invalid signatures and unsigned archives fail before execution while preserving installation/vault | HTTPS distribution regression and native Windows fixture |
 | DIST-11 | Production promotion fails when the public client is old, unavailable, unsigned or differs from its signed archive; verified publication permits promotion | Distribution release-gate regression |

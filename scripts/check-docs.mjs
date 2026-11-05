@@ -18,6 +18,13 @@ await collect("docs");
 await collect("skills");
 for (const file of files) {
   const content = await readFile(path.join(root, file), "utf8");
+  if (file === "docs/feature.md") {
+    const ids = new Set();
+    for (const [, id] of content.matchAll(/^\| ([A-Z]+-\d+) \|/gm)) {
+      assert.ok(!ids.has(id), `${file}: duplicate regression ID ${id}`);
+      ids.add(id);
+    }
+  }
   assert.ok(content.endsWith("\n"), `${file}: missing final newline`);
   assert.ok(!/[\t ]+$/m.test(content), `${file}: trailing whitespace`);
   let fence;
