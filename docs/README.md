@@ -19,6 +19,7 @@ Passman is an experimental, source-available encrypted secret store. Start with 
 - [Security profile and encryption](security.md).
 - [Architecture and accepted design decisions](simplified-design.md).
 - [Requirements](PRD.md) and [implementation plan](plan.md).
+- [Landing-page design and storage illustration](landing-design.md).
 
 ## Develop and operate
 

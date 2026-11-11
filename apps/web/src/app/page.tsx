@@ -1,12 +1,7 @@
 "use client";
 import { isReverificationHint } from "@clerk/shared/authorization-errors";
-import {
-  SignInButton,
-  UserButton,
-  useAuth,
-  useUser,
-  useReverification,
-} from "@clerk/nextjs";
+import { UserButton, useAuth, useUser, useReverification } from "@clerk/nextjs";
+import Landing from "./landing";
 import { isReverificationCancelledError } from "@clerk/nextjs/errors";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
@@ -146,73 +141,7 @@ function Workspace() {
       setBusy(false);
     }
   }
-  if (!isLoaded)
-    return (
-      <main className="setup">
-        <span className="brand">◈ KEYMAN</span>
-        <p>Loading your workspace…</p>
-      </main>
-    );
-  if (!isSignedIn)
-    return (
-      <main className="landing">
-        <header>
-          <span className="brand">◈ KEYMAN</span>
-          <span className="tag">MVP · EXPERIMENTAL</span>
-        </header>
-        <div className="hero">
-          <span className="eyebrow">ONE VAULT. SIMPLE ACCESS.</span>
-          <h1>
-            Secrets belong
-            <br />
-            with <em>you.</em>
-          </h1>
-          <p>
-            Store encrypted values. Retrieve them in your code.
-            <br />
-            Keep the private key on your machine.
-          </p>
-          <SignInButton mode="modal">
-            <button>Open your workspace →</button>
-          </SignInButton>
-          <div className="hero-note">
-            Install once, sign in, then use Passman in your code.
-          </div>
-          <pre>
-            <code>
-              curl -fsSL https://passman.subdomain.wtf/install.sh | sh
-            </code>
-          </pre>
-          <p>
-            Then run <code>~/.local/bin/passman login</code> on macOS/Linux. No
-            source checkout required.
-          </p>
-          <WindowsInstall />
-        </div>
-        <div className="features">
-          <article>
-            <span>01</span>
-            <h3>Encrypt locally</h3>
-            <p>The local CLI encrypts provider values before upload.</p>
-          </article>
-          <article>
-            <span>02</span>
-            <h3>Stay organized</h3>
-            <p>Readable names and projects keep your applications in order.</p>
-          </article>
-          <article>
-            <span>03</span>
-            <h3>Use in code</h3>
-            <p>
-              Read-only credentials fetch ciphertext. The SDK decrypts locally.
-            </p>
-          </article>
-        </div>
-        <footer>
-          Experimental build. Use synthetic secrets. No private-key recovery.
-        </footer>
-      </main>
-    );
+  if (!isLoaded || !isSignedIn) return <Landing authReady={isLoaded} />;
   const selected = data?.projects.find((p) => p.id === projectId),
     entries =
       data?.entries.filter((e) => !projectId || e.project_id === projectId) ??

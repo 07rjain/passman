@@ -26,6 +26,7 @@ Store generic named secret values encrypted on a service and retrieve/decrypt th
 
 ## Client installation and versioning
 
+- Introduce the local-key model on a responsive public landing page with platform-specific installation, a realistic SDK example, existing Clerk sign-in and clear key-loss/browser-input limits. Decorative artwork must not process customer data or imply a cryptographic guarantee.
 - Provide macOS/Linux arm64/x64 and Windows x64/arm64 installers, `passman login` with the hosted default, and a typed Node.js SDK installable from a versioned package archive without cloning the repository.
 - Include a private Node.js 24 runtime in the installer experience; do not require sudo or modify existing system Node installations or vault identities.
 - Gate production promotion of signed installers on verified public signed-client availability, so a source merge cannot strand new installations.

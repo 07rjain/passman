@@ -4,6 +4,16 @@ Status: experimental. Local verification and hosted Vercel/Neon API checks passe
 
 The maintained [feature/regression catalogue](feature.md) is the checklist for every future feature and release.
 
+## Landing-page redesign — 2026-11-11
+
+Local working-tree verification based on `3d996de` covers WEB-01–04. `npm run check` passed formatting, production builds, types, lint, Linux unit tests, installed-package consumption and documentation checks. The native Windows-only unit test is skipped on Linux. No API/database or SDK behavior changed, so database integration and a new client release are not prerequisites for this presentation change.
+
+Headless Chromium checked widths 320, 390, 768, 900, 1024 and 1440 without page-level horizontal overflow or JavaScript page errors. Browser interactions verified actual clipboard contents for both installation platforms and the SDK example, the permission-denied manual-copy message, arrow-key tab navigation, disclosure expansion, the static local-key/encrypted-storage illustration and reduced-motion media behavior. The public page was checked without Clerk configuration; real configured Clerk sign-in, account switching and device approval remain separate live acceptance checks. Screenshots and browser-check evidence are under `ignore-docs/landing-revision/`.
+
+The subsequent pale sage background and faint static wave refinement passed a fresh web production build and the same Chromium interaction/responsive checks. Desktop and mobile screenshots were visually reviewed; the waves keep broad curves on narrow screens and do not intercept controls. This CSS/SVG refinement did not rerun the earlier full package suite. Evidence uses the `tinted-` prefix in the same ignored directory.
+
+The landing page uses bundled, SIL Open Font License Manrope files, normal HTML for the hero illustration and small decorative SVG icons. It loads no remote font or art-rendering script.
+
 ## Install and configure
 
 End users can use the [Passman installer/package](releases.md) without cloning this repository. The commands below remain the source-contributor setup. Distribution checks additionally cover offline package installation, SDK types and local crypto, CLI version output, first HTTPS install, repeat install, version upgrade, checksum rejection and vault preservation.

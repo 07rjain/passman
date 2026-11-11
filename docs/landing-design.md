@@ -1,0 +1,30 @@
+# Passman landing page
+
+The public page introduces the local-key vault to developers, shows a real SDK example and leads into installation or existing Clerk sign-in. The authenticated workspace and approval flow retain their existing behavior. The hero illustration explains the storage boundary using example metadata; it is not a live workspace or a complete cryptographic protocol diagram.
+
+## Design direction
+
+- Palette: pale sage `#f5f9f6` fading through soft paper `#fafbf9` to white `#ffffff`, charcoal `#242424`, graphite `#686868`, dark surface `#2b2b2b`. Controls, type and product illustration retain their neutral palette. Three faint, broad sage wave lines and a translucent band sit behind the hero; their minimum width keeps the curves gentle on mobile.
+- Type: locally served Manrope for the public page, with the platform monospace stack reserved for code and example secret names. Large, closely spaced headings supply the identity without colored word accents.
+- Layout: left-aligned copy and a concrete secret-flow illustration share the hero. A quiet three-part explanation leads to a light SDK section with a charcoal code pane, platform-specific installation and concise security questions. Mobile uses the same reading order in one column.
+- Interaction: working install tabs, clipboard feedback with manual-copy fallback and native disclosure controls. The hero illustration and background waves stay still; they have no animation or regeneration control. The decorative wave SVG is a CSS background and cannot intercept input or enter the accessibility tree.
+
+```text
+wordmark        how it works / developers / docs        sign in
+headline + actions                 local private key
+                                   encrypted example project
+                                   local SDK retrieval
+local key                       encrypted store            local SDK
+SDK explanation                 charcoal code example
+installation steps              platform tabs + command
+security questions
+wordmark                        source / security / license
+```
+
+## Illustrating the product boundary
+
+The key appears in a local-vault block above the service. The connecting line describes values being encrypted locally; it does not show the private key being uploaded. The service block uses clearly labeled example project and secret names with encrypted-value indicators. The final block shows ciphertext retrieval and local decryption by the SDK.
+
+The diagram includes only synthetic metadata and fixed display text. It does not fetch an account, encrypt a value, generate a key or simulate an actual authenticated operation. Its labels are normal readable HTML, with decorative icons hidden from assistive technology. The nearby feature descriptions and security questions provide the qualifications that a compact illustration cannot: optional browser input trusts hosted JavaScript, application code can read plaintext, and private-key loss cannot be recovered by signing in.
+
+The visual hierarchy comes from spacing, readable type and contrasting surfaces. The product flow is the hero's one detailed element; other sections remain quiet. Local fonts and small SVG icons avoid a remote rendering dependency or an art runtime in the production page.

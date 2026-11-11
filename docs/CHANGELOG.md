@@ -4,6 +4,10 @@ This file records website/API/security and operational changes. Installable clie
 
 ## Unreleased
 
+### Website
+
+- Redesign the public landing page around Passman's local-key model, with charcoal controls, a pale sage background fading to white, a few faint static waves behind the hero, consistent wordmark, self-hosted Manrope typography, a concrete illustration of local keys, encrypted storage and SDK retrieval, a real SDK example, keyboard-accessible platform install tabs and clipboard feedback. Explain key loss, optional browser input and application/model access in expandable security questions. Preserve the existing signed-in workspace, Clerk controls and approval flow. No database, API or client-format change is introduced; this is a source change awaiting deployment.
+
 ### Fixed
 
 - Restrict runtime database writes to required tables/columns. Account vault bindings, project names and migration state cannot be rewritten by the runtime role. Apply `npm run db:grants` with the migration owner and `MVP_RUNTIME_ROLE` after deploying the matching API; no user data or schema format is reset.

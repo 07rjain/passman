@@ -50,6 +50,15 @@ Never point integration tests at the deployed Neon database. `npm run check` cov
 | [Standalone clone verification](testing.md#standalone-repository-verification--2026-10-31) | Independent source checkout, direct web prerequisite build, package/installer checks and disposable PostgreSQL workflow | Local Linux; replacement deployment/browser/inbox acceptance remains open |
 | Manual acceptance below | Real platform/domain/provider/browser/operations behavior | Record actual results per run; no standing blanket pass |
 
+## Public landing page
+
+| ID | Expected behavior | Verification |
+| --- | --- | --- |
+| WEB-01 | The public page introduces Passman, links to installation/docs/source, remains readable from 320px to desktop, and has no page-level horizontal overflow | Local Chromium viewport checks; see dated testing record |
+| WEB-02 | Platform tabs change both installation and follow-up commands, support arrow/Home/End navigation and copy the displayed command; clipboard denial directs manual copying | Local Chromium interaction checks |
+| WEB-03 | The static hero illustration identifies the local key, encrypted example storage and local SDK decryption, includes an accessible description, and neither fetches account data nor presents a live operation | Local Chromium content and responsive checks |
+| WEB-04 | Security disclosures explain key loss, browser-input trust and plaintext application/model access; missing Clerk configuration offers docs without pretending sign-in is available | Local public-page checks; actual configured Clerk sign-in/approval remains a separate acceptance case |
+
 ## 1. Installation, updates and SDK distribution
 
 | ID | Test and expected result | Verification |
