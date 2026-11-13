@@ -6,10 +6,10 @@ import styles from "./landing.module.css";
 
 const repository = "https://github.com/07rjain/passman";
 const docs = `${repository}/blob/main/docs`;
-const release = `${repository}/releases/download/passman-v0.3.0`;
+const installerOrigin = "https://passman.subdomain.wtf";
 const installCommands = {
-  unix: `curl -fsSL ${release}/install.sh | sh`,
-  windows: `Invoke-WebRequest -Uri ${release}/install.ps1 -OutFile "$env:TEMP\\passman-install.ps1"\n& "$env:TEMP\\passman-install.ps1"`,
+  unix: `curl -fsSL ${installerOrigin}/install.sh | sh`,
+  windows: `Invoke-WebRequest -Uri ${installerOrigin}/install.ps1 -OutFile "$env:TEMP\\passman-install.ps1"\n& "$env:TEMP\\passman-install.ps1"`,
 };
 const sdkExample = `import { KeymanClient, unlockIdentity } from '@07rjain/passman';
 
@@ -335,10 +335,10 @@ export default function Landing({
           <div className={styles.heroCopy}>
             <a
               className={styles.releaseLink}
-              href={`${repository}/releases/tag/passman-v0.3.0`}
+              href={`${repository}/releases/latest`}
             >
               <span />
-              Passman 0.3.0 is here
+              Latest Passman release
               <svg
                 width="15"
                 height="15"

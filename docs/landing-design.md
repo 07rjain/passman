@@ -28,3 +28,11 @@ The key appears in a local-vault block above the service. The connecting line de
 The diagram includes only synthetic metadata and fixed display text. It does not fetch an account, encrypt a value, generate a key or simulate an actual authenticated operation. Its labels are normal readable HTML, with decorative icons hidden from assistive technology. The nearby feature descriptions and security questions provide the qualifications that a compact illustration cannot: optional browser input trusts hosted JavaScript, application code can read plaintext, and private-key loss cannot be recovered by signing in.
 
 The visual hierarchy comes from spacing, readable type and contrasting surfaces. The product flow is the hero's one detailed element; other sections remain quiet. Local fonts and small SVG icons avoid a remote rendering dependency or an art runtime in the production page.
+
+## Site icons
+
+The favicon reuses the header's Passman mark in charcoal on a rounded pale sage tile, keeping its contrast in light and dark browser chrome. The SVG source is `apps/web/src/app/icon.svg`; `favicon.ico` contains 16/32/48-pixel variants, and `apple-icon.png` is 180 pixels square. Derive the raster assets from the SVG when changing the mark. Next.js file-based metadata adds the icon links through the root layout, covering both the public page and authenticated workspace without a remote service or client script.
+
+## Installation links
+
+The platform tabs use the stable hosted URLs `https://passman.subdomain.wtf/install.sh` and `https://passman.subdomain.wtf/install.ps1`, matching the quickstart. The installers select the latest published client unless `PASSMAN_VERSION` is supplied, then verify its publisher signature and checksum. A version in an installer script's download URL does not pin the client version it selects. The release announcement also links to GitHub's latest release, so the landing page does not require a version edit after publication. Already installed clients update only when the installer is run again.

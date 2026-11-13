@@ -14,6 +14,14 @@ The subsequent pale sage background and faint static wave refinement passed a fr
 
 The landing page uses bundled, SIL Open Font License Manrope files, normal HTML for the hero illustration and small decorative SVG icons. It loads no remote font or art-rendering script.
 
+The installer-link follow-up passed a fresh web production build and local development-server Chromium checks for the stable macOS/Linux and Windows URLs, copied command contents, latest-release link and the existing WEB-01–04 interactions/viewports. Both public hosted installer scripts downloaded successfully and matched the repository scripts byte-for-byte; their existing latest-version selection and signature/checksum verification were inspected. No installer was executed or client version published for this link-only change. Evidence is under `ignore-docs/installer-link-check/`.
+
+## Site-icon verification — 2026-11-13
+
+WEB-05 passed a fresh web production build and headless Chromium checks against a temporary local production server without Clerk configuration. The rendered page advertised the SVG icon, ICO fallback and 180x180 Apple touch icon. All three linked assets returned HTTP 200, their expected image content types and bytes matching the source files. The icon links remained available under dark-mode media with no JavaScript page errors. Image inspection confirmed the ICO's 16/32/48-pixel frames and the touch icon's 180-pixel dimensions; enlarged previews of the small sizes were visually reviewed.
+
+Evidence is in `ignore-docs/favicon-check/`. No dependencies, account/API/database behavior or client format changed. The earlier cancelled preview server was not needed; this check started and stopped its own local server. This is source/local verification, not a deployed favicon or native Safari/iOS acceptance result.
+
 ## Install and configure
 
 End users can use the [Passman installer/package](releases.md) without cloning this repository. The commands below remain the source-contributor setup. Distribution checks additionally cover offline package installation, SDK types and local crypto, CLI version output, first HTTPS install, repeat install, version upgrade, checksum rejection and vault preservation.

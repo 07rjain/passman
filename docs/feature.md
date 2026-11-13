@@ -55,9 +55,10 @@ Never point integration tests at the deployed Neon database. `npm run check` cov
 | ID | Expected behavior | Verification |
 | --- | --- | --- |
 | WEB-01 | The public page introduces Passman, links to installation/docs/source, remains readable from 320px to desktop, and has no page-level horizontal overflow | Local Chromium viewport checks; see dated testing record |
-| WEB-02 | Platform tabs change both installation and follow-up commands, support arrow/Home/End navigation and copy the displayed command; clipboard denial directs manual copying | Local Chromium interaction checks |
+| WEB-02 | Platform tabs use stable hosted installer URLs, change both installation and follow-up commands, support arrow/Home/End navigation and copy the displayed command; clipboard denial directs manual copying | Local Chromium interaction checks |
 | WEB-03 | The static hero illustration identifies the local key, encrypted example storage and local SDK decryption, includes an accessible description, and neither fetches account data nor presents a live operation | Local Chromium content and responsive checks |
 | WEB-04 | Security disclosures explain key loss, browser-input trust and plaintext application/model access; missing Clerk configuration offers docs without pretending sign-in is available | Local public-page checks; actual configured Clerk sign-in/approval remains a separate acceptance case |
+| WEB-05 | Site metadata advertises a matching SVG favicon, 16/32/48-pixel ICO fallback and 180-pixel Apple touch icon; each asset is served successfully with its correct image content type | Local built-production Chromium metadata/asset checks and raster-size inspection |
 
 ## 1. Installation, updates and SDK distribution
 

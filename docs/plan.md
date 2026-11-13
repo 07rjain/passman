@@ -4,7 +4,7 @@ Status: experimental standalone source prepared for [07rjain/passman](https://gi
 
 ## Implemented and verified locally
 
-- Responsive Passman landing page with an illustrated local-key/encrypted-storage flow, platform install tabs, clipboard feedback, a TypeScript SDK example and security disclosures. The public page also renders without Clerk configuration; sign-in is offered only when Clerk is configured. See [the design rationale](landing-design.md) and the dated local browser checks in [testing.md](testing.md).
+- Responsive Passman landing page with an illustrated local-key/encrypted-storage flow, platform install tabs, clipboard feedback, a TypeScript SDK example and security disclosures. Matching browser and Apple touch icons use the existing header mark. The public page also renders without Clerk configuration; sign-in is offered only when Clerk is configured. See [the design rationale](landing-design.md) and the dated local browser checks in [testing.md](testing.md).
 - Independent npm workspace with shared browser/Node HPKE contracts, encrypted local identity files and a read-only runtime SDK.
 - App-level Node.js 24 pin, committed Vercel commands and an npm prebuild lifecycle that compiles core before Next.js even with the default app build command. The clean default build passed in an independent source snapshot; CI builds the web workspace first to cover the missing-core regression.
 - Application-owned CLI/browser approval bound to the exact public key and a one-time claim secret. Clerk JWT verification pins issuer, authorized origin, session identity, expiry and recent authentication for administrative changes.

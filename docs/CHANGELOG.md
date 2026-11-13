@@ -6,6 +6,8 @@ This file records website/API/security and operational changes. Installable clie
 
 ### Website
 
+- Add a Passman favicon matching the header mark, with a charcoal glyph on pale sage. Serve an SVG browser icon, 16/32/48-pixel ICO fallback and 180-pixel Apple touch icon through Next.js file-based metadata.
+- Use stable hosted installer URLs for both landing-page platforms and link the release announcement to GitHub's latest release. New visitors need no version edit to install the latest published client. Installer version selection, publisher-signature checks and checksum verification are unchanged.
 - Redesign the public landing page around Passman's local-key model, with charcoal controls, a pale sage background fading to white, a few faint static waves behind the hero, consistent wordmark, self-hosted Manrope typography, a concrete illustration of local keys, encrypted storage and SDK retrieval, a real SDK example, keyboard-accessible platform install tabs and clipboard feedback. Explain key loss, optional browser input and application/model access in expandable security questions. Preserve the existing signed-in workspace, Clerk controls and approval flow. No database, API or client-format change is introduced; this is a source change awaiting deployment.
 
 ### Fixed
