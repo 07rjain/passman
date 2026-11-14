@@ -8,8 +8,9 @@
     "node": "24.x"
   },
   "scripts": {
-    "prebuild": "npm --prefix ../.. run build --workspace @keyman-mvp/core && node ../../distribution/prepare-web.mjs",
+    "prebuild": "npm --prefix ../.. run build --workspace @keyman-mvp/core && node ../../distribution/prepare-web.mjs && npm --prefix ../.. run docs:build",
     "build": "next build",
+    "predev": "npm --prefix ../.. run docs:build",
     "dev": "next dev --port 3100",
     "start": "next start --port 3100"
   },

@@ -1,4 +1,5 @@
 "use client";
+import CreatorContact from "./creator-contact";
 
 import { SignInButton } from "@clerk/nextjs";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
@@ -728,10 +729,12 @@ export default function Landing({
         <nav aria-label="Footer navigation">
           <a href="/status">Status</a>
           <a href="/support">Support</a>
+          <a href="/llms.txt">Agent docs</a>
           <a href={repository}>Source</a>
           <a href={`${docs}/security.md`}>Security</a>
           <a href={`${repository}/blob/main/LICENSE`}>License</a>
         </nav>
+        <CreatorContact className={styles.creatorContacts} />
         <span className={styles.experimental}>
           <span />
           Experimental. Start with test secrets.

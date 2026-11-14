@@ -4,6 +4,8 @@ Passman is an experimental, source-available encrypted secret store. Start with 
 
 ## Use Passman
 
+Agents: start with the [setup and usage guide](agent-guide.md), served at [`/llms.txt`](https://passman.subdomain.wtf/llms.txt) with a complete source index. [`/llms-full.txt`](https://passman.subdomain.wtf/llms-full.txt) bundles all public guides, the repository overview, private-reporting instructions and the portable skill; fetch only what fits your context budget.
+
 1. [Install, sign in and retrieve your first secret](quickstart.md).
 2. [CLI commands, SDK methods and permissions](reference.md).
 3. [Troubleshoot setup, authentication and retrieval](troubleshooting.md).

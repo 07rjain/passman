@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import CreatorContact from "./creator-contact";
 import { PassmanMark } from "./landing";
 import styles from "./public.module.css";
 
@@ -27,6 +28,8 @@ export default function PublicShell({ children }: { children: ReactNode }) {
       <footer className={styles.footer}>
         <span>Experimental. Start with test secrets.</span>
         <Link href="/">Back to Passman</Link>
+        <a href="/llms.txt">Agent docs</a>
+        <CreatorContact className={styles.creatorContacts} />
       </footer>
     </div>
   );

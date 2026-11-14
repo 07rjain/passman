@@ -17,7 +17,10 @@ export function pageMetadata(
     ),
     title,
     description,
-    alternates: { canonical: path },
+    alternates: {
+      canonical: path,
+      types: { "text/plain": "/llms.txt" },
+    },
     openGraph: {
       type: "website",
       siteName: "Passman",
