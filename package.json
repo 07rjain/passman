@@ -29,6 +29,7 @@
     "test:distribution": "node distribution/check.mjs",
     "format": "prettier --write .",
     "docs:check": "node scripts/check-docs.mjs",
+    "docs:build": "node --import tsx scripts/build-agent-docs.ts",
     "audit:prune": "node --env-file-if-exists=.env.migrate --import tsx scripts/audit-prune.ts",
     "audit:operation": "node --env-file-if-exists=.env.migrate --import tsx scripts/audit-operation.ts",
     "db:grants": "node --env-file-if-exists=.env.migrate --import tsx scripts/runtime-grants.ts",

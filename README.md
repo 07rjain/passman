@@ -49,6 +49,8 @@ For Windows, use the [PowerShell installation guide](docs/windows.md).
 
 ## Documentation
 
+Agents can start with [`/llms.txt`](https://passman.subdomain.wtf/llms.txt) for setup/usage guidance and a complete documentation index, or fetch [`/llms-full.txt`](https://passman.subdomain.wtf/llms-full.txt) for the full public documentation snapshot. Discovery depends on the agent client; neither endpoint grants credential access. The maintained source is [the agent setup guide](docs/agent-guide.md).
+
 Start with the [documentation index](docs/README.md), [quickstart](docs/quickstart.md), [troubleshooting](docs/troubleshooting.md) and [key-loss policy](docs/key-loss.md). Find [support and feedback](docs/support.md) or check [service status](https://passman.subdomain.wtf/status).
 
 - [Product requirements](docs/PRD.md) and [implementation plan](docs/plan.md)

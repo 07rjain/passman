@@ -6,6 +6,9 @@ This file records website/API/security and operational changes. Installable clie
 
 ### Website
 
+- Add public `/llms.txt` agent setup/usage guidance, a complete source-document index and `/llms-full.txt` containing the public documentation snapshot. Generate both in web build/development from maintained docs, advertise them through public footer links and alternate metadata, and document private unlock, credential scopes, SDK/skill integration, errors and support without adding MCP or autonomous secret access.
+- Add a separate, wrapping creator-contact row to the public landing, support and status footers: book a call, visit Rishabh’s website or email him. Preserve existing branding, links and theme; use ordinary links without a Calendly embed or tracking.
+
 - Add canonical, Open Graph and Twitter metadata with a locally generated sharing card. Publish support and feedback routes with best-effort beta expectations and separate private vulnerability reporting.
 - Add a public service-status page backed by the existing readiness check, including timestamps, manual/visible-page refresh, a timeout and distinct ready, failed and unknown results. It does not add alerts, incident history, recovery drills or cost controls.
 - Improve public-page touch targets and dashboard mobile navigation, forms, long names/credentials, approval text and row actions. Keep account isolation, approval, credential-clearing and cryptographic operations unchanged.

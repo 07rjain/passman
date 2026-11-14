@@ -152,6 +152,18 @@
   color: #686868;
   font-size: 12px;
 }
+.creatorContacts {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+}
+.creatorContacts a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
 @media (max-width: 480px) {
   .header,
   .main,

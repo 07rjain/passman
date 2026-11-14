@@ -27,7 +27,7 @@ Store generic named secret values encrypted on a service and retrieve/decrypt th
 ## Client installation and versioning
 
 - Introduce the local-key model on a responsive public landing page with platform-specific installation, a realistic SDK example, existing Clerk sign-in and clear key-loss/browser-input limits. Use a matching Passman mark for browser and Apple touch icons. Decorative artwork must not process customer data or imply a cryptographic guarantee.
-- Make the public pages and authenticated dashboard usable from 320px through desktop, including approval, long metadata, credentials and account activity. Provide canonical/social sharing metadata, discoverable support and a public point-in-time readiness page based on the existing health check; it must distinguish unknown results from confirmed readiness and must not imply incident history, monitoring or authentication acceptance.
+- Make the public pages and authenticated dashboard usable from 320px through desktop, including approval, long metadata, credentials and account activity. Provide canonical/social sharing metadata, discoverable support, a separate wrapping creator-contact row in public footers and a public point-in-time readiness page based on the existing health check; it must distinguish unknown results from confirmed readiness and must not imply incident history, monitoring or authentication acceptance.
 - Provide macOS/Linux arm64/x64 and Windows x64/arm64 installers, `passman login` with the hosted default, and a typed Node.js SDK installable from a versioned package archive without cloning the repository.
 - Include a private Node.js 24 runtime in the installer experience; do not require sudo or modify existing system Node installations or vault identities.
 - Gate production promotion of signed installers on verified public signed-client availability, so a source merge cannot strand new installations.
@@ -55,6 +55,8 @@ Before release, verify the encryption/credential/authorization/loss/agent-output
 The [audit guide](audit.md) defines metadata-only event coverage, transaction/failure behavior, account-scoped activity, signed session webhooks and maintenance retention. Migration 2, restricted runtime grants and separate webhook configuration are required for rollout. Local decryption, provider usage and Clerk failed-sign-in details are outside the application event stream. Immutable external export and automated alert delivery remain follow-up work.
 
 ## Agent skill and deferred MCP
+
+Expose public `/llms.txt` setup/usage guidance and a complete documentation index, plus a generated `/llms-full.txt` snapshot for agents that need the full text. Keep them usable without authentication, link them from public pages and regenerate them from maintained public documentation during web build/development. Explain private setup, credential scopes, manual unlock, safe application use, support and recovery limits. Discovery depends on agent capabilities; these documents grant no access and add no autonomous execution or MCP service.
 
 The [Passman skill](skills.md) provides portable instructions for local CLI metadata lookup and SDK retrieval/use without printing values. Public GitHub distribution uses the skills.sh discovery/install workflow; instructions do not grant access or create an unlocked session. Keep private credentials outside skill content/model output. Skill metadata is versioned separately from the client.
 
