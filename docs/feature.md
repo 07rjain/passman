@@ -59,6 +59,9 @@ Never point integration tests at the deployed Neon database. `npm run check` cov
 | WEB-03 | The static hero illustration identifies the local key, encrypted example storage and local SDK decryption, includes an accessible description, and neither fetches account data nor presents a live operation | Local Chromium content and responsive checks |
 | WEB-04 | Security disclosures explain key loss, browser-input trust and plaintext application/model access; missing Clerk configuration offers docs without pretending sign-in is available | Local public-page checks; actual configured Clerk sign-in/approval remains a separate acceptance case |
 | WEB-05 | Site metadata advertises a matching SVG favicon, 16/32/48-pixel ICO fallback and 180-pixel Apple touch icon; each asset is served successfully with its correct image content type | Local built-production Chromium metadata/asset checks and raster-size inspection |
+| WEB-06 | Public home, support and status routes advertise canonical, Open Graph and Twitter metadata with a local 1200x630 sharing card; contact links distinguish public issues from private vulnerability reporting and make no response-time promise | Built-page metadata, image and link checks |
+| WEB-07 | Public status distinguishes ready, server failure and unknown/network/timeout/malformed responses, supports retry, shows a check time and bounds background refreshes to visible pages; it never implies historical uptime or full authentication acceptance | Local built-page Chromium response/clock/visibility fixtures; health API remains unchanged |
+| WEB-08 | Landing, support/status and dashboard fit 320px through desktop; long metadata, credentials, approval text and forms remain readable with reachable touch controls and keyboard navigation | Local Chromium viewport and synthetic dashboard fixture checks; real Clerk/native device acceptance separate |
 
 ## 1. Installation, updates and SDK distribution
 
@@ -180,7 +183,7 @@ Do not run destructive integration fixtures against production or bypass real au
 
 ## Known exclusions and future features
 
-Multi-machine private-key transfer, account-only recovery, project/account purge, `.env` bulk import, environment injection, unattended SDK mutation, Windows, Homebrew and npm-registry publication are not established features of this MVP. Add specifications, case IDs and automated coverage before advertising them. The older root application's feature set is not evidence of MVP support.
+Multi-machine private-key transfer, account-only recovery, project/account purge, `.env` bulk import, environment injection, unattended SDK mutation, Homebrew and npm-registry publication are not established features of this MVP. Add specifications, case IDs and automated coverage before advertising them. The older root application's feature set is not evidence of MVP support.
 
 ## Per-change result template
 

@@ -23,7 +23,7 @@ passman --version
 passman login
 ```
 
-For future terminals, add `%LOCALAPPDATA%\Passman\bin` to your **user** Path through Windows Environment Variables, then reopen the terminal. The installer does not modify your profile or persistent Path. Rerun it to update. `PASSMAN_VERSION` selects a released version; the prepared signed-only installer requires a signed release (0.3.0+), while the existing public 0.2.0 installer remains checksum-only; `PASSMAN_INSTALL_DIR` selects an absolute local installation root. `PASSMAN_BIN_DIR` is Unix-only.
+For future terminals, add `%LOCALAPPDATA%\Passman\bin` to your **user** Path through Windows Environment Variables, then reopen the terminal. The installer does not modify your profile or persistent Path. Rerun it to update. `PASSMAN_VERSION` selects a released version; the current signed-only installer requires a signed release (0.3.0+), while the immutable historical 0.2.0 installer remains checksum-only; `PASSMAN_INSTALL_DIR` selects an absolute local installation root. `PASSMAN_BIN_DIR` is Unix-only.
 
 The CLI opens browser approval using Windows' URL handler. Compare the full fingerprint, enter the terminal's code in the website and acknowledge key loss. `--no-browser` leaves browser opening to you. Every new process still needs manual local unlock; login is not a shared unlocked session.
 

@@ -164,6 +164,57 @@ footer {
   grid-template-columns: 220px minmax(0, 1fr);
   min-height: 100vh;
 }
+.workspace > main {
+  min-width: 0;
+}
+.workspace :is(h1, h2, h3, p, small, strong, a) {
+  overflow-wrap: anywhere;
+}
+.workspace :is(button, a, summary):focus-visible {
+  outline: 3px solid #557362;
+  outline-offset: 3px;
+}
+.workspace button {
+  min-height: 44px;
+}
+.workspace pre {
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.workspace section {
+  scroll-margin-top: 20px;
+}
+.workspace-brand {
+  display: inline-flex;
+  padding: 0;
+  white-space: nowrap;
+}
+.workspace-brand > span {
+  font-size: 24px;
+}
+.workspace-brand svg {
+  flex-shrink: 0;
+}
+.workspace-brand:hover {
+  background: transparent;
+}
+.workspace aside nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.workspace-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin-top: 12px;
+}
+.workspace-footer-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
 aside {
   border-right: 1px solid var(--line);
   padding: 36px 24px;
@@ -247,6 +298,9 @@ aside a:hover {
   align-items: center;
   justify-content: space-between;
 }
+.section-title > div {
+  min-width: 0;
+}
 .inline {
   display: flex;
   gap: 10px;
@@ -265,6 +319,11 @@ aside a:hover {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+.project-list button {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: left;
 }
 .entry {
   display: flex;
@@ -285,6 +344,10 @@ aside a:hover {
   display: block;
   margin-top: 6px;
   font-size: 11px;
+}
+.entry > button,
+.entry > .pill {
+  flex-shrink: 0;
 }
 .local-tip {
   background: #f2f5ec;
@@ -362,8 +425,14 @@ aside a:hover {
     gap: 4px;
     flex-wrap: wrap;
   }
-  aside .brand {
-    margin-right: auto;
+  .workspace aside nav {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+    gap: 4px;
+  }
+  .workspace-brand {
+    margin-bottom: 10px;
   }
   aside .eyebrow,
   .aside-note {
@@ -371,13 +440,31 @@ aside a:hover {
   }
   aside a {
     font-size: 12px;
-    padding: 8px;
+    padding: 12px 8px;
+  }
+  aside a.workspace-brand {
+    padding: 0;
   }
   .content {
     padding: 24px 18px;
   }
   .workspace main > header {
     padding: 16px 18px;
+  }
+  .workspace :is(input:not([type="checkbox"]), select) {
+    font-size: 16px;
+    max-width: 100%;
+  }
+  .workspace input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+  .workspace h1 {
+    font-size: clamp(30px, 6vw, 39px);
+  }
+  .panel {
+    padding: 22px;
   }
   .user > span {
     display: none;
@@ -390,7 +477,7 @@ aside a:hover {
     flex-wrap: wrap;
   }
   .inline input:first-child {
-    min-width: 160px;
+    min-width: 0;
   }
   .stats {
     gap: 8px;
@@ -399,7 +486,8 @@ aside a:hover {
     padding: 13px;
   }
   .stats span {
-    font-size: 10px;
+    font-size: 11px;
+    line-height: 1.5;
   }
   .entry {
     gap: 9px;
@@ -413,5 +501,56 @@ aside a:hover {
   }
   .setup h1 {
     font-size: 48px;
+  }
+}
+@media (max-width: 480px) {
+  .workspace aside nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .workspace aside nav a {
+    min-height: 44px;
+  }
+  .content {
+    padding: 24px 16px;
+  }
+  .panel {
+    padding: 18px;
+    border-radius: 12px;
+  }
+  .workspace .inline > :is(input, select, button) {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+  .workspace .inline input[type="number"] {
+    width: 100%;
+  }
+  .stats article {
+    padding: 12px 10px;
+  }
+  .stats strong {
+    font-size: 26px;
+  }
+  .entry {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+  .entry > div {
+    grid-column: 1 / -1;
+  }
+  .entry > .pill {
+    justify-self: start;
+  }
+  .entry > button {
+    justify-self: end;
+  }
+  .browser-entry {
+    padding: 16px;
+  }
+  .token-box {
+    padding: 14px;
+  }
+  .fingerprint {
+    padding: 12px;
   }
 }

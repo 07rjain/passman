@@ -1,6 +1,6 @@
 # Passman installation and releases
 
-The public Passman SDK and CLI release is **0.2.0**. Source prepares **0.3.0**, pending native CI and signed publication. The command is `passman`; the previous `keyman-mvp` command remains available. Packages use PolyForm Noncommercial 1.0.0; third-party licenses are included. This remains an experimental vault, not production security approval.
+The public Passman SDK and CLI release is **0.3.0**, published on 2026-11-05 with a pinned publisher signature. The command is `passman`; the previous `keyman-mvp` command remains available. Packages use PolyForm Noncommercial 1.0.0; third-party licenses are included. This remains an experimental vault, not production security approval.
 
 ## Repository transition
 
@@ -15,7 +15,7 @@ curl -fsSL https://passman.subdomain.wtf/install.sh | sh
 ~/.local/bin/passman login
 ```
 
-The installer downloads the versioned client and an official pinned Node.js 24 runtime, verifies SHA-256 checksums, and activates the installation under `~/.local/share/passman`. The prepared signed installer needs curl, tar, OpenSSL and a SHA-256 tool; it does not need existing Node/npm or sudo. The launcher is `~/.local/bin/passman`. Add that directory to your shell PATH to use the shorter command:
+The installer downloads the versioned client, verifies its pinned RSA-SHA256 publisher signature and archive checksum, fetches an official pinned Node.js 24 runtime and verifies its checksum, and activates the installation under `~/.local/share/passman`. The signed installer needs curl, tar, OpenSSL and a SHA-256 tool; it does not need existing Node/npm or sudo. The launcher is `~/.local/bin/passman`. Add that directory to your shell PATH to use the shorter command:
 
 ```sh
 export PATH="$HOME/.local/bin:$PATH"
@@ -29,7 +29,7 @@ passman put --project testing --name TEST_KEY
 The installer does not modify shell profiles, the system Node installation, or the local vault. It refuses to replace an unrelated `passman` file, unexpected symlinks, or an already-installed version whose checksum differs. Network, checksum or version-check failures before activation leave the current version intact. Re-running the installer installs the latest published release. To select a specific release:
 
 ```sh
-curl -fsSL https://passman.subdomain.wtf/install.sh | PASSMAN_VERSION=0.2.0 sh
+curl -fsSL https://passman.subdomain.wtf/install.sh | PASSMAN_VERSION=0.3.0 sh
 ```
 
 `PASSMAN_INSTALL_DIR` and `PASSMAN_BIN_DIR` accept absolute custom paths. Older installed versions are retained, allowing explicit selection with the same installer; vault-format compatibility must be checked before downgrading across future format changes. Windows uses the [PowerShell installer](windows.md); Homebrew is not provided yet.
@@ -39,14 +39,14 @@ curl -fsSL https://passman.subdomain.wtf/install.sh | PASSMAN_VERSION=0.2.0 sh
 With Node.js 24/npm already installed, install the exact same self-contained package:
 
 ```sh
-npm install -g https://github.com/07rjain/passman/releases/download/passman-v0.2.0/passman-0.2.0.tgz
+npm install -g https://github.com/07rjain/passman/releases/download/passman-v0.3.0/passman-0.3.0.tgz
 passman login
 ```
 
 For an application:
 
 ```sh
-npm install https://github.com/07rjain/passman/releases/download/passman-v0.2.0/passman-0.2.0.tgz
+npm install https://github.com/07rjain/passman/releases/download/passman-v0.3.0/passman-0.3.0.tgz
 ```
 
 ```js
@@ -76,13 +76,13 @@ Use patch for compatible fixes, minor for new functionality and pre-1.0 breaking
 
 Release artifacts are created in ignored `ignore-docs/releases`. The npm archive includes only the built client, bundled runtime dependency trees, license and notices; it does not need server credentials or a database. `test:distribution` installs that archive offline in an independent consumer, checks runtime/types/version output and tests HTTPS installation, repeat installation, corrupted-package rejection and preservation of an existing vault. The installer test downloads the pinned official Node runtime and requires network access plus OpenSSL.
 
-The manually dispatched **Passman release** workflow validates the requested version, runs checks and publishes `passman-vVERSION` at the workflow commit. Configure required reviewers on the `passman-release` GitHub environment to enforce a maintainer approval gate; the environment name alone does not enforce review. Ordinary pushes and pull requests do not publish releases. The next signed release additionally requires `npm run release:sign` with the protected publisher private key; `publish.mjs` refuses missing/invalid signatures. Direct GitHub release write access alone cannot create archives accepted by the new installers. Do not copy the signing key into repository secrets, ordinary CI, local examples or pull-request workflows.
+The manually dispatched **Passman release** workflow validates the requested version, runs checks and publishes `passman-vVERSION` at the workflow commit. Configure required reviewers on the `passman-release` GitHub environment to enforce a maintainer approval gate; the environment name alone does not enforce review. Ordinary pushes and pull requests do not publish releases. Every signed release requires `npm run release:sign` with the protected publisher private key; `publish.mjs` refuses missing/invalid signatures. Direct GitHub release write access alone cannot create archives accepted by the new installers. Do not copy the signing key into repository secrets, ordinary CI, local examples or pull-request workflows.
 
-GitHub Releases stores the archive, checksum, version pointer and installer; the website serves the maintained installer. Never overwrite a release tag or its assets: publish a new version for corrections. Keep release credentials out of contributor/PR workflows. Native binaries, Homebrew, Windows, npm trusted publishing, OS executable signing, provenance and an automated server-version compatibility matrix remain future work.
+GitHub Releases stores the archive, checksum, version pointer and installer; the website serves the maintained installer. Never overwrite a release tag or its assets: publish a new version for corrections. Keep release credentials out of contributor/PR workflows. Native standalone binaries, Homebrew, npm trusted publishing, OS executable signing, provenance and an automated server-version compatibility matrix remain future work.
 
 ## Security boundary
 
-The public 0.2.0 installer uses checksums only. The prepared security update adds a pinned RSA-SHA256 publisher signature over each versioned checksum manifest, checked before extraction/execution. A checksum downloaded from the same origin is not independent publisher authentication; the signing key must remain separate from ordinary release-write authority. This flow trusts the HTTPS website, GitHub release account and official Node distribution. A compromised installer/client update can read local secrets when used; this does not strengthen protection against client supply-chain compromise. The new archive publisher signature does not imply OS-user isolation, OS executable signing, or protection from owner-approved malicious updates. Review the script or pin a reviewed version when appropriate.
+The immutable historical 0.2.0 installer uses checksums only. The current 0.3.0 installer requires a pinned RSA-SHA256 publisher signature over each versioned checksum manifest, checked before extraction/execution. A checksum downloaded from the same origin is not independent publisher authentication; the signing key must remain separate from ordinary release-write authority. This flow trusts the HTTPS website, GitHub release account and official Node distribution. A compromised installer/client update can read local secrets when used; this does not strengthen protection against client supply-chain compromise. The archive publisher signature does not imply OS-user isolation, OS executable signing, or protection from owner-approved malicious updates. Review the script or pin a reviewed version when appropriate.
 
 ## 0.1.0 verification record
 
@@ -111,6 +111,14 @@ Actual public 0.1.1 and 0.2.0 SDK archives were also exercised in an isolated Li
 Native ARM64, interactive Windows production login/hidden prompts and independent security review remain distinct gates. See [windows.md](windows.md). The manual `Windows published client acceptance` workflow can repeat the actual public-download checks after future releases; it uses synthetic local data and no Clerk/provider credentials.
 
 ## Signed-release transition
+
+### Current 0.3.0 evidence — 2026-11-14
+
+Signed [passman-v0.3.0](https://github.com/07rjain/passman/releases/tag/passman-v0.3.0) was published on 2026-11-05 from `3d996de598b299a4ab2497a6ad896049a7cfa293` through the [protected release workflow](https://github.com/07rjain/passman/actions/runs/42026452044). Read-only verification on 2026-11-14 confirmed that the latest pointer selects 0.3.0, the checksum manifest verifies against the pinned publisher key and the public archive matches that signed manifest. Both hosted installer scripts matched source. The signing environment has an owner-review gate and branch policy; administrators remain trusted.
+
+The later website commit `6d92d164ed7e085bbc7b2fc8d2be523a8db937f7` passed [all four native/integration checks](https://github.com/07rjain/passman/actions/runs/43502992027). That CI includes installed-package and installer fixture verification; it is distinct from fresh ordinary-user signup, Mac interactive acceptance or a new live vault round trip. No existing release asset was replaced and no new client version was published during this read-only check.
+
+### Deployment and trust boundary
 
 Follow [the remediation rollout](security-remediation.md). The production build guard verifies the public default version, publisher signature and archive before copying the new installers. Merge source after CI, publish the signed archive through the protected workflow, then redeploy Vercel; older unsigned releases stay immutable and are intentionally rejected by the new installers. The default GitHub release pointer is not an authentication mechanism: it selects a version whose exact manifest must independently verify. Review/pin a version when installing; the pointer can still be withheld or redirected to an already signed version by a release writer. Existing installed clients are not silently updated.
 

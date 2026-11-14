@@ -17,16 +17,38 @@ Create `sandbox` on the website, then run:
 
 ```sh
 ~/.local/bin/passman put --project sandbox --name TEST_API_KEY
-~/.local/bin/passman check --project sandbox --name TEST_API_KEY
-~/.local/bin/passman search --project sandbox
 ```
 
 Enter a synthetic value in the hidden local prompt. Local input is preferred: encryption happens before upload. Upload authorization lasts 20 minutes; renew it with `login` using the same vault. Replacements require `--replace`. Optional website input exposes new values to the page's scripts before encryption.
 
+## Create read access before searching or retrieving
+
+Create an expiring read credential on the website, scoped to `sandbox`. It is shown once. Upload authorization from `login` cannot perform reads. Configure `KEYMAN_SERVICE_KEY` privately before using `check`, `search` or the SDK; never put a live key into source control, command history or model messages.
+
+For an interactive macOS/Linux terminal, use Bash (run `bash` first if your normal shell is zsh). This reads the credential without echoing it or storing its value in shell history:
+
+```bash
+read -r -s -p 'Read service key (hidden): ' KEYMAN_SERVICE_KEY
+printf '\n'
+export KEYMAN_SERVICE_KEY
+~/.local/bin/passman check --project sandbox --name TEST_API_KEY
+~/.local/bin/passman search --project sandbox
+```
+
+Each CLI process still asks you to unlock the local vault. Windows users should follow [private read-credential configuration](windows.md#use-secrets) before the equivalent metadata commands.
+
 ## Use the SDK
 
-Create an expiring read credential on the website, scoped to `sandbox`. It is shown once. Store it privately, never in source control, command history or model messages. Install the versioned package using the [release guide](releases.md); use the runnable [SDK example](../examples/retrieve.mjs) and the imports/options in [testing.md](testing.md#issue-a-read-credential-and-call-the-sdk).
+With Node.js 24 installed, add the current immutable SDK archive to your application:
+
+```sh
+npm install https://github.com/07rjain/passman/releases/download/passman-v0.3.0/passman-0.3.0.tgz
+```
+
+The public package imports as `@07rjain/passman`. Use the example in the [release guide](releases.md#npm-and-sdk), supplying the existing vault directory, locally entered passphrase and scoped read credential from trusted application configuration. The [source-checkout example](../examples/retrieve.mjs) instead uses the workspace package name and the private environment settings described in [testing.md](testing.md#issue-a-read-credential-and-call-the-sdk); it is not a standalone installed-package command.
 
 Your application unlocks the existing local identity and calls `getSecret({ name: "TEST_API_KEY" })`. It receives plaintext: use it locally, without printing or returning it to an agent conversation. `search()` and `hasSecret()` provide metadata-only lookups. No CLI command prints provider values.
 
 Finish by revoking the read credential and checking that further retrieval fails. Revocation does not erase values or ciphertext already copied. See [key loss and exposure](key-loss.md).
+
+For help, check [service status](https://passman.subdomain.wtf/status) and [support and feedback](support.md). Do not delete or regenerate a working local vault to retry setup.

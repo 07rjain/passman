@@ -3,7 +3,7 @@ name: passman
 description: Set up Passman and use its local CLI or TypeScript SDK to find and consume encrypted project secrets in application code. Use when the user asks to use Passman credentials or integrate Passman into an agent workflow.
 license: PolyForm-Noncommercial-1.0.0
 metadata:
-  version: "0.1.1"
+  version: "0.1.2"
 ---
 
 # Passman

@@ -46,7 +46,7 @@ npm run db:migrate
 npm run dev
 ```
 
-The default local origin is `http://localhost:3100`; use that exact origin in `APP_ORIGIN`, your browser and CLI. Remote deployments require HTTPS. The UI shows a configuration screen when the Clerk publishable key is missing; API configuration failures do not enable an authentication bypass.
+The default local origin is `http://localhost:3100`; use that exact origin in `APP_ORIGIN`, your browser and CLI. Remote deployments require HTTPS. Without a Clerk publishable key the home page shows the public landing page with documentation links, and public support/status pages remain accessible. API configuration failures do not enable an authentication bypass.
 
 ## Set up your local vault
 
@@ -184,3 +184,16 @@ Use [windows.md](windows.md) for native Windows prerequisites and security bound
 ## Seven-finding remediation verification
 
 See [security-remediation.md](security-remediation.md) for regression IDs and production sequencing. Local Linux unit/build/type/lint/distribution and disposable PostgreSQL 16 integration passed during preparation. The latter includes explicit denied SQL under the restricted runtime role, normal encrypted CLI/SDK operations, setup isolation by trusted client address, and durable denial quotas. Distribution tests use an isolated fixture signing key patched into a fixture installer only, with no production key in CI; forged matching checksums and invalid signatures fail before execution. Native Windows tests also reject private input under replaceable parents and exercise handle-based ACL reads. Final native CI results and production acceptance remain separate evidence.
+
+## Public website and mobile dashboard — 2026-11-14
+
+WEB-06–08 were checked locally on Linux/Node.js 24. `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY='' npm run check` passed formatting, production builds, types, lint, eight Linux unit tests, installed-tarball/type/runtime/CLI checks and validation of 33 Markdown documents. The Windows-only unit test was skipped on Linux; this run does not replace native CI. After a final dashboard wordmark CSS adjustment, the web production build and browser checks passed again.
+
+Headless Chromium exercised the built home, support and status routes at 320, 390, 768, 900, 1024 and 1440 pixels, checking horizontal overflow, visible controls, canonical/Open Graph/Twitter metadata and the locally served sharing image. Support links point to public Issues and private vulnerability reporting, with explicit best-effort expectations. Status tests covered ready, HTTP 503, malformed/unexpected data, network failure, timeout, manual recovery, timestamps and polling only while visible. Raw failure details were not displayed.
+
+The actual dashboard components were bundled separately with isolated Clerk and API fixtures containing synthetic data. Checks covered long project/secret/credential names, activity identifiers, one-time credential display/hide, project submission, mobile input sizing and local-vault approval controls, including expanded Windows instructions. No horizontal overflow or browser page errors occurred, and screenshots were reviewed. This fixture does not establish real Clerk sign-in/reverification, ordinary-user signup, email delivery or a native-device vault round trip. No authentication bypass was added to the application.
+
+Local scripts, logs and screenshots are in ignored `ignore-docs/launch-followup/`. These results describe source/local behavior, not deployment. API, database, authentication and cryptographic behavior were unchanged, so the PostgreSQL suite was not rerun for this presentation change. Alert delivery, recovery drills and cost controls were left outside this update; the status page is a current readiness check, not an incident feed or uptime record.
+
+
+The portable Passman skill was reconciled to SDK 0.3.0 and its metadata version advanced to 0.1.2. The skill-creator validator, `gh skill publish --dry-run` and an isolated `skills@1.7.4` local installation passed; all installed skill files matched source. The dry-run reported absent active tag-protection rulesets; no repository protections or release publication were changed.

@@ -1190,6 +1190,30 @@
   }
 }
 
+@media (max-width: 960px) {
+  .landing
+    :is(button, summary, .signIn, .sourceButton, .workspaceLink, .textLink) {
+    min-height: 44px;
+  }
+  .sourceButton {
+    align-items: center;
+  }
+  .footer nav {
+    flex-wrap: wrap;
+    gap: 8px 20px;
+  }
+  .footer nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  .navigation a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
 .hero h1 > span {
   white-space: nowrap;
 }

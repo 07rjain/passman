@@ -9,6 +9,7 @@ Passman is an experimental, source-available encrypted secret store. Start with 
 3. [Troubleshoot setup, authentication and retrieval](troubleshooting.md).
 4. [Understand key loss and respond to exposure](key-loss.md).
 5. [Understand account activity and audit coverage](audit.md).
+6. [Get support and share feedback](support.md); [check service status](https://passman.subdomain.wtf/status).
 
 - [Use Passman with an agent skill](skills.md); MCP is deferred.
 

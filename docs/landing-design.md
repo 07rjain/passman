@@ -36,3 +36,11 @@ The favicon reuses the header's Passman mark in charcoal on a rounded pale sage 
 ## Installation links
 
 The platform tabs use the stable hosted URLs `https://passman.subdomain.wtf/install.sh` and `https://passman.subdomain.wtf/install.ps1`, matching the quickstart. The installers select the latest published client unless `PASSMAN_VERSION` is supplied, then verify its publisher signature and checksum. A version in an installer script's download URL does not pin the client version it selects. The release announcement also links to GitHub's latest release, so the landing page does not require a version edit after publication. Already installed clients update only when the installer is run again.
+
+## Sharing, support and mobile use
+
+Home, support and status pages supply canonical, Open Graph and Twitter metadata with a local 1200x630 PNG sharing card based on the same mark, Manrope type and pale sage waves. Metadata resolves against `APP_ORIGIN` when configured, otherwise the stable Passman origin. No remote image-generation or font service is used.
+
+The public footer and dashboard link to `/support` and `/status`. Support routes ordinary questions and feedback to public GitHub Issues, warns against sensitive content and keeps vulnerability reports private; best-effort beta help has no guaranteed response time. Status shows only the existing service-readiness result and time, with unknown distinct from failed or ready. See [operations](operations.md#public-service-status) for its exact scope.
+
+The dashboard keeps its account-keyed client component behind the server home-page entry. Public support/status routes remain usable without Clerk configuration. Below 800px, workspace navigation moves above the content; narrow screens use two navigation columns, stacked form controls and separate metadata/action rows. Long names, fingerprints and one-time credentials wrap inside their panels. Public controls have larger mobile touch targets. These presentation changes do not add a native mobile application or alter authorization.

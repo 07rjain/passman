@@ -726,6 +726,8 @@ export default function Landing({
         </a>
         <p>Keep something to yourself.</p>
         <nav aria-label="Footer navigation">
+          <a href="/status">Status</a>
+          <a href="/support">Support</a>
           <a href={repository}>Source</a>
           <a href={`${docs}/security.md`}>Security</a>
           <a href={`${repository}/blob/main/LICENSE`}>License</a>

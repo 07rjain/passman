@@ -2,6 +2,12 @@
 
 Status: operational procedures and acceptance gates; automated alert delivery, immutable audit export and a completed disaster-recovery drill are not established.
 
+## Public service status
+
+The website's `/status` page calls the existing `GET /api/health` without account credentials on opening, manual retry and every 60 seconds while the page is visible. A 10-second request timeout bounds each check. Only a successful response with `status: "ready"` shows a passed check. Server 5xx responses show a failed check; network errors, timeouts, unexpected responses and malformed data show unknown status rather than asserting an outage or a healthy service. The page displays the check time and links to support.
+
+Health verifies required API configuration and access to migration version 2 in the database. It does not test Clerk sign-in, email delivery, individual vault operations, provider usage, backups or alerts. There is no incident-history or uptime-percentage claim. No account data, database details or raw error payloads are exposed by the page. Existing no-store behavior and audit exclusions for health are preserved. This visible readiness check does not configure monitoring, paging, recovery drills or cost controls.
+
 ## Monitor
 
 Monitor `/api/health`, application 5xx/latency, DB connections/storage, spending and edge denials. Configure alerts for `audit.persistence_failed`, sustained authentication failures and rate limits. Use the [audit guide](audit.md) for event coverage, retention, privileges and Clerk setup. Diagnostic logging must exclude credentials and payloads. Set diagnostic retention to 30 days and schedule audit pruning with the maintenance role.
