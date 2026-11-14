@@ -894,10 +894,11 @@
 }
 .footer .creatorContacts {
   flex-basis: 100%;
-  flex-wrap: wrap;
-  justify-content: flex-end;
   margin-left: 0;
-  gap: 8px 24px;
+}
+.creatorContacts > summary,
+.creatorContacts > div {
+  margin-left: auto;
 }
 .experimental > span {
   width: 5px;
