@@ -1,0 +1,61 @@
+.contact {
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+}
+.contact > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+}
+.contact > summary::-webkit-details-marker {
+  display: none;
+}
+.contact[open] > summary svg {
+  transform: rotate(180deg);
+}
+.contact :is(summary, a):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+.panel {
+  width: min(260px, 100%);
+  margin-top: 8px;
+  padding: 16px;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  background: #fff;
+}
+.name {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+.description {
+  margin: 4px 0 8px;
+  font-size: 11px;
+  color: #686868;
+}
+.contact .links {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+}
+.contact .links a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: inherit;
+  text-decoration: none;
+}
+.contact .links a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
