@@ -17,10 +17,12 @@ Confirm the operating system, intended application, project and task. Check whet
 On macOS/Linux (x64 or arm64), the stable installer selects the latest published signed client and includes a private Node.js runtime. It does not require sudo or an existing Node/npm installation. Review the installer under the user's normal installation policy:
 
 ```sh
-curl -fsSL https://passman.subdomain.wtf/install.sh | sh
-~/.local/bin/passman --version
-~/.local/bin/passman login
+curl -fsSL https://passman.subdomain.wtf/install.sh | sh && . "$HOME/.local/share/passman/env"
+passman --version
+passman login
 ```
+
+The copied command activates PATH in the current Bash/Zsh/POSIX terminal; the installer also configures future terminals while preserving existing settings. With a custom install directory, source the exact environment-file path printed by the installer. See the [installation guide](https://github.com/07rjain/passman/blob/main/docs/releases.md#install-sign-in-use) for profile-edit opt-out and manual configuration.
 
 On Windows 10/11 (x64 or arm64), use PowerShell 5.1+ and local NTFS storage. Download and review the script before running it; follow the organization's execution policy without disabling protections or running as Administrator:
 
@@ -41,7 +43,7 @@ The default vault directory is `~/.keyman-mvp` (`%USERPROFILE%\.keyman-mvp` on W
 The user creates a project such as `sandbox` on the website. Add a synthetic value through the hidden local CLI prompt:
 
 ```sh
-~/.local/bin/passman put --project sandbox --name TEST_API_KEY
+passman put --project sandbox --name TEST_API_KEY
 ```
 
 Windows users run `& "$env:LOCALAPPDATA\Passman\bin\passman.cmd" put --project sandbox --name TEST_API_KEY` in PowerShell. Login issues a separate upload credential that lasts 20 minutes; renew it with login using the same vault. Existing entries require an intentional `--replace`. Do not overwrite, revoke or delete entries just to test a connection.
@@ -55,8 +57,8 @@ The user creates an expiring, preferably project-scoped read service credential 
 Once privately configured, these commands return metadata only and still require local vault unlock:
 
 ```sh
-~/.local/bin/passman search --project sandbox --query API
-~/.local/bin/passman check --project sandbox --name TEST_API_KEY
+passman search --project sandbox --query API
+passman check --project sandbox --name TEST_API_KEY
 ```
 
 `check` prints `Found` or `Not found`. `search` returns up to 50 names/revisions and a `nextCursor`; the CLI currently has no next-page flag, so use SDK pagination when needed. There is no CLI command that prints secret values. Read credentials cannot write secrets, create projects, revoke credentials or access account activity.
@@ -65,10 +67,10 @@ For noninteractive execution, the user can privately provision an owner-only pas
 
 ## Use secrets in trusted application code
 
-The application SDK requires Node.js 24/npm. Install the published archive in the intended application directory; do not install unrelated npm packages called `passman` or `passman-cli`. The current documented immutable release is 0.3.0; consult the release guide for updates:
+The application SDK requires Node.js 24/npm. Install the published archive in the intended application directory; do not install unrelated npm packages called `passman` or `passman-cli`. The current documented immutable release is 0.3.1; consult the release guide for updates:
 
 ```sh
-npm install https://github.com/07rjain/passman/releases/download/passman-v0.3.0/passman-0.3.0.tgz
+npm install https://github.com/07rjain/passman/releases/download/passman-v0.3.1/passman-0.3.1.tgz
 ```
 
 The public import is `@07rjain/passman`; `@keyman-mvp/client` is an internal source-workspace name. This example is an integration fragment: `directory`, `passphrase` and `serviceKey` come from trusted private application configuration, not model-generated literals:

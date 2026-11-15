@@ -4,6 +4,7 @@ Keep your current encrypted vault file. Reinstallation, repeated signup or gener
 
 | Symptom | Action |
 | --- | --- |
+| `passman: command not found` on macOS/Linux | Rerun the maintained installer, then open a new Bash/Zsh/POSIX login terminal or run `. "$HOME/.local/share/passman/env"` once in the current terminal. For a custom installation directory use the exact activation command printed by the installer. Unsafe/symlinked profiles are preserved with a warning; see [installation](releases.md#install-sign-in-use) for manual configuration and opt-out. |
 | `UNAVAILABLE` before the approval URL | Check `/api/health`. Operators verify database connectivity, migration version 2, audit INSERT/sequence privileges, origin and Clerk verifier configuration. A new deployment needs a deliberate migration. |
 | Local vault will not unlock | Check the passphrase, directory and owner-only permissions. Do not delete the file. There is no passphrase reset that recovers its private key. |
 | `KEY_MISMATCH` | This account is already bound to another key. Use its original vault; a new key cannot replace it. |

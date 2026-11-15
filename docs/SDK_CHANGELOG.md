@@ -4,6 +4,10 @@ The SDK and CLI share one semantic version. This changelog covers the installabl
 
 ## Unreleased
 
+## 0.3.1 — 2026-11-15
+
+- Configure per-user Bash/Zsh/POSIX login PATH in the maintained macOS/Linux installer and provide a sourceable environment file for immediate activation. Preserve existing shell settings, avoid duplicate setup, skip unsafe profiles, support custom install paths and offer `PASSMAN_NO_MODIFY_PATH=1`. `passman login` works by name after the copied install command; CLI/SDK runtime behavior, the private runtime and vault format are unchanged. Existing immutable release installers are not replaced.
+
 ## 0.3.0 — 2026-11-05
 
 - Prevent vault overwrite through custom directory symlinks or writable/untrusted parent directories. POSIX private input files now require a private containing directory; administrator-owned macOS system aliases remain supported.

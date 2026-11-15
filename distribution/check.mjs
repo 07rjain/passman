@@ -1,7 +1,14 @@
 import { Buffer } from "node:buffer";
 import assert from "node:assert/strict";
 import { createHash, generateKeyPairSync, sign } from "node:crypto";
-import { mkdtemp, readFile, writeFile, mkdir, rm } from "node:fs/promises";
+import {
+  mkdtemp,
+  readFile,
+  writeFile,
+  mkdir,
+  rm,
+  symlink,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { spawn, execFileSync } from "node:child_process";
@@ -229,6 +236,10 @@ try {
   server = createServer(
     { key: await readFile(path.join(fixture, "key.pem")), cert },
     async (req, res) => {
+      if (req.url === "/install.sh") {
+        res.end(await readFile(installerFile));
+        return;
+      }
       let filename;
       if (req.url === "/latest/download/latest.txt") filename = "latest.txt";
       else if (
@@ -282,6 +293,10 @@ try {
     path.join(home, ".keyman-mvp/vault.json"),
     "preserve-user-vault",
   );
+  const profileContent =
+    "# Existing shell settings\nexport PASSMAN_PROFILE_TEST=preserved\n";
+  for (const name of [".bashrc", ".bash_profile", ".profile", ".zshrc"])
+    await writeFile(path.join(home, name), profileContent);
   const env = {
     ...process.env,
     HOME: home,
@@ -289,6 +304,9 @@ try {
     PASSMAN_INSTALL_DIR: path.join(home, "install ' directory"),
     PASSMAN_BIN_DIR: path.join(home, "command directory"),
     CURL_CA_BUNDLE: path.join(fixture, "ca.pem"),
+    PATH: "/usr/bin:/bin",
+    ZDOTDIR: home,
+    PASSMAN_NO_MODIFY_PATH: "0",
   };
   const install = () => run("sh", [installerFile], { env });
   const first = await install();
@@ -298,8 +316,160 @@ try {
     (await run(launcher, ["--version"])).output.trim(),
     release.version,
   );
+  const profiles = new Map();
+  for (const name of [".bashrc", ".bash_profile", ".profile", ".zshrc"]) {
+    const file = path.join(home, name);
+    const content = await readFile(file, "utf8");
+    assert.ok(
+      content.startsWith(profileContent),
+      "Existing settings must survive",
+    );
+    profiles.set(file, content);
+    const shell = await run(
+      "sh",
+      [
+        "-c",
+        `. "$HOME/${name}"; passman --version; printf '%s\\n' "$PASSMAN_PROFILE_TEST"`,
+      ],
+      { env },
+    );
+    assert.equal(shell.code, 0, shell.output);
+    assert.equal(shell.output.trim(), release.version + "\npreserved");
+  }
+  const activation = first.output
+    .split("\n")
+    .find((line) => line.startsWith(". "));
+  assert.ok(activation, "Print a current-terminal activation command");
+  const activated = await run(
+    "sh",
+    [
+      "-c",
+      `${activation}\n${activation}\npassman --version\nprintf '%s\\n' "$PATH"`,
+    ],
+    { env },
+  );
+  assert.equal(activated.code, 0, activated.output);
+  assert.equal(
+    activated.output.trim(),
+    release.version + "\n" + env.PASSMAN_BIN_DIR + ":" + env.PATH,
+  );
   const again = await install();
   assert.equal(again.code, 0, again.output);
+  for (const [file, content] of profiles)
+    assert.equal(
+      await readFile(file, "utf8"),
+      content,
+      "Reinstall must not duplicate PATH setup",
+    );
+  // Exercise the published copy/paste flow in the same shell, starting without
+  // ~/.local/bin in PATH. Use the private runtime, not system Node.
+  const commandHome = path.join(fixture, "fresh-terminal");
+  await mkdir(commandHome);
+  const commandEnv = {
+    ...env,
+    HOME: commandHome,
+    ZDOTDIR: commandHome,
+    PASSMAN_BIN_DIR: "",
+  };
+  const copied = await run(
+    "sh",
+    [
+      "-c",
+      `curl -fsSL https://localhost:${port}/install.sh | sh && . "$HOME/.local/share/passman/env" && passman --version`,
+    ],
+    {
+      env: {
+        ...commandEnv,
+        PASSMAN_INSTALL_DIR: path.join(commandHome, ".local/share/passman"),
+      },
+    },
+  );
+  assert.equal(copied.code, 0, copied.output);
+  assert.ok(copied.output.trim().endsWith(release.version), copied.output);
+  const interactive = await run(
+    "bash",
+    [
+      "--noprofile",
+      "--rcfile",
+      path.join(commandHome, ".bashrc"),
+      "-ic",
+      "passman --version",
+    ],
+    { env: commandEnv },
+  );
+  assert.equal(interactive.code, 0, interactive.output);
+  assert.ok(
+    interactive.output.trim().endsWith(release.version),
+    interactive.output,
+  );
+
+  // Custom Zsh configuration and paths with shell metacharacters remain literal.
+  const zshHome = path.join(home, "zsh ' $ configuration");
+  await mkdir(zshHome);
+  const zshInstall = await run("sh", [installerFile], {
+    env: { ...env, ZDOTDIR: zshHome },
+  });
+  assert.equal(zshInstall.code, 0, zshInstall.output);
+  const zshPath = await run(
+    "sh",
+    ["-c", '. "$ZDOTDIR/.zshrc"; passman --version'],
+    { env: { ...env, ZDOTDIR: zshHome } },
+  );
+  assert.equal(zshPath.code, 0, zshPath.output);
+  assert.equal(zshPath.output.trim(), release.version);
+  const zshAvailable = await run("sh", ["-c", "command -v zsh"]);
+  if (zshAvailable.code === 0) {
+    const zsh = await run(
+      zshAvailable.output.trim(),
+      ["-d", "-i", "-c", "passman --version"],
+      { env: { ...env, ZDOTDIR: zshHome } },
+    );
+    assert.equal(zsh.code, 0, zsh.output);
+    assert.equal(zsh.output.trim(), release.version);
+  }
+
+  // Respect Bash login precedence without creating .bash_profile, and do not
+  // overwrite symlinked dotfiles or append anything when profile edits opt out.
+  const settingsHome = path.join(fixture, "existing-settings");
+  await mkdir(settingsHome);
+  await writeFile(path.join(settingsHome, ".bash_login"), profileContent);
+  const externalProfile = path.join(fixture, "external-bashrc");
+  await writeFile(externalProfile, profileContent);
+  await symlink(externalProfile, path.join(settingsHome, ".bashrc"));
+  const settingsEnv = { ...env, HOME: settingsHome, ZDOTDIR: settingsHome };
+  const settings = await run("sh", [installerFile], { env: settingsEnv });
+  assert.equal(settings.code, 0, settings.output);
+  assert.match(settings.output, /could not configure .*\.bashrc/);
+  assert.equal(await readFile(externalProfile, "utf8"), profileContent);
+  await assert.rejects(readFile(path.join(settingsHome, ".bash_profile")), {
+    code: "ENOENT",
+  });
+  const loginShell = await run(
+    "sh",
+    ["-c", '. "$HOME/.bash_login"; passman --version'],
+    { env: settingsEnv },
+  );
+  assert.equal(loginShell.code, 0, loginShell.output);
+  assert.equal(loginShell.output.trim(), release.version);
+  const optedOutHome = path.join(fixture, "no-profile-edits");
+  await mkdir(optedOutHome);
+  await writeFile(path.join(optedOutHome, ".profile"), profileContent);
+  const optedOut = await run("sh", [installerFile], {
+    env: {
+      ...env,
+      HOME: optedOutHome,
+      ZDOTDIR: optedOutHome,
+      PASSMAN_NO_MODIFY_PATH: "1",
+    },
+  });
+  assert.equal(optedOut.code, 0, optedOut.output);
+  assert.equal(
+    await readFile(path.join(optedOutHome, ".profile"), "utf8"),
+    profileContent,
+  );
+  await assert.rejects(readFile(path.join(optedOutHome, ".bashrc")), {
+    code: "ENOENT",
+  });
   const oldVersion = release.version;
   const nextVersion = oldVersion.split(".");
   nextVersion[2] = String(Number(nextVersion[2]) + 1);
@@ -396,8 +566,14 @@ try {
     await readFile(path.join(home, ".keyman-mvp/vault.json"), "utf8"),
     "preserve-user-vault",
   );
+  for (const [file, content] of profiles)
+    assert.equal(
+      await readFile(file, "utf8"),
+      content,
+      "Upgrades and rejected downloads preserve shell settings",
+    );
   console.log(
-    "Passman artifact installs offline, SDK declarations/runtime work, and HTTPS install/reinstall/tamper checks pass without changing the vault.",
+    "Passman artifact installs offline, SDK declarations/runtime work, and HTTPS install/reinstall/tamper/PATH checks pass without changing the vault.",
   );
 } finally {
   if (server) await new Promise((resolve) => server.close(resolve));

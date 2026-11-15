@@ -14,7 +14,7 @@ if (start < 0) throw Error("Version needs a changelog entry");
 const end = log.indexOf("\n## ", start + 1);
 const notes =
   log.slice(start, end < 0 ? undefined : end) +
-  "\n\nExperimental early-test client. PolyForm Noncommercial 1.0.0. Install: curl -fsSL https://passman.subdomain.wtf/install.sh | sh\n";
+  '\n\nExperimental early-test client. PolyForm Noncommercial 1.0.0. Install: curl -fsSL https://passman.subdomain.wtf/install.sh | sh && . "$HOME/.local/share/passman/env"\n';
 const body = path.join(root, "ignore-docs/releases/release-notes.md");
 await writeFile(body, notes);
 const directory = path.join(root, "ignore-docs/releases");

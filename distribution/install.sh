@@ -63,9 +63,12 @@ else
  mv "$work/release" "$root/versions/$version"
 fi
 "$root/versions/$version/runtime/bin/node" --input-type=module - "$root" "$bin" "$version" <<'NODE'
-import {symlinkSync,renameSync,writeFileSync,lstatSync,readFileSync} from 'node:fs';
+import {symlinkSync,renameSync,writeFileSync,lstatSync,readFileSync,openSync,fstatSync,appendFileSync,closeSync,constants} from 'node:fs';
 import path from 'node:path';
 const [root,bin,version]=process.argv.slice(2);
+const envFile=path.join(root,'env');
+const envMarker='# Managed by the Passman installer.\n';
+try {const stat=lstatSync(envFile);if(!stat.isFile()||stat.isSymbolicLink()||!readFileSync(envFile,'utf8').startsWith(envMarker))throw Error('Existing environment file is not managed by Passman');}catch(e){if(e.code!=='ENOENT')throw e;}
 for(const file of [path.join(root,'current'),path.join(bin,'passman')]) {
  try {const stat=lstatSync(file);if(file.endsWith('/current')&&!stat.isSymbolicLink())throw Error('Existing current path is not a managed symlink');if(file.endsWith('/passman')&&(!stat.isFile()||stat.isSymbolicLink()||!readFileSync(file,'utf8').startsWith('#!/bin/sh\n# Managed by the Passman installer.\n')))throw Error('Existing command is not a regular file');}catch(e){if(e.code!=='ENOENT')throw e;}
 }
@@ -75,8 +78,40 @@ symlinkSync(path.join(root,'versions',version),link);renameSync(link,path.join(r
 const launcher=path.join(bin,'.passman-'+process.pid);
 writeFileSync(launcher,'#!/bin/sh\n# Managed by the Passman installer.\nexec '+quote(path.join(root,'current/runtime/bin/node'))+' '+quote(path.join(root,'current/package/dist/cli.js'))+' "$@"\n',{mode:0o700,flag:'wx'});
 renameSync(launcher,path.join(bin,'passman'));
+// A piped installer cannot export into its parent terminal. Persist PATH for new
+// terminals and provide a sourceable file for the terminal running the installer.
+const envContent=envMarker+'case ":${PATH-}:" in\n  *'+quote(':'+bin+':')+'*) ;;\n  *) export PATH='+quote(bin)+'${PATH:+":$PATH"} ;;\nesac\n';
+const envTemp=path.join(root,'.env-'+process.pid);
+writeFileSync(envTemp,envContent,{mode:0o600,flag:'wx'});
+renameSync(envTemp,envFile);
+if(process.env.PASSMAN_NO_MODIFY_PATH!=='1') {
+ const home=process.env.HOME;
+ if(!home||!path.isAbsolute(home))throw Error('HOME must be an absolute path');
+ const exists=file=>{try{lstatSync(file);return true;}catch(e){if(e.code==='ENOENT')return false;throw e;}};
+ // Bash reads only its first existing login profile. Do not create a new one
+ // that would hide settings in .bash_login or .profile.
+ const login=['.bash_profile','.bash_login','.profile'].map(name=>path.join(home,name));
+ const zshHome=process.env.ZDOTDIR||home;
+ const profiles=[...new Set([path.join(home,'.bashrc'),path.join(home,'.profile'),login.find(exists)||path.join(home,'.profile')])];
+ if(path.isAbsolute(zshHome))profiles.push(path.join(zshHome,'.zshrc'));
+ else console.error('Passman: relative ZDOTDIR was not changed; configure Zsh PATH manually.');
+ const block='# Passman PATH\n[ ! -f '+quote(envFile)+' ] || . '+quote(envFile)+'\n';
+ for(const file of profiles) {
+  let fd;
+  try {
+   fd=openSync(file,constants.O_RDWR|constants.O_APPEND|constants.O_CREAT|constants.O_NOFOLLOW|constants.O_NONBLOCK,0o600);
+   const stat=fstatSync(fd);
+   if(!stat.isFile()||stat.uid!==process.getuid()||(stat.mode&0o022)||stat.nlink!==1||stat.size>1024*1024)throw Error('Unsafe shell profile');
+   const content=readFileSync(fd,'utf8');
+   if(!content.includes(block))appendFileSync(fd,(content.endsWith('\n')||!content?'':'\n')+'\n'+block);
+  } catch {
+   console.error('Passman: could not configure '+file+'. Existing settings were preserved; source '+envFile+' or add the command directory to PATH manually.');
+  } finally {if(fd!==undefined)closeSync(fd);}
+ }
+}
+console.log('\nFor this terminal, run once:');
+console.log('. '+quote(envFile));
 NODE
 printf '\nPassman %s installed. Your vault was not changed.\n' "$version"
-printf 'Sign in: %s/passman login\n' "$bin"
-case ":$PATH:" in *":$bin:"*) ;; *) printf 'Add the command to PATH: export PATH="%s:$PATH"\n' "$bin";; esac
+printf 'Sign in: passman login\n'
 printf 'Update by running this installer again. Use PASSMAN_VERSION to select a specific version.\n'

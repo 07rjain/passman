@@ -35,6 +35,8 @@ The favicon reuses the header's Passman mark in charcoal on a rounded pale sage 
 
 ## Installation links
 
+The macOS/Linux copy command installs Passman and sources its managed environment file in the current shell, so the following steps use `passman login` and `passman put` directly. The installer persists PATH for future Bash/Zsh/POSIX login terminals without duplicating its setup or discarding existing shell settings. A script piped through `sh` alone cannot change its parent terminal’s PATH.
+
 The platform tabs use the stable hosted URLs `https://passman.subdomain.wtf/install.sh` and `https://passman.subdomain.wtf/install.ps1`, matching the quickstart. The installers select the latest published client unless `PASSMAN_VERSION` is supplied, then verify its publisher signature and checksum. A version in an installer script's download URL does not pin the client version it selects. The release announcement also links to GitHub's latest release, so the landing page does not require a version edit after publication. Already installed clients update only when the installer is run again.
 
 ## Sharing, support and mobile use

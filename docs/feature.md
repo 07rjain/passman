@@ -79,6 +79,7 @@ Never point integration tests at the deployed Neon database. `npm run check` cov
 | DIST-08 | Exact archive installs through npm without registry dependencies; ESM exports and TypeScript declarations work in a separate consumer | Packaging + distribution checks |
 | DIST-09 | Archive contains license/notices and built client/dependencies; no `.env`, vault, private key, server config or test credential is packaged | Packaging + distribution inspection |
 | DIST-10 | Hosted installer points to an immutable tagged release; updates select a new version rather than overwriting old assets | Release smoke and GitHub release inspection |
+| DIST-13 | macOS/Linux copy/paste installation enables bare `passman` in the current terminal and future Bash/Zsh/POSIX login shells; repeat activation/profile edits are idempotent, existing settings survive, custom paths remain literal, unsafe profiles are skipped and profile-edit opt-out works | HTTPS distribution regression with isolated homes, real Bash startup and native Zsh when available |
 
 ## 2. Clerk authentication and production configuration
 

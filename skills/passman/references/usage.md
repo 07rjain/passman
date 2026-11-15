@@ -1,6 +1,6 @@
 # Passman usage reference
 
-The public CLI/SDK release is 0.3.0. This skill has its own metadata version; it does not change client or wire/vault versions. Source and maintained guides: [07rjain/passman](https://github.com/07rjain/passman).
+The public CLI/SDK release is 0.3.1. This skill has its own metadata version; it does not change client or wire/vault versions. Source and maintained guides: [07rjain/passman](https://github.com/07rjain/passman).
 
 ## CLI metadata lookup
 
@@ -24,7 +24,7 @@ Only the path appears in this command, never the passphrase. Do not create the f
 Install in the intended application's directory with Node.js 24/npm:
 
 ```sh
-npm install https://github.com/07rjain/passman/releases/download/passman-v0.3.0/passman-0.3.0.tgz
+npm install https://github.com/07rjain/passman/releases/download/passman-v0.3.1/passman-0.3.1.tgz
 ```
 
 Use the published package name `@07rjain/passman`. Do not install unrelated npm packages named `passman` or `passman-cli`. `@keyman-mvp/client` is only the repository's internal workspace name.

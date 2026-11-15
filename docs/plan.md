@@ -54,7 +54,9 @@ On the former Keyman deployment, the configuration cutover completed on 2026-10-
 
 ## Client distribution
 
-The public SDK/CLI release is 0.3.0, published with a pinned publisher signature on 2026-11-05. Distribution includes the installer/private runtime, a self-contained npm archive with bundled locked dependencies, default hosted login, artifact/installer tests, and manual immutable GitHub Releases. Follow [releases.md](releases.md) and [SDK_CHANGELOG.md](SDK_CHANGELOG.md) for future versions. Windows support is documented in [windows.md](windows.md); Homebrew and npm-registry publication remain follow-up work.
+The maintained macOS/Linux installer configures per-user shell PATH through a managed environment file, preserving existing profiles and supporting `PASSMAN_NO_MODIFY_PATH=1`. The public copy/paste command activates it in the current terminal before `passman login`; a piped child shell cannot modify the parent environment. DIST-13 covers fresh-terminal discovery, repeat activation, existing settings, custom paths and profile-edit opt-out. No client/vault format changes are required; earlier release assets remain immutable.
+
+This source prepares SDK/CLI 0.3.1 for publication through the protected signing workflow; see the latest GitHub release for publication status. The earlier signed 0.3.0 release remains immutable. Distribution includes the installer/private runtime, a self-contained npm archive with bundled locked dependencies, default hosted login, artifact/installer tests, and manual immutable GitHub Releases. Follow [releases.md](releases.md) and [SDK_CHANGELOG.md](SDK_CHANGELOG.md) for future versions. Windows support is documented in [windows.md](windows.md); Homebrew and npm-registry publication remain follow-up work.
 
 ## Future TODO
 

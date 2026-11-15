@@ -1,6 +1,6 @@
 # Passman installation and releases
 
-The public Passman SDK and CLI release is **0.3.0**, published on 2026-11-05 with a pinned publisher signature. The command is `passman`; the previous `keyman-mvp` command remains available. Packages use PolyForm Noncommercial 1.0.0; third-party licenses are included. This remains an experimental vault, not production security approval.
+This source documents Passman SDK/CLI **0.3.1**. Check [the latest GitHub release](https://github.com/07rjain/passman/releases/latest) for publication status. Client archives use a pinned publisher signature. The command is `passman`; the previous `keyman-mvp` command remains available. Packages use PolyForm Noncommercial 1.0.0; third-party licenses are included. This remains an experimental vault, not production security approval.
 
 ## Repository transition
 
@@ -11,14 +11,13 @@ Source and public client downloads live in `07rjain/passman`. Version 0.1.1 swit
 On macOS/Linux, arm64 or x64:
 
 ```sh
-curl -fsSL https://passman.subdomain.wtf/install.sh | sh
-~/.local/bin/passman login
+curl -fsSL https://passman.subdomain.wtf/install.sh | sh && . "$HOME/.local/share/passman/env"
+passman login
 ```
 
-The installer downloads the versioned client, verifies its pinned RSA-SHA256 publisher signature and archive checksum, fetches an official pinned Node.js 24 runtime and verifies its checksum, and activates the installation under `~/.local/share/passman`. The signed installer needs curl, tar, OpenSSL and a SHA-256 tool; it does not need existing Node/npm or sudo. The launcher is `~/.local/bin/passman`. Add that directory to your shell PATH to use the shorter command:
+The installer downloads the versioned client, verifies its pinned RSA-SHA256 publisher signature and archive checksum, fetches an official pinned Node.js 24 runtime and verifies its checksum, and activates the installation under `~/.local/share/passman`. The signed installer needs curl, tar, OpenSSL and a SHA-256 tool; it does not need existing Node/npm or sudo. The launcher is `~/.local/bin/passman`. The installer creates a managed environment file and adds it to Bash, Zsh and POSIX login configuration (`.bashrc`, `.profile`, the first existing Bash login profile and `${ZDOTDIR:-$HOME}/.zshrc`). It preserves existing settings and does not duplicate its block on reinstallation. The final part of the copied command loads that environment into the current terminal, so you can immediately use:
 
 ```sh
-export PATH="$HOME/.local/bin:$PATH"
 passman --version
 passman login
 passman put --project testing --name TEST_KEY
@@ -26,27 +25,27 @@ passman put --project testing --name TEST_KEY
 
 `signin` is an alias for `login`. Login defaults to `https://passman.subdomain.wtf`; `--url` still supports self-hosting. Existing vaults remain in `~/.keyman-mvp`, and their stored origin/key is preserved. A failed unlock never generates a replacement key. Create projects on the website before local uploads. Search/check use the privately configured `KEYMAN_SERVICE_KEY`; the CLI does not print provider values.
 
-The installer does not modify shell profiles, the system Node installation, or the local vault. It refuses to replace an unrelated `passman` file, unexpected symlinks, or an already-installed version whose checksum differs. Network, checksum or version-check failures before activation leave the current version intact. Re-running the installer installs the latest published release. To select a specific release:
+A script piped into `sh` cannot change its parent terminal’s environment. If you ran the older install command, open a new terminal or run `. "$HOME/.local/share/passman/env"` once after rerunning the maintained installer. The commands above use Bash, Zsh or a POSIX-compatible shell; from another shell, run `bash` first. Symlinked, shared/writable or otherwise unsafe shell profile files are skipped with a warning and a manual activation command. Set `PASSMAN_NO_MODIFY_PATH=1` when running the installer to leave profiles untouched. The system Node installation and local vault are not modified. It refuses to replace an unrelated `passman` file, unexpected symlinks, or an already-installed version whose checksum differs. Network, checksum or version-check failures before activation leave the current version intact. Re-running the installer installs the latest published release. To select a specific release:
 
 ```sh
-curl -fsSL https://passman.subdomain.wtf/install.sh | PASSMAN_VERSION=0.3.0 sh
+curl -fsSL https://passman.subdomain.wtf/install.sh | PASSMAN_VERSION=0.3.1 sh
 ```
 
-`PASSMAN_INSTALL_DIR` and `PASSMAN_BIN_DIR` accept absolute custom paths. Older installed versions are retained, allowing explicit selection with the same installer; vault-format compatibility must be checked before downgrading across future format changes. Windows uses the [PowerShell installer](windows.md); Homebrew is not provided yet.
+`PASSMAN_INSTALL_DIR` and `PASSMAN_BIN_DIR` accept absolute custom paths. For a custom installation directory, use the exact activation command printed by the installer instead of the default environment-file path above. Older installed versions are retained, allowing explicit selection with the same installer; vault-format compatibility must be checked before downgrading across future format changes. Windows uses the [PowerShell installer](windows.md); Homebrew is not provided yet.
 
 ## npm and SDK
 
 With Node.js 24/npm already installed, install the exact same self-contained package:
 
 ```sh
-npm install -g https://github.com/07rjain/passman/releases/download/passman-v0.3.0/passman-0.3.0.tgz
+npm install -g https://github.com/07rjain/passman/releases/download/passman-v0.3.1/passman-0.3.1.tgz
 passman login
 ```
 
 For an application:
 
 ```sh
-npm install https://github.com/07rjain/passman/releases/download/passman-v0.3.0/passman-0.3.0.tgz
+npm install https://github.com/07rjain/passman/releases/download/passman-v0.3.1/passman-0.3.1.tgz
 ```
 
 ```js
@@ -82,7 +81,7 @@ GitHub Releases stores the archive, checksum, version pointer and installer; the
 
 ## Security boundary
 
-The immutable historical 0.2.0 installer uses checksums only. The current 0.3.0 installer requires a pinned RSA-SHA256 publisher signature over each versioned checksum manifest, checked before extraction/execution. A checksum downloaded from the same origin is not independent publisher authentication; the signing key must remain separate from ordinary release-write authority. This flow trusts the HTTPS website, GitHub release account and official Node distribution. A compromised installer/client update can read local secrets when used; this does not strengthen protection against client supply-chain compromise. The archive publisher signature does not imply OS-user isolation, OS executable signing, or protection from owner-approved malicious updates. Review the script or pin a reviewed version when appropriate.
+The immutable historical 0.2.0 installer uses checksums only. Installers since 0.3.0 require a pinned RSA-SHA256 publisher signature over each versioned checksum manifest, checked before extraction/execution. A checksum downloaded from the same origin is not independent publisher authentication; the signing key must remain separate from ordinary release-write authority. This flow trusts the HTTPS website, GitHub release account and official Node distribution. A compromised installer/client update can read local secrets when used; this does not strengthen protection against client supply-chain compromise. The archive publisher signature does not imply OS-user isolation, OS executable signing, or protection from owner-approved malicious updates. Review the script or pin a reviewed version when appropriate.
 
 ## 0.1.0 verification record
 
@@ -112,7 +111,7 @@ Native ARM64, interactive Windows production login/hidden prompts and independen
 
 ## Signed-release transition
 
-### Current 0.3.0 evidence — 2026-11-14
+### 0.3.0 evidence — 2026-11-14
 
 Signed [passman-v0.3.0](https://github.com/07rjain/passman/releases/tag/passman-v0.3.0) was published on 2026-11-05 from `3d996de598b299a4ab2497a6ad896049a7cfa293` through the [protected release workflow](https://github.com/07rjain/passman/actions/runs/42026452044). Read-only verification on 2026-11-14 confirmed that the latest pointer selects 0.3.0, the checksum manifest verifies against the pinned publisher key and the public archive matches that signed manifest. Both hosted installer scripts matched source. The signing environment has an owner-review gate and branch policy; administrators remain trusted.
 
