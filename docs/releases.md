@@ -1,6 +1,6 @@
 # Passman installation and releases
 
-The public Passman SDK/CLI release is **0.3.1**, published on 2026-11-15 through the protected signing workflow. Client archives use a pinned publisher signature. The command is `passman`; the previous `keyman-mvp` command remains available. Packages use PolyForm Noncommercial 1.0.0; third-party licenses are included. This remains an experimental vault, not production security approval.
+Passman SDK/CLI **0.3.2** is prepared for publication through the protected signing workflow; **0.3.1** remains the latest public release until publication succeeds. Client archives use a pinned publisher signature. The command is `passman`; the previous `keyman-mvp` command remains available. Packages use PolyForm Noncommercial 1.0.0; third-party licenses are included. This remains an experimental vault, not production security approval.
 
 ## Repository transition
 
@@ -25,12 +25,12 @@ passman put --project testing --name TEST_KEY
 
 `signin` is an alias for `login`. Login defaults to `https://passman.subdomain.wtf`; `--url` still supports self-hosting. Existing vaults remain in `~/.keyman-mvp`, and their stored origin/key is preserved. A failed unlock never generates a replacement key. Create projects on the website before local uploads. Search/check use the privately configured `KEYMAN_SERVICE_KEY`; the CLI does not print provider values.
 
-Client 0.3.1 requires `passman login` again when the 20-minute upload authorization expires. The unreleased CLI checks before secret input and starts browser reapproval automatically for interactive `put`, preserving the existing identity. `--no-browser` leaves opening the printed URL to you. Noninteractive `put` requires prior login and fails before reading the value if authorization is missing/expired. This does not change runtime SDK behavior or extend credential lifetimes.
+Client 0.3.1 requires `passman login` again when the 20-minute upload authorization expires. Client 0.3.2 checks before secret input and starts browser reapproval automatically for interactive `put`, preserving the existing identity. `--no-browser` leaves opening the printed URL to you. Noninteractive `put` requires prior login and fails before reading the value if authorization is missing/expired. This does not change runtime SDK behavior or extend credential lifetimes.
 
 A script piped into `sh` cannot change its parent terminal’s environment. If you ran the older install command, open a new terminal or run `. "$HOME/.local/share/passman/env"` once after rerunning the maintained installer. The commands above use Bash, Zsh or a POSIX-compatible shell; from another shell, run `bash` first. Symlinked, shared/writable or otherwise unsafe shell profile files are skipped with a warning and a manual activation command. Set `PASSMAN_NO_MODIFY_PATH=1` when running the installer to leave profiles untouched. The system Node installation and local vault are not modified. It refuses to replace an unrelated `passman` file, unexpected symlinks, or an already-installed version whose checksum differs. Network, checksum or version-check failures before activation leave the current version intact. Re-running the installer installs the latest published release. To select a specific release:
 
 ```sh
-curl -fsSL https://passman.subdomain.wtf/install.sh | PASSMAN_VERSION=0.3.1 sh
+curl -fsSL https://passman.subdomain.wtf/install.sh | PASSMAN_VERSION=0.3.2 sh
 ```
 
 `PASSMAN_INSTALL_DIR` and `PASSMAN_BIN_DIR` accept absolute custom paths. For a custom installation directory, use the exact activation command printed by the installer instead of the default environment-file path above. Older installed versions are retained, allowing explicit selection with the same installer; vault-format compatibility must be checked before downgrading across future format changes. Windows uses the [PowerShell installer](windows.md); Homebrew is not provided yet.
@@ -40,14 +40,14 @@ curl -fsSL https://passman.subdomain.wtf/install.sh | PASSMAN_VERSION=0.3.1 sh
 With Node.js 24/npm already installed, install the exact same self-contained package:
 
 ```sh
-npm install -g https://github.com/07rjain/passman/releases/download/passman-v0.3.1/passman-0.3.1.tgz
+npm install -g https://github.com/07rjain/passman/releases/download/passman-v0.3.2/passman-0.3.2.tgz
 passman login
 ```
 
 For an application:
 
 ```sh
-npm install https://github.com/07rjain/passman/releases/download/passman-v0.3.1/passman-0.3.1.tgz
+npm install https://github.com/07rjain/passman/releases/download/passman-v0.3.2/passman-0.3.2.tgz
 ```
 
 ```js

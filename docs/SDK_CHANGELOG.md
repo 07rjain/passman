@@ -4,6 +4,8 @@ The SDK and CLI share one semantic version. This changelog covers the installabl
 
 ## Unreleased
 
+## 0.3.2 — 2026-11-15
+
 - Renew missing/expired upload authorization automatically during interactive `passman put`, using the existing browser approval and vault key before prompting for or reading the secret. Honor `--no-browser`; noninteractive commands require prior `passman login`. Preserve the 20-minute lifetime, account/origin binding and encrypted vault format. Stop on failed approval or already-expired new authorization without reading a value; do not replay rejected uploads. Clarify local vault/passphrase errors and give actionable expiry/rejection guidance.
 
 ## 0.3.1 — 2026-11-15
