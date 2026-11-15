@@ -4,6 +4,8 @@ The SDK and CLI share one semantic version. This changelog covers the installabl
 
 ## Unreleased
 
+- Renew missing/expired upload authorization automatically during interactive `passman put`, using the existing browser approval and vault key before prompting for or reading the secret. Honor `--no-browser`; noninteractive commands require prior `passman login`. Preserve the 20-minute lifetime, account/origin binding and encrypted vault format. Stop on failed approval or already-expired new authorization without reading a value; do not replay rejected uploads. Clarify local vault/passphrase errors and give actionable expiry/rejection guidance.
+
 ## 0.3.1 — 2026-11-15
 
 - Configure per-user Bash/Zsh/POSIX login PATH in the maintained macOS/Linux installer and provide a sourceable environment file for immediate activation. Preserve existing shell settings, avoid duplicate setup, skip unsafe profiles, support custom install paths and offer `PASSMAN_NO_MODIFY_PATH=1`. `passman login` works by name after the copied install command; CLI/SDK runtime behavior, the private runtime and vault format are unchanged. Existing immutable release installers are not replaced.

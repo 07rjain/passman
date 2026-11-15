@@ -21,6 +21,8 @@ An optional hosted form may encrypt values in the browser using the public key b
 
 Local administrative upload is the recommended input experience; ordinary agent/runtime credentials remain read-only. CLI `put` and the separately exported `uploadValue` helper require short-lived upload authorization. Broader unattended SDK creation/update/deletion and a hosted-page-to-local-port bridge stay on the future TODO list. The runtime `KeymanClient` exposes no mutation method; read credentials never implicitly gain write permission.
 
+After manual local unlock, interactive CLI `put` may start the existing browser approval to renew missing/expired upload authorization before secret input. This requires the same fingerprint/code and human approval; it never replaces the vault key, account or origin. Noninteractive `put` fails before reading a value and directs the user to `passman login`. Runtime SDK calls and `uploadValue` never start browser approval. The 20-minute authorization lifetime is unchanged.
+
 The normal service must not receive provider plaintext through supported local upload/retrieval paths. Optional browser input supports a narrower claim: encryption happens before the normal upload, but confidentiality of newly entered values does not survive malicious hosted JavaScript. This limitation does not allow private keys or provider values into server logs, telemetry or configuration.
 
 ## Accepted service authentication change

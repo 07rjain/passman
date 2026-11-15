@@ -21,7 +21,7 @@ Create `sandbox` on the website, then run:
 passman put --project sandbox --name TEST_API_KEY
 ```
 
-Enter a synthetic value in the hidden local prompt. Local input is preferred: encryption happens before upload. Upload authorization lasts 20 minutes; renew it with `login` using the same vault. Replacements require `--replace`. Optional website input exposes new values to the page's scripts before encryption.
+Enter a synthetic value in the hidden local prompt. Local input is preferred: encryption happens before upload. Upload authorization lasts 20 minutes. In client 0.3.1, renew it with `passman login` using the same vault. The unreleased CLI automatically starts browser reapproval during interactive `put` before asking for a secret; compare the fingerprint/code as during login. `--no-browser` prints the approval URL without launching it. Noninteractive use requires prior login and stops before reading a value when authorization is missing/expired. Replacements require `--replace`. Optional website input exposes new values to the page's scripts before encryption.
 
 ## Create read access before searching or retrieving
 

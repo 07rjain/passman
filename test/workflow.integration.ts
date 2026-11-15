@@ -31,6 +31,7 @@ import {
   type Transport,
 } from "@keyman-mvp/client";
 import { z, projectSchema } from "@keyman-mvp/core";
+import { runCli } from "../packages/client/src/cli-runner";
 import { createApi } from "../apps/web/src/server/api";
 import { recordAudit, pruneAudit } from "../apps/web/src/server/audit";
 import { clerkWebhook } from "../apps/web/src/server/clerk-webhook";
@@ -425,6 +426,86 @@ await test("MVP: built Next.js, real JWT verification/PostgreSQL enrollment, enc
       transport,
     }).getSecret({ name: "PROVIDER_KEY" }),
     (e: unknown) => e instanceof KeymanError && e.code === "KEY_MISMATCH",
+  );
+  await t.test(
+    "interactive put renews expired authorization against the real API before reading a secret",
+    async () => {
+      const expired = await unlockIdentity(
+        first.dir,
+        "synthetic-local-passphrase",
+        { administrative: true },
+      );
+      expired.upload!.expiresAt = Math.floor(Date.now() / 1000) - 60;
+      await saveIdentity(first.dir, "synthetic-local-passphrase", expired);
+      const passwordFile = path.join(first.dir, "renew-passphrase");
+      await writeFile(passwordFile, "synthetic-local-passphrase", {
+        mode: 0o600,
+      });
+      let approved = false,
+        prompted = false;
+      const output: string[] = [];
+      await runCli(
+        [
+          "put",
+          "--directory",
+          first.dir,
+          "--passphrase-file",
+          passwordFile,
+          "--project",
+          "production",
+          "--name",
+          "CLI_RENEWED",
+          "--no-browser",
+        ],
+        {
+          interactive: true,
+          print: (message) => {
+            output.push(message);
+          },
+          openBrowser: () => {
+            assert.fail("--no-browser must be respected");
+          },
+          async prompt() {
+            assert.equal(approved, true);
+            const saved = await unlockIdentity(
+              first.dir,
+              "synthetic-local-passphrase",
+              { administrative: true },
+            );
+            assert.deepEqual(saved.privateKey, expired.privateKey);
+            assert.deepEqual(saved.vault, expired.vault);
+            assert.ok(saved.upload!.expiresAt > Date.now() / 1000);
+            prompted = true;
+            return "synthetic-cli-renewed-value";
+          },
+          transport: async (url, init) => {
+            const response = await transport(url, init);
+            if (String(url).endsWith("/api/device/start")) {
+              const started = await response.clone().json();
+              assert.equal(
+                (
+                  await human("/api/device/approve", {
+                    id: started.id,
+                    keyId: started.keyId,
+                    userCode: started.userCode,
+                    acknowledgeLoss: true,
+                  })
+                ).status,
+                200,
+              );
+              approved = true;
+            }
+            return response;
+          },
+        },
+      );
+      assert.equal(prompted, true);
+      assert.equal(
+        await client.getSecret({ name: "CLI_RENEWED" }),
+        "synthetic-cli-renewed-value",
+      );
+      assert.ok(!output.join("\n").includes("synthetic-cli-renewed-value"));
+    },
   );
   await t.test(
     "actual CLI reuses its identity, completes browser approval, uploads and searches without printing values",
