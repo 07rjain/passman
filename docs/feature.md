@@ -42,6 +42,7 @@ Never point integration tests at the deployed Neon database. `npm run check` cov
 | --- | --- | --- |
 | [Crypto tests](../test/crypto.test.ts) | HPKE interoperability, context binding, wrong-key/tamper rejection, sizes/encoding | Does not audit the cryptography or establish an honest website |
 | [Vault/client tests](../test/vault.test.ts) | Protected local file, unlock failures, client response bounds | Does not isolate same-OS-user malware |
+| [CLI regressions](../test/cli.test.ts) | Expiry preflight, interactive renewal before value input, same-key persistence, failure/clock handling, redacted unlock errors and no upload replay | Injected terminal/browser/transport; actual API renewal also covered by workflow integration |
 | [Auth tests](../test/auth.test.ts) | Real verifier with signed fixture JWTs: key/issuer/origin/session/expiry/recent-auth checks | Does not log into a live Clerk production instance |
 | [Workflow integration](../test/workflow.integration.ts) | Built Next.js, real PostgreSQL, actual CLI/SDK, isolation, conflicts, expiry/replay/revocation | Fixture JWTs; no real inbox or browser interactions |
 | [Distribution checks](../distribution/check.mjs) | Offline archive consumption, SDK types/runtime, HTTPS installer, upgrade/tamper/missing-release/vault preservation and version tooling | Downloads a pinned Node runtime; does not validate every desktop configuration |
@@ -109,6 +110,7 @@ Never point integration tests at the deployed Neon database. `npm run check` cov
 | SETUP-07 | Re-login with the same key preserves account/vault identity and renews upload authorization | Workflow + live CLI |
 | SETUP-08 | A fresh key under an existing account is rejected; Clerk login alone does not replace/recover the old private key | Workflow + Agent37/live API |
 | SETUP-09 | Rotating unknown poll codes create only shared/client counters per minute; the shared 1,200-attempt quota persists across denials and API instances; verified live devices retain a 30-poll quota that resets next minute; consumed/expired devices get no counter | Device-poll PostgreSQL integration |
+| SETUP-11 | Interactive `put` renews missing/expired upload authorization before prompting/reading a value using the same key/account/origin; honors `--no-browser`; noninteractive use requires prior login. Failed/expired/pending/mismatched approval and clock skew stop without value input or vault replacement; rejected uploads are not replayed | CLI regressions + built Next.js/PostgreSQL renewal; native browser/terminal acceptance separate |
 
 ## 4. Local vault and encryption
 

@@ -10,7 +10,7 @@ import {
   errorSchema,
   type ErrorCode,
 } from "@keyman-mvp/core";
-import { apiOrigin, type Identity } from "./vault.js";
+import { apiOrigin, hasUploadAuthorization, type Identity } from "./vault.js";
 export {
   initializeIdentity,
   unlockIdentity,
@@ -173,12 +173,7 @@ export async function uploadValue(
   return redacted(async () => {
     if (typeof value !== "string" || Buffer.byteLength(value, "utf8") > 65536)
       throw new KeymanError("INVALID_REQUEST");
-    if (
-      !identity.vault ||
-      !identity.upload ||
-      identity.upload.expiresAt <= Date.now() / 1000
-    )
-      throw new KeymanError("EXPIRED");
+    if (!hasUploadAuthorization(identity)) throw new KeymanError("EXPIRED");
     const headers = {
       authorization: `Bearer ${identity.upload.token}`,
       "content-type": "application/json",

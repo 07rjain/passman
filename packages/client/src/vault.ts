@@ -36,6 +36,16 @@ const profileSchema = z
   })
   .strict();
 export type Identity = z.infer<typeof profileSchema>;
+/** Local preflight only; the server still enforces expiry and revocation. */
+export function hasUploadAuthorization(
+  identity: Identity,
+): identity is Identity & Required<Pick<Identity, "vault" | "upload">> {
+  return Boolean(
+    identity.vault &&
+    identity.upload &&
+    identity.upload.expiresAt > Date.now() / 1000,
+  );
+}
 const diskSchema = z
   .object({
     version: z.literal(1),
