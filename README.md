@@ -33,7 +33,7 @@ curl -fsSL https://passman.subdomain.wtf/install.sh | sh && . "$HOME/.local/shar
 passman login
 ```
 
-This source documents CLI/SDK **0.3.1**, distributed with a pinned publisher signature from `07rjain/passman`. The installer uses that repository because the earlier release repository is now private. Existing local vaults and earlier immutable assets are preserved. See [releases.md](docs/releases.md).
+The public CLI/SDK release is **0.3.1**, published on 2026-11-15 with a pinned publisher signature and distributed from `07rjain/passman`. The installer uses that repository because the earlier release repository is now private. Existing local vaults and earlier immutable assets are preserved. See [releases.md](docs/releases.md).
 
 ## Agent skill
 

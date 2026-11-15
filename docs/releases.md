@@ -1,6 +1,6 @@
 # Passman installation and releases
 
-This source documents Passman SDK/CLI **0.3.1**. Check [the latest GitHub release](https://github.com/07rjain/passman/releases/latest) for publication status. Client archives use a pinned publisher signature. The command is `passman`; the previous `keyman-mvp` command remains available. Packages use PolyForm Noncommercial 1.0.0; third-party licenses are included. This remains an experimental vault, not production security approval.
+The public Passman SDK/CLI release is **0.3.1**, published on 2026-11-15 through the protected signing workflow. Client archives use a pinned publisher signature. The command is `passman`; the previous `keyman-mvp` command remains available. Packages use PolyForm Noncommercial 1.0.0; third-party licenses are included. This remains an experimental vault, not production security approval.
 
 ## Repository transition
 
@@ -122,3 +122,11 @@ The later website commit `6d92d164ed7e085bbc7b2fc8d2be523a8db937f7` passed [all 
 Follow [the remediation rollout](security-remediation.md). The production build guard verifies the public default version, publisher signature and archive before copying the new installers. Merge source after CI, publish the signed archive through the protected workflow, then redeploy Vercel; older unsigned releases stay immutable and are intentionally rejected by the new installers. The default GitHub release pointer is not an authentication mechanism: it selects a version whose exact manifest must independently verify. Review/pin a version when installing; the pointer can still be withheld or redirected to an already signed version by a release writer. Existing installed clients are not silently updated.
 
 Protect the signing environment with an owner reviewer and main-only deployment policy, and protect main/bootstrap changes with CODEOWNERS plus required review/checks. The environment name by itself enforces nothing. Administrators who can change these policies remain trusted. The publisher key cannot protect a bootstrap installer replaced outside this reviewed boundary.
+
+## 0.3.1 verification record — 2026-11-15
+
+Published [passman-v0.3.1](https://github.com/07rjain/passman/releases/tag/passman-v0.3.1) from main commit `237124eaf16acf1c85494e4f9c11ab41fcd93cde` through the [protected release workflow](https://github.com/07rjain/passman/actions/runs/43672957706). The release workflow passed native Windows package/installer acceptance, Linux source/distribution checks and publisher signing. [All four required PR checks](https://github.com/07rjain/passman/actions/runs/43672536042) passed before merge, including native macOS/Zsh, Windows and disposable PostgreSQL integration. The sole maintainer’s admin override was used for the separate-review requirement after CI; no protection settings were changed.
+
+The public default pointer selects 0.3.1. Anonymous downloads matched the pinned publisher signature and signed manifest, and both published installers matched source. Archive SHA-256: `46e0ff016001803d0c7a249272e192da300d9d98fafb16db4dbf24fcf0128ebb`. Fresh Linux installation with a private runtime, current-terminal PATH activation, new Bash command discovery, reinstallation and unavailable-release preservation passed in isolated directories. The installed SDK encrypted/unlocked a synthetic vault, denied a wrong passphrase and decrypted a synthetic response without printing values. Existing release assets, account bindings and vault formats were preserved.
+
+The initial production build remained blocked until publication, as designed. This verification-record update triggers a new build after publication; its deployment status must be verified separately. No real signup, browser approval or native Mac interactive installation is claimed by the release fixture checks.
