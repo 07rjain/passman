@@ -2,7 +2,7 @@
 
 This is the maintained feature/test catalogue for the standalone **Passman MVP**. It does not describe the older application in `07rjain/keyman`. Update it whenever a feature, permission, wire contract, storage format or supported platform changes. A checklist entry is an expected result, not proof that the test ran.
 
-Current client release: 0.1.1. Authentication target: Clerk **production** for the hosted production app; development instances and reserved OTPs remain confined to isolated test environments. The [Agent37 report](agent37-verification.md) records the earlier development-instance run, not production authentication acceptance.
+Current client release: 0.3.2. Authentication target: Clerk **production** for the hosted production app; development instances and reserved OTPs remain confined to isolated test environments. The [Agent37 report](agent37-verification.md) records the earlier development-instance run, not production authentication acceptance.
 
 The historical [2026-10-31 production configuration record](history/legacy-hosted-setup.md#production-clerk-cutover--2026-10-31) establishes matching live frontend/issuer/verifier settings, DNS/TLS and live denial checks. It applies to the former Keyman deployment and does not close actual inbox/browser, reverification, signup CAPTCHA or the authenticated production client journey cases.
 

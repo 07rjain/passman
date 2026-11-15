@@ -69,7 +69,7 @@ For noninteractive execution, the user can privately provision an owner-only pas
 
 ## Use secrets in trusted application code
 
-The application SDK requires Node.js 24/npm. Install the published archive in the intended application directory; do not install unrelated npm packages called `passman` or `passman-cli`. The next immutable release is 0.3.2 (publication pending); consult the release guide for updates:
+The application SDK requires Node.js 24/npm. Install the published archive in the intended application directory; do not install unrelated npm packages called `passman` or `passman-cli`. The current immutable release is 0.3.2; consult the release guide for updates:
 
 ```sh
 npm install https://github.com/07rjain/passman/releases/download/passman-v0.3.2/passman-0.3.2.tgz

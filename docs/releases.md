@@ -1,6 +1,6 @@
 # Passman installation and releases
 
-Passman SDK/CLI **0.3.2** is prepared for publication through the protected signing workflow; **0.3.1** remains the latest public release until publication succeeds. Client archives use a pinned publisher signature. The command is `passman`; the previous `keyman-mvp` command remains available. Packages use PolyForm Noncommercial 1.0.0; third-party licenses are included. This remains an experimental vault, not production security approval.
+The public Passman SDK/CLI release is **0.3.2**, published on 2026-11-15 through the protected signing workflow. Client archives use a pinned publisher signature. The command is `passman`; the previous `keyman-mvp` command remains available. Packages use PolyForm Noncommercial 1.0.0; third-party licenses are included. This remains an experimental vault, not production security approval.
 
 ## Repository transition
 
@@ -132,3 +132,12 @@ Published [passman-v0.3.1](https://github.com/07rjain/passman/releases/tag/passm
 The public default pointer selects 0.3.1. Anonymous downloads matched the pinned publisher signature and signed manifest, and both published installers matched source. Archive SHA-256: `46e0ff016001803d0c7a249272e192da300d9d98fafb16db4dbf24fcf0128ebb`. Fresh Linux installation with a private runtime, current-terminal PATH activation, new Bash command discovery, reinstallation and unavailable-release preservation passed in isolated directories. The installed SDK encrypted/unlocked a synthetic vault, denied a wrong passphrase and decrypted a synthetic response without printing values. Existing release assets, account bindings and vault formats were preserved.
 
 The initial production build remained blocked until publication, as designed. This verification-record update triggers a new build after publication; its deployment status must be verified separately. No real signup, browser approval or native Mac interactive installation is claimed by the release fixture checks.
+
+
+## 0.3.2 verification record — 2026-11-15
+
+Published [passman-v0.3.2](https://github.com/07rjain/passman/releases/tag/passman-v0.3.2) from main commit `7d53601f0fac107b1ae71fa02684cf3e69085e1f` through the [protected release workflow](https://github.com/07rjain/passman/actions/runs/43679199635). All four required checks passed on [PR #6](https://github.com/07rjain/passman/pull/6) before merge, including native macOS/Windows and disposable PostgreSQL integration. The release workflow passed Windows package/installer acceptance, Linux checks/distribution and protected publisher signing. The sole maintainer's admin override was used for the separate-review requirement after CI; no protection settings changed. The existing owner-review signing gate was approved using the authorized maintainer account for the requested release.
+
+The public default pointer selects 0.3.2. Anonymous downloads verified against the pinned publisher signature and signed checksum manifest, and both published installers matched source. Archive SHA-256: `c445f551f3f9582ae2f3613fb7824b3994610680e53cdab9cec5dc1c0d891d02`. An actual public Linux installation of 0.3.1 upgraded to the default 0.3.2 release with a private Node runtime and exact encrypted vault-byte/key preservation. Installed SDK decryption and wrong-password rejection, packaged CLI expiry preflight before value-file input, reinstallation, unavailable-release preservation and bare command activation all passed with synthetic local data. No existing release assets or customer vaults were changed. Native macOS/Windows interactive Clerk/browser approval and a production customer vault round trip were not performed.
+
+Rerun the maintained installer to upgrade; keep the existing vault and passphrase. A new source push after publication rebuilds the website and generated agent guides once the signed-release guard clears; deployment readiness is verified separately.
