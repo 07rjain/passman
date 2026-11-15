@@ -48,7 +48,7 @@ passman put --project sandbox --name TEST_API_KEY
 
 Windows users run `& "$env:LOCALAPPDATA\Passman\bin\passman.cmd" put --project sandbox --name TEST_API_KEY` in PowerShell. Login issues a separate upload credential that lasts 20 minutes; renew it with login using the same vault. Existing entries require an intentional `--replace`. Do not overwrite, revoke or delete entries just to test a connection.
 
-The unreleased CLI can start browser reapproval automatically during interactive `put` before secret input; client 0.3.1 requires explicit login after expiry. The user must still compare the fingerprint/code and approve privately. Noninteractive `put` stops before reading a value if authorization is missing/expired: have the user run `passman login` with the same vault, then retry. `--no-browser` prints the approval URL without opening it. SDK calls never start browser approval.
+Client 0.3.2 can start browser reapproval automatically during interactive `put` before secret input; client 0.3.1 requires explicit login after expiry. The user must still compare the fingerprint/code and approve privately. Noninteractive `put` stops before reading a value if authorization is missing/expired: have the user run `passman login` with the same vault, then retry. `--no-browser` prints the approval URL without opening it. SDK calls never start browser approval.
 
 Local input encrypts before upload. Optional website input exposes new plaintext to that page's JavaScript before encryption and is not safe against malicious website code. Neither setup nor value entry requires uploading the private key.
 
@@ -69,10 +69,10 @@ For noninteractive execution, the user can privately provision an owner-only pas
 
 ## Use secrets in trusted application code
 
-The application SDK requires Node.js 24/npm. Install the published archive in the intended application directory; do not install unrelated npm packages called `passman` or `passman-cli`. The current documented immutable release is 0.3.1; consult the release guide for updates:
+The application SDK requires Node.js 24/npm. Install the published archive in the intended application directory; do not install unrelated npm packages called `passman` or `passman-cli`. The next immutable release is 0.3.2 (publication pending); consult the release guide for updates:
 
 ```sh
-npm install https://github.com/07rjain/passman/releases/download/passman-v0.3.1/passman-0.3.1.tgz
+npm install https://github.com/07rjain/passman/releases/download/passman-v0.3.2/passman-0.3.2.tgz
 ```
 
 The public import is `@07rjain/passman`; `@keyman-mvp/client` is an internal source-workspace name. This example is an integration fragment: `directory`, `passphrase` and `serviceKey` come from trusted private application configuration, not model-generated literals:

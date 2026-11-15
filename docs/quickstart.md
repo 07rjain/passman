@@ -21,7 +21,7 @@ Create `sandbox` on the website, then run:
 passman put --project sandbox --name TEST_API_KEY
 ```
 
-Enter a synthetic value in the hidden local prompt. Local input is preferred: encryption happens before upload. Upload authorization lasts 20 minutes. In client 0.3.1, renew it with `passman login` using the same vault. The unreleased CLI automatically starts browser reapproval during interactive `put` before asking for a secret; compare the fingerprint/code as during login. `--no-browser` prints the approval URL without launching it. Noninteractive use requires prior login and stops before reading a value when authorization is missing/expired. Replacements require `--replace`. Optional website input exposes new values to the page's scripts before encryption.
+Enter a synthetic value in the hidden local prompt. Local input is preferred: encryption happens before upload. Upload authorization lasts 20 minutes. In client 0.3.1, renew it with `passman login` using the same vault. Client 0.3.2 automatically starts browser reapproval during interactive `put` before asking for a secret; compare the fingerprint/code as during login. `--no-browser` prints the approval URL without launching it. Noninteractive use requires prior login and stops before reading a value when authorization is missing/expired. Replacements require `--replace`. Optional website input exposes new values to the page's scripts before encryption.
 
 ## Create read access before searching or retrieving
 
@@ -44,7 +44,7 @@ Each CLI process still asks you to unlock the local vault. Windows users should 
 With Node.js 24 installed, add the current immutable SDK archive to your application:
 
 ```sh
-npm install https://github.com/07rjain/passman/releases/download/passman-v0.3.1/passman-0.3.1.tgz
+npm install https://github.com/07rjain/passman/releases/download/passman-v0.3.2/passman-0.3.2.tgz
 ```
 
 The public package imports as `@07rjain/passman`. Use the example in the [release guide](releases.md#npm-and-sdk), supplying the existing vault directory, locally entered passphrase and scoped read credential from trusted application configuration. The [source-checkout example](../examples/retrieve.mjs) instead uses the workspace package name and the private environment settings described in [testing.md](testing.md#issue-a-read-credential-and-call-the-sdk); it is not a standalone installed-package command.
