@@ -245,9 +245,10 @@ function Workspace() {
               <pre>
                 <code>
                   curl -fsSL https://passman.subdomain.wtf/install.sh | sh
+                  {' && . "$HOME/.local/share/passman/env"'}
                 </code>
               </pre>
-              <code>~/.local/bin/passman login</code>
+              <code>passman login</code>
               <WindowsInstall />
               <p className="muted">
                 The installer includes a private Node.js runtime. Your vault

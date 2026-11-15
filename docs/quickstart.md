@@ -5,9 +5,11 @@ Use a synthetic value. Passman is experimental. Supported clients: macOS/Linux a
 ## Install and sign in
 
 ```sh
-curl -fsSL https://passman.subdomain.wtf/install.sh | sh
-~/.local/bin/passman login
+curl -fsSL https://passman.subdomain.wtf/install.sh | sh && . "$HOME/.local/share/passman/env"
+passman login
 ```
+
+The copied command enables `passman` in this terminal; the installer also configures future Bash/Zsh/POSIX login shells. If you used the older command, rerun the installer and open a new terminal or load `. "$HOME/.local/share/passman/env"` once. Use the [installation guide](releases.md#install-sign-in-use) for custom paths, managed profiles or another shell.
 
 Choose a local passphrase of at least 12 characters. Sign in at the printed website URL, compare the complete fingerprint with your terminal, enter the terminal's approval code and acknowledge key loss. Wait for the CLI to confirm linking. Keep the encrypted `~/.keyman-mvp/vault.json` file and its passphrase separately protected. Neither Clerk nor Passman can recover a lost private key.
 
@@ -16,7 +18,7 @@ Choose a local passphrase of at least 12 characters. Sign in at the printed webs
 Create `sandbox` on the website, then run:
 
 ```sh
-~/.local/bin/passman put --project sandbox --name TEST_API_KEY
+passman put --project sandbox --name TEST_API_KEY
 ```
 
 Enter a synthetic value in the hidden local prompt. Local input is preferred: encryption happens before upload. Upload authorization lasts 20 minutes; renew it with `login` using the same vault. Replacements require `--replace`. Optional website input exposes new values to the page's scripts before encryption.
@@ -31,8 +33,8 @@ For an interactive macOS/Linux terminal, use Bash (run `bash` first if your norm
 read -r -s -p 'Read service key (hidden): ' KEYMAN_SERVICE_KEY
 printf '\n'
 export KEYMAN_SERVICE_KEY
-~/.local/bin/passman check --project sandbox --name TEST_API_KEY
-~/.local/bin/passman search --project sandbox
+passman check --project sandbox --name TEST_API_KEY
+passman search --project sandbox
 ```
 
 Each CLI process still asks you to unlock the local vault. Windows users should follow [private read-credential configuration](windows.md#use-secrets) before the equivalent metadata commands.
@@ -42,7 +44,7 @@ Each CLI process still asks you to unlock the local vault. Windows users should 
 With Node.js 24 installed, add the current immutable SDK archive to your application:
 
 ```sh
-npm install https://github.com/07rjain/passman/releases/download/passman-v0.3.0/passman-0.3.0.tgz
+npm install https://github.com/07rjain/passman/releases/download/passman-v0.3.1/passman-0.3.1.tgz
 ```
 
 The public package imports as `@07rjain/passman`. Use the example in the [release guide](releases.md#npm-and-sdk), supplying the existing vault directory, locally entered passphrase and scoped read credential from trusted application configuration. The [source-checkout example](../examples/retrieve.mjs) instead uses the workspace package name and the private environment settings described in [testing.md](testing.md#issue-a-read-credential-and-call-the-sdk); it is not a standalone installed-package command.

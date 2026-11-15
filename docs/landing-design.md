@@ -35,6 +35,8 @@ The favicon reuses the header's Passman mark in charcoal on a rounded pale sage 
 
 ## Installation links
 
+The macOS/Linux copy command installs Passman and sources its managed environment file in the current shell, so the following steps use `passman login` and `passman put` directly. The installer persists PATH for future Bash/Zsh/POSIX login terminals without duplicating its setup or discarding existing shell settings. A script piped through `sh` alone cannot change its parent terminal’s PATH.
+
 The platform tabs use the stable hosted URLs `https://passman.subdomain.wtf/install.sh` and `https://passman.subdomain.wtf/install.ps1`, matching the quickstart. The installers select the latest published client unless `PASSMAN_VERSION` is supplied, then verify its publisher signature and checksum. A version in an installer script's download URL does not pin the client version it selects. The release announcement also links to GitHub's latest release, so the landing page does not require a version edit after publication. Already installed clients update only when the installer is run again.
 
 ## Sharing, support and mobile use
@@ -45,4 +47,4 @@ The public footer and dashboard link to `/support` and `/status`. Support routes
 
 The dashboard keeps its account-keyed client component behind the server home-page entry. Public support/status routes remain usable without Clerk configuration. Below 800px, workspace navigation moves above the content; narrow screens use two navigation columns, stacked form controls and separate metadata/action rows. Long names, fingerprints and one-time credentials wrap inside their panels. Public controls have larger mobile touch targets. These presentation changes do not add a native mobile application or alter authorization.
 
-The landing, support and status footers keep their existing content and group creator links under one initially collapsed “Meet the builder” control. Expanding it identifies Rishabh as the builder behind Passman and reveals call, website and email links in a compact panel. Native details/summary works with keyboard, touch and JavaScript disabled. The control inherits the footer theme, fits narrow screens, preserves visible focus and 44px targets, and uses ordinary links without an embed or tracking.
+The landing, support and status footers keep their existing content and group creator links under one initially collapsed “Contact us” control. Expanding it reveals Book a call, Website and Email links in a compact panel, without a builder introduction. Native details/summary works with keyboard, touch and JavaScript disabled. The control inherits the footer theme, fits narrow screens, preserves visible focus and 44px targets, and uses ordinary links without an embed or tracking.

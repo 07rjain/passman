@@ -1,6 +1,6 @@
 # Passman agent skill
 
-The portable [Passman skill](../skills/passman/SKILL.md) teaches a shell/code-capable agent to use the existing CLI/SDK. It adds no runtime server, credential store or decryption mechanism. Skill metadata version 0.1.2 is separate from client 0.3.0; neither vault nor API format changes.
+The portable [Passman skill](../skills/passman/SKILL.md) teaches a shell/code-capable agent to use the existing CLI/SDK. It adds no runtime server, credential store or decryption mechanism. Skill metadata version 0.1.3 is separate from client 0.3.1; neither vault nor API format changes.
 
 Agents can also fetch [`/llms.txt`](https://passman.subdomain.wtf/llms.txt) for the [setup/usage guide](agent-guide.md) and complete documentation index, or `/llms-full.txt` for the complete text bundle. This works as documentation without installing a skill; automatic fetching depends on the client.
 

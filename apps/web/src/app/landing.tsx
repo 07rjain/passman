@@ -9,7 +9,7 @@ const repository = "https://github.com/07rjain/passman";
 const docs = `${repository}/blob/main/docs`;
 const installerOrigin = "https://passman.subdomain.wtf";
 const installCommands = {
-  unix: `curl -fsSL ${installerOrigin}/install.sh | sh`,
+  unix: `curl -fsSL ${installerOrigin}/install.sh | sh && . "$HOME/.local/share/passman/env"`,
   windows: `Invoke-WebRequest -Uri ${installerOrigin}/install.ps1 -OutFile "$env:TEMP\\passman-install.ps1"\n& "$env:TEMP\\passman-install.ps1"`,
 };
 const sdkExample = `import { KeymanClient, unlockIdentity } from '@07rjain/passman';
@@ -644,7 +644,7 @@ export default function Landing({
                   Run{" "}
                   <code>
                     {platform === "unix"
-                      ? "~/.local/bin/passman login"
+                      ? "passman login"
                       : '& "$env:LOCALAPPDATA\\Passman\\bin\\passman.cmd" login'}
                   </code>{" "}
                   and approve the request in your browser.
@@ -659,7 +659,7 @@ export default function Landing({
                   Create a project in your workspace, then run{" "}
                   <code>
                     {platform === "unix"
-                      ? "~/.local/bin/passman put --project my-app --name PAYMENTS_KEY"
+                      ? "passman put --project my-app --name PAYMENTS_KEY"
                       : '& "$env:LOCALAPPDATA\\Passman\\bin\\passman.cmd" put --project my-app --name PAYMENTS_KEY'}
                   </code>{" "}
                   to enter and encrypt a value locally.

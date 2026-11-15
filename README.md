@@ -29,11 +29,11 @@ The replacement Vercel/Clerk/database configuration and targeted two-account liv
 For the currently hosted service:
 
 ```sh
-curl -fsSL https://passman.subdomain.wtf/install.sh | sh
-~/.local/bin/passman login
+curl -fsSL https://passman.subdomain.wtf/install.sh | sh && . "$HOME/.local/share/passman/env"
+passman login
 ```
 
-The public CLI/SDK release is **0.3.0**, published with a pinned publisher signature and distributed from `07rjain/passman`. The installer uses that repository because the earlier release repository is now private. Existing local vaults and earlier immutable assets are preserved. See [releases.md](docs/releases.md).
+This source documents CLI/SDK **0.3.1**, distributed with a pinned publisher signature from `07rjain/passman`. The installer uses that repository because the earlier release repository is now private. Existing local vaults and earlier immutable assets are preserved. See [releases.md](docs/releases.md).
 
 ## Agent skill
 

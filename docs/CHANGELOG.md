@@ -6,6 +6,12 @@ This file records website/API/security and operational changes. Installable clie
 
 ### Website
 
+- Prepare SDK/CLI 0.3.1 and portable skill 0.1.3, with matching package examples and release notes for seamless command discovery. Publish through the protected signed-release workflow; existing releases and vault/account bindings remain unchanged.
+
+- Make macOS/Linux setup commands activate the installed command path immediately, and use `passman login`/`passman put` on the landing page, dashboard and public agent/setup guides. The maintained installer also configures future terminals; no vault/account migration or new client archive is required.
+
+- Simplify the shared public footer to “Contact us” with Book a call, Website and Email. Remove the builder introduction while preserving destinations and native accessible disclosure. No migration or client update is required.
+
 - Group the three creator contact links inside a single, initially collapsed “Meet the builder” footer control. Identify Rishabh as Passman’s builder and reveal call, website and email links with native keyboard/touch support, including without JavaScript.
 
 - Add public `/llms.txt` agent setup/usage guidance, a complete source-document index and `/llms-full.txt` containing the public documentation snapshot. Generate both in web build/development from maintained docs, advertise them through public footer links and alternate metadata, and document private unlock, credential scopes, SDK/skill integration, errors and support without adding MCP or autonomous secret access.
