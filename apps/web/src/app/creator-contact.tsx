@@ -4,7 +4,7 @@ export default function CreatorContact({ className }: { className?: string }) {
   return (
     <details className={`${styles.contact} ${className ?? ""}`}>
       <summary>
-        Meet the builder
+        Contact us
         <svg
           width="12"
           height="12"
@@ -22,11 +22,9 @@ export default function CreatorContact({ className }: { className?: string }) {
         </svg>
       </summary>
       <div className={styles.panel}>
-        <p className={styles.name}>Rishabh</p>
-        <p className={styles.description}>The builder behind Passman.</p>
-        <nav className={styles.links} aria-label="Builder contact">
+        <nav className={styles.links} aria-label="Contact us">
           <a href="https://calendly.com/07rishabh/quick-call">Book a call</a>
-          <a href="https://www.bothrarishabh.com/">Rishabh’s website</a>
+          <a href="https://www.bothrarishabh.com/">Website</a>
           <a href="mailto:07rishabhjain@gmail.com">Email</a>
         </nav>
       </div>

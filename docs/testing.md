@@ -219,3 +219,9 @@ Headless Chromium verified footer and alternate-metadata discovery on home, supp
 WEB-09 passed a fresh web production build, lint and formatting checks. Built-page Chromium checks on home, support and status verified one initially collapsed “Meet the builder” control, creator identification, the existing three destinations, Enter/Space and click toggling, keyboard link order and 44px targets. Closed links were hidden; expanded and collapsed layouts had no horizontal overflow at 320, 390, 768 and 1440 pixels. Existing footer/agent-docs links remained intact. Native disclosure also worked with JavaScript disabled, with no page errors or automatic contact-site requests. Screenshots were reviewed; no call or email was sent.
 
 Evidence is in ignored `ignore-docs/builder-contact/`. These checks describe local source behavior, not a push or deployment. No API, database, authentication, SDK or operational behavior changed.
+
+## 2026-11-15 — WEB-09 contact wording
+
+Simplified the shared home, support and status footer to an initially collapsed “Contact us” disclosure containing Book a call, Website and Email. Removed the builder introduction; destinations and existing footer navigation are unchanged.
+
+`npm run check` passed (formatting, builds, typecheck, lint, unit tests, package checks and documentation checks). Built-production Chromium checks passed on all three public routes at 320, 390, 768 and 1440px: collapsed state, Enter/Space and click toggling, keyboard link order, correct destinations, 44px link heights, no horizontal overflow, no page errors and no automatic requests to contact sites. Native disclosure also passed with JavaScript disabled. No contact navigation, call or email was sent. These local checks do not establish deployment or new authentication/database acceptance.

@@ -31,16 +31,6 @@
   border-radius: 8px;
   background: #fff;
 }
-.name {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 700;
-}
-.description {
-  margin: 4px 0 8px;
-  font-size: 11px;
-  color: #686868;
-}
 .contact .links {
   display: grid;
   gap: 0;
