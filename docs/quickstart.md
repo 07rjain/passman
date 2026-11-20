@@ -25,6 +25,8 @@ Enter a synthetic value in the hidden local prompt. Local input is preferred: en
 
 ## Create read access before searching or retrieving
 
+For existing environment files, prepared client 0.4.0 adds `passman import --project sandbox --file /absolute/private/project.env --dry-run`, then an explicitly confirmed import. This needs the matching server update and has not been published yet. See [validation, conflict rules and the SDK](env-import.md).
+
 Create an expiring read credential on the website, scoped to `sandbox`. It is shown once. Upload authorization from `login` cannot perform reads. Configure `KEYMAN_SERVICE_KEY` privately before using `check`, `search` or the SDK; never put a live key into source control, command history or model messages.
 
 For an interactive macOS/Linux terminal, use Bash (run `bash` first if your normal shell is zsh). This reads the credential without echoing it or storing its value in shell history:

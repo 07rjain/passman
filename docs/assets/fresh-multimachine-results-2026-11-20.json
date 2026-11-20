@@ -1,0 +1,225 @@
+[
+  {
+    "at": "2026-11-20T22:49:39.287Z",
+    "result": "PASS",
+    "label": "Source initialized three independent account vaults and signed synthetic records"
+  },
+  {
+    "at": "2026-11-20T22:49:39.289Z",
+    "result": "PASS",
+    "label": "Accounts A/B/C have distinct decryption keys"
+  },
+  {
+    "at": "2026-11-20T22:49:58.056Z",
+    "result": "PASS",
+    "label": "Service key alone returns metadata/ciphertext; denies plaintext and password bootstrap"
+  },
+  {
+    "at": "2026-11-20T22:50:00.376Z",
+    "result": "PASS",
+    "label": "Transfer requires recipient credential for the same account"
+  },
+  {
+    "at": "2026-11-20T22:50:01.366Z",
+    "result": "PASS",
+    "label": "Transfer rejects substituted service origin"
+  },
+  {
+    "at": "2026-11-20T22:50:02.269Z",
+    "result": "PASS",
+    "label": "Transfer rejects incorrect claim secret"
+  },
+  {
+    "at": "2026-11-20T22:50:03.179Z",
+    "result": "PASS",
+    "label": "Lost transfer claim response preserves durable receiver proof"
+  },
+  {
+    "at": "2026-11-20T22:50:04.146Z",
+    "result": "PASS",
+    "label": "Lost transfer acknowledgement leaves installed custody resumable"
+  },
+  {
+    "at": "2026-11-20T22:50:05.180Z",
+    "result": "PASS",
+    "label": "Cross-machine transfer installs identical decryption keys, distinct installation and no private writer"
+  },
+  {
+    "at": "2026-11-20T22:50:06.110Z",
+    "result": "PASS",
+    "label": "Used transfer code cannot enroll a second receiver"
+  },
+  {
+    "at": "2026-11-20T22:50:07.440Z",
+    "result": "PASS",
+    "label": "Remote fresh process 1 reads exact normal, empty and Unicode/multiline values without password"
+  },
+  {
+    "at": "2026-11-20T22:50:08.638Z",
+    "result": "PASS",
+    "label": "Remote fresh process 2 reads exact normal, empty and Unicode/multiline values without password"
+  },
+  {
+    "at": "2026-11-20T22:50:11.183Z",
+    "result": "PASS",
+    "label": "Cancelled transfer cannot provision a machine"
+  },
+  {
+    "at": "2026-11-20T22:50:14.423Z",
+    "result": "PASS",
+    "label": "Expired transfer cannot provision a machine"
+  },
+  {
+    "at": "2026-11-20T22:50:32.285Z",
+    "result": "PASS",
+    "label": "Incorrect vault password cannot bootstrap account B"
+  },
+  {
+    "at": "2026-11-20T22:50:33.452Z",
+    "result": "PASS",
+    "label": "Password bootstrap adds account B without replacing account A"
+  },
+  {
+    "at": "2026-11-20T22:50:35.912Z",
+    "result": "PASS",
+    "label": "Code transfer adds a third account to the same protected local store"
+  },
+  {
+    "at": "2026-11-20T22:50:39.461Z",
+    "result": "PASS",
+    "label": "Saved service credentials route identical project/secret names to the correct A/B/C vault"
+  },
+  {
+    "at": "2026-11-20T22:50:40.332Z",
+    "result": "PASS",
+    "label": "SDK rejects another account key even if custody adapter returns it"
+  },
+  {
+    "at": "2026-11-20T22:51:17.817Z",
+    "result": "PASS",
+    "label": "Removing default A never silently chooses B; invalid explicit key never falls back"
+  },
+  {
+    "at": "2026-11-20T22:51:47.446Z",
+    "result": "PASS",
+    "label": "Routine key rotation auto-syncs remote custody and decrypts new/old records without password"
+  },
+  {
+    "at": "2026-11-20T22:51:49.613Z",
+    "result": "PASS",
+    "label": "Revoked secondary credential cannot fetch ciphertext"
+  },
+  {
+    "at": "2026-11-20T22:51:51.719Z",
+    "result": "PASS",
+    "label": "Replacement service key reuses installed vault and stable machine identity"
+  },
+  {
+    "at": "2026-11-20T22:51:52.905Z",
+    "result": "PASS",
+    "label": "Account A rotation/revocation leaves account B usable on same machine"
+  },
+  {
+    "at": "2026-11-20T22:52:03.314Z",
+    "result": "PASS",
+    "label": "Project-scoped service key cannot fetch a different project"
+  },
+  {
+    "at": "2026-11-20T22:52:04.884Z",
+    "result": "PASS",
+    "label": "Account A inventory distinguishes source/secondary and preserves IDs across processes",
+    "installationCount": 2
+  },
+  {
+    "at": "2026-11-20T22:52:06.397Z",
+    "result": "PASS",
+    "label": "Account B inventory distinguishes source/secondary and preserves IDs across processes",
+    "installationCount": 2
+  },
+  {
+    "at": "2026-11-20T22:52:07.949Z",
+    "result": "PASS",
+    "label": "Account C inventory distinguishes source/secondary and preserves IDs across processes",
+    "installationCount": 2
+  },
+  {
+    "at": "2026-11-20T22:52:09.142Z",
+    "result": "PASS",
+    "label": "Read-only runtime bearer cannot create a project"
+  },
+  {
+    "at": "2026-11-20T22:52:13.070Z",
+    "result": "PASS",
+    "label": "Unprivileged read-only container start decrypts from protected runtime mount without password"
+  },
+  {
+    "at": "2026-11-20T22:52:13.997Z",
+    "result": "PASS",
+    "label": "Unprivileged read-only container restart decrypts from protected runtime mount without password"
+  },
+  {
+    "at": "2026-11-20T22:52:14.306Z",
+    "result": "PASS",
+    "label": "Container keeps distinct logical installation ID across restarts"
+  },
+  {
+    "at": "2026-11-20T22:52:48.208Z",
+    "result": "PASS",
+    "label": "Compromise rotation revokes old machine API credentials"
+  },
+  {
+    "at": "2026-11-20T22:52:49.795Z",
+    "result": "PASS",
+    "label": "New API credential alone cannot update old copied sync authority after compromise"
+  },
+  {
+    "at": "2026-11-20T22:52:50.915Z",
+    "result": "PASS",
+    "label": "Old vault password cannot bootstrap replacement epoch"
+  },
+  {
+    "at": "2026-11-20T22:52:52.104Z",
+    "result": "PASS",
+    "label": "Explicit new-password provisioning restores retained machine with stable installation ID"
+  },
+  {
+    "at": "2026-11-20T22:52:54.151Z",
+    "result": "PASS",
+    "label": "Re-provisioned machine decrypts historical and new-epoch records without further password prompts"
+  },
+  {
+    "at": "2026-11-20T22:52:56.529Z",
+    "result": "PASS",
+    "label": "Compromise changes for A preserve B/C vaults on the same machine"
+  },
+  {
+    "at": "2026-11-20T22:54:41.725Z",
+    "result": "PASS",
+    "label": "Agent37 VM cold reboot confirmed by changed kernel boot identity"
+  },
+  {
+    "at": "2026-11-20T22:54:42.991Z",
+    "result": "PASS",
+    "label": "After VM reboot account A reads correct value with unchanged installation and source-matching active key, no password"
+  },
+  {
+    "at": "2026-11-20T22:54:44.177Z",
+    "result": "PASS",
+    "label": "After VM reboot account B reads correct value with unchanged installation and source-matching active key, no password"
+  },
+  {
+    "at": "2026-11-20T22:54:45.392Z",
+    "result": "PASS",
+    "label": "After VM reboot account C reads correct value with unchanged installation and source-matching active key, no password"
+  },
+  {
+    "at": "2026-11-20T22:54:46.380Z",
+    "result": "PASS",
+    "label": "Saved A/B/C service-credential routing survives VM reboot"
+  },
+  {
+    "at": "2026-11-20T22:54:47.344Z",
+    "result": "PASS",
+    "label": "Protected runtime mount and unprivileged container read survive host VM reboot"
+  }
+]

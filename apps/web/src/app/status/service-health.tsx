@@ -23,7 +23,7 @@ export default function ServiceHealth() {
     setHealth("checking");
     let result: Health = "unknown";
     try {
-      const response = await fetch("/api/health", {
+      const response = await fetch("/api/passman/health", {
         cache: "no-store",
         credentials: "omit",
         signal: controller.signal,

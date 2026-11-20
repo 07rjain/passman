@@ -8,7 +8,7 @@ import {
   createSecretKey,
 } from "node:crypto";
 import path from "node:path";
-import { windowsPrivatePath, windowsReadPrivateFile } from "./windows.js";
+import { windowsPrivatePath, windowsReadPrivateBytes } from "./windows.js";
 import { posixPrivateDirectory } from "./paths.js";
 import {
   generateIdentity,
@@ -97,9 +97,22 @@ export async function readPrivateFile(
   file: string,
   max = 100000,
 ): Promise<string> {
+  const bytes = await readPrivateBytes(file, max);
+  try {
+    return bytes.toString("utf8");
+  } finally {
+    bytes.fill(0);
+  }
+}
+export async function readPrivateBytes(
+  file: string,
+  max = 100000,
+): Promise<Buffer> {
+  if (!Number.isInteger(max) || max < 0 || max > 100000)
+    throw new LocalVaultError();
   if (process.platform === "win32") {
     try {
-      return await windowsReadPrivateFile(file, max);
+      return await windowsReadPrivateBytes(file, max);
     } catch {
       throw new LocalVaultError();
     }
@@ -110,10 +123,12 @@ export async function readPrivateFile(
     throw new LocalVaultError();
   }
   const before = await lstat(file);
-  if (before.isSymbolicLink()) throw new LocalVaultError();
+  if (!before.isFile() || before.isSymbolicLink()) throw new LocalVaultError();
   const handle = await open(
     file,
-    constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0),
+    constants.O_RDONLY |
+      (constants.O_NOFOLLOW ?? 0) |
+      (constants.O_NONBLOCK ?? 0),
   );
   try {
     const info = await handle.stat();
@@ -126,7 +141,23 @@ export async function readPrivateFile(
       info.size > max
     )
       throw new LocalVaultError();
-    return await handle.readFile("utf8");
+    const result = Buffer.alloc(max + 1);
+    let length = 0;
+    while (length < result.length) {
+      const { bytesRead } = await handle.read(
+        result,
+        length,
+        result.length - length,
+        null,
+      );
+      if (!bytesRead) break;
+      length += bytesRead;
+    }
+    if (length > max) {
+      result.fill(0);
+      throw new LocalVaultError();
+    }
+    return result.subarray(0, length);
   } finally {
     await handle.close();
   }

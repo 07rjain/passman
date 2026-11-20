@@ -144,7 +144,7 @@ try {
   assert.equal(installed.code, 0, installed.output);
   await writeFile(
     path.join(consumer, "consumer.ts"),
-    "import {KeymanClient,type Identity} from '@07rjain/passman';declare const identity:Identity;const c=new KeymanClient({identity,serviceKey:'local',project:'test'});const v:Promise<string>=c.getSecret({name:'KEY'});void v;",
+    "import {KeymanClient,prepareEnvImport,type PreparedEnvImport,type Identity} from '@07rjain/passman';declare const identity:Identity;const c=new KeymanClient({identity,serviceKey:'local',project:'test'});const v:Promise<string>=c.getSecret({name:'KEY'});void v;const plan:Promise<PreparedEnvImport>=prepareEnvImport({identity,project:'test',source:'KEY=synthetic'});void plan;",
   );
   const typed = await run(
     process.execPath,
@@ -166,7 +166,7 @@ try {
   assert.equal(typed.code, 0, typed.output);
   await writeFile(
     path.join(consumer, "runtime.mjs"),
-    "import assert from 'node:assert/strict';import {KeymanClient,KeymanError,initializeIdentity,unlockIdentity} from '@07rjain/passman';assert.equal(typeof KeymanClient,'function');assert.equal(typeof initializeIdentity,'function');assert.equal(typeof unlockIdentity,'function');assert.equal(new KeymanError('NOT_FOUND').code,'NOT_FOUND');const i=await initializeIdentity('./vault','synthetic passphrase for test','https://passman.subdomain.wtf');assert.equal((await unlockIdentity('./vault','synthetic passphrase for test')).keyId,i.keyId);",
+    "import assert from 'node:assert/strict';import {KeymanClient,KeymanError,initializeIdentity,unlockIdentity,parseEnv,prepareEnvImport} from '@07rjain/passman';assert.equal(typeof KeymanClient,'function');assert.equal(typeof initializeIdentity,'function');assert.equal(typeof unlockIdentity,'function');assert.equal(typeof prepareEnvImport,'function');assert.equal(parseEnv('KEY=synthetic')[0].name,'KEY');assert.equal(new KeymanError('NOT_FOUND').code,'NOT_FOUND');const i=await initializeIdentity('./vault','synthetic passphrase for test','https://passman.subdomain.wtf');assert.equal((await unlockIdentity('./vault','synthetic passphrase for test')).keyId,i.keyId);",
   );
   const runtime = await run(process.execPath, ["runtime.mjs"], {
     cwd: consumer,

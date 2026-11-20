@@ -4,6 +4,10 @@ Keep your current encrypted vault file. Reinstallation, repeated signup or gener
 
 | Symptom | Action |
 | --- | --- |
+| Import reports line/reason issues | Correct the local file without pasting values into chat. No entries were imported. See [supported dotenv syntax](env-import.md#supported-syntax-and-limits). |
+| Import conflict / empty-value warning | Review key names and choose `--skip-existing` or `--replace` deliberately; selected empty values require `--allow-empty`. `--yes` does not waive these checks. |
+| Import outcome unknown | The entire transaction may have committed. Inspect project metadata/revisions before a deliberate retry; never automatically repeat replacements. |
+| Import file cannot be read | Check the path, 64 KiB limit, regular-file status and owner-only private input permissions; preserve the existing vault. |
 | `passman: command not found` on macOS/Linux | Rerun the maintained installer, then open a new Bash/Zsh/POSIX login terminal or run `. "$HOME/.local/share/passman/env"` once in the current terminal. For a custom installation directory use the exact activation command printed by the installer. Unsafe/symlinked profiles are preserved with a warning; see [installation](releases.md#install-sign-in-use) for manual configuration and opt-out. |
 | `UNAVAILABLE` before the approval URL | Check `/api/health`. Operators verify database connectivity, migration version 2, audit INSERT/sequence privileges, origin and Clerk verifier configuration. A new deployment needs a deliberate migration. |
 | Local vault will not unlock | Check the passphrase, directory and owner-only permissions. Do not delete the file. There is no passphrase reset that recovers its private key. |

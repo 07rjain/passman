@@ -1,0 +1,133 @@
+.console {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 40px 28px 80px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid var(--green);
+}
+.header h1 {
+  margin: 0;
+  font-size: 34px;
+  letter-spacing: -1px;
+}
+.header p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  max-width: 65ch;
+}
+.section {
+  margin-top: 36px;
+}
+.section h2 {
+  font-size: 22px;
+  margin: 0 0 10px;
+}
+.section p {
+  max-width: 72ch;
+  line-height: 1.55;
+}
+.split {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(300px, 1.5fr);
+  gap: 32px;
+}
+.form {
+  display: grid;
+  gap: 14px;
+  background: white;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.form label {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+}
+.form textarea {
+  resize: vertical;
+  min-height: 100px;
+  font: inherit;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.form small {
+  font-weight: 400;
+  color: var(--muted);
+}
+.notice {
+  background: #e8f0e9;
+  padding: 18px 22px;
+  border-radius: 8px;
+  line-height: 1.5;
+}
+.status {
+  padding: 12px 0;
+  min-height: 44px;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.table th {
+  text-align: left;
+  color: var(--muted);
+  font-weight: 500;
+}
+.table td,
+.table th {
+  padding: 14px 10px;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.scroll {
+  overflow-x: auto;
+}
+.key {
+  overflow-wrap: anywhere;
+  user-select: all;
+  display: block;
+  padding: 16px;
+  background: #e8f0e9;
+  border-radius: 8px;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+.console :is(button, input, select, textarea):focus-visible {
+  outline: 3px solid #467baf;
+  outline-offset: 3px;
+}
+@media (max-width: 700px) {
+  .console {
+    padding: 24px 18px;
+  }
+  .header {
+    align-items: flex-start;
+  }
+  .header h1 {
+    font-size: 28px;
+  }
+  .split {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .table td,
+  .table th {
+    padding: 12px 7px;
+  }
+}

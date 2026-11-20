@@ -293,13 +293,22 @@ function SignInAction({
 export default function Landing({
   authConfigured = true,
   authReady = true,
+  fresh = false,
 }: {
   authConfigured?: boolean;
   authReady?: boolean;
+  fresh?: boolean;
 }) {
   const [platform, setPlatform] = useState<"unix" | "windows">("unix");
   const tabsId = useId();
-  const command = installCommands[platform];
+  const command = fresh
+    ? installCommands[platform]
+        .replace("install.sh", "install-v1.sh")
+        .replaceAll("install.ps1", "install-v1.ps1")
+    : installCommands[platform];
+  const example = fresh
+    ? `import { connect } from '@passman/sdk';\n\nconst client = await connect();\nconst value = await client.getSecret({\n  project: 'my-app',\n  name: 'PAYMENTS_KEY',\n});`
+    : sdkExample;
   return (
     <div className={styles.landing}>
       <a className={styles.skipLink} href="#main-content">
@@ -403,8 +412,9 @@ export default function Landing({
             <div>
               <h2>Local keys. Your control.</h2>
               <p>
-                Your private key lives in a passphrase-encrypted vault on your
-                machine.
+                {fresh
+                  ? "Your machine stores the runtime key in OS-protected or explicitly configured deployment storage."
+                  : "Your private key lives in a passphrase-encrypted vault on your machine."}
               </p>
             </div>
           </article>
@@ -481,34 +491,42 @@ export default function Landing({
                 <span className={styles.fileDot} />
                 your-app.ts
               </span>
-              <CopyButton text={sdkExample} label="Copy SDK example" />
+              <CopyButton text={example} label="Copy SDK example" />
             </div>
             <pre tabIndex={0} aria-label="TypeScript SDK example">
               <code>
-                <span className={styles.syntaxKeyword}>import</span>
-                {" { KeymanClient, unlockIdentity } "}
-                <span className={styles.syntaxKeyword}>from</span>
-                {"\n  "}
-                <span className={styles.syntaxString}>
-                  {"'@07rjain/passman'"}
-                </span>
-                {";\n\n"}
-                <span className={styles.syntaxKeyword}>const</span>
-                {" identity = "}
-                <span className={styles.syntaxKeyword}>await</span>
-                {" unlockIdentity(\n  directory, passphrase,\n);\n"}
-                <span className={styles.syntaxKeyword}>const</span>
-                {" client = "}
-                <span className={styles.syntaxKeyword}>new</span>
-                {" KeymanClient({\n  identity,\n  serviceKey,\n  project: "}
-                <span className={styles.syntaxString}>{"'my-app'"}</span>
-                {",\n});\n\n"}
-                <span className={styles.syntaxKeyword}>const</span>
-                {" value = "}
-                <span className={styles.syntaxKeyword}>await</span>
-                {" client.getSecret({\n  name: "}
-                <span className={styles.syntaxString}>{"'PAYMENTS_KEY'"}</span>
-                {",\n});"}
+                {fresh ? (
+                  example
+                ) : (
+                  <>
+                    <span className={styles.syntaxKeyword}>import</span>
+                    {" { KeymanClient, unlockIdentity } "}
+                    <span className={styles.syntaxKeyword}>from</span>
+                    {"\n  "}
+                    <span className={styles.syntaxString}>
+                      {"'@07rjain/passman'"}
+                    </span>
+                    {";\n\n"}
+                    <span className={styles.syntaxKeyword}>const</span>
+                    {" identity = "}
+                    <span className={styles.syntaxKeyword}>await</span>
+                    {" unlockIdentity(\n  directory, passphrase,\n);\n"}
+                    <span className={styles.syntaxKeyword}>const</span>
+                    {" client = "}
+                    <span className={styles.syntaxKeyword}>new</span>
+                    {" KeymanClient({\n  identity,\n  serviceKey,\n  project: "}
+                    <span className={styles.syntaxString}>{"'my-app'"}</span>
+                    {",\n});\n\n"}
+                    <span className={styles.syntaxKeyword}>const</span>
+                    {" value = "}
+                    <span className={styles.syntaxKeyword}>await</span>
+                    {" client.getSecret({\n  name: "}
+                    <span className={styles.syntaxString}>
+                      {"'PAYMENTS_KEY'"}
+                    </span>
+                    {",\n});"}
+                  </>
+                )}
               </code>
             </pre>
             <div className={styles.codeFooter}>
@@ -647,7 +665,9 @@ export default function Landing({
                       ? "passman login"
                       : '& "$env:LOCALAPPDATA\\Passman\\bin\\passman.cmd" login'}
                   </code>{" "}
-                  and approve the request in your browser.
+                  {fresh
+                    ? "then run passman-v1 init to set up your vault once."
+                    : "and approve the request in your browser."}
                 </p>
               </div>
             </div>
@@ -656,7 +676,9 @@ export default function Landing({
               <div className={styles.stepContent}>
                 <h3>Add a project. Store your first value.</h3>
                 <p>
-                  Create a project in your workspace, then run{" "}
+                  {fresh
+                    ? "Create a project, then run passman-v1 put with your --account UUID: "
+                    : "Create a project in your workspace, then run "}
                   <code>
                     {platform === "unix"
                       ? "passman put --project my-app --name PAYMENTS_KEY"
@@ -699,7 +721,9 @@ export default function Landing({
               ],
               [
                 "What happens if I lose my private key?",
-                "There is no private-key recovery, reset or transfer service. Signing in cannot replace a lost key or recover its ciphertext. Keep access to your existing local vault and its passphrase.",
+                fresh
+                  ? "Use your vault password once to unlock encrypted synchronized key material on a new machine, or transfer runtime access with an expiring code. Account login alone cannot decrypt your secrets. Ordinary reads use configured local custody without that password."
+                  : "There is no private-key recovery, reset or transfer service. Signing in cannot replace a lost key or recover its ciphertext. Keep access to your existing local vault and its passphrase.",
               ],
               [
                 "Can I use this with an AI agent?",

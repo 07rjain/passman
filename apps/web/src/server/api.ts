@@ -13,6 +13,8 @@ import {
   envelopeSchema,
   type ErrorCode,
   type Vault,
+  importContextInputSchema,
+  importInputSchema,
 } from "@keyman-mvp/core";
 import type { Human } from "./auth";
 import { transaction as databaseTransaction } from "./database";
@@ -66,6 +68,7 @@ type Account = {
   key_id: string;
 };
 type Credential = {
+  id: string;
   accountId: string;
   kind: "read" | "upload";
   projectId: string | null;
@@ -263,7 +266,12 @@ export function createApi(options: {
           : "CREDENTIAL_EXPIRED";
       throw new ApiError("UNAUTHORIZED", 401);
     }
-    return { accountId: row.account_id, kind, projectId: row.project_id };
+    return {
+      id: row.id,
+      accountId: row.account_id,
+      kind,
+      projectId: row.project_id,
+    };
   }
   async function project(
     client: PoolClient,
@@ -453,6 +461,111 @@ export function createApi(options: {
             [input.id, owner.id],
           );
           return Response.json({ approved: true });
+        });
+      }
+      if (path === "/api/upload/import-context" && method === "POST") {
+        const actor = await credential(req, "upload");
+        const input = importContextInputSchema.parse(await body(req));
+        return await transaction(pool, async (client) => {
+          const p = await project(client, actor.accountId, input.project);
+          const owner = (
+            await client.query<Account>(
+              "SELECT * FROM keyman_mvp.accounts WHERE id=$1",
+              [actor.accountId],
+            )
+          ).rows[0]!;
+          const rows = (
+            await client.query<{ name: string; revision: number }>(
+              "SELECT name,revision FROM keyman_mvp.secrets WHERE project_id=$1 AND name=ANY($2::text[])",
+              [p.id, input.names],
+            )
+          ).rows;
+          const revisions = new Map(
+            rows.map((row) => [row.name, row.revision]),
+          );
+          return Response.json({
+            vault: vault(owner),
+            project: p,
+            entries: input.names.map((name) => ({
+              name,
+              revision: revisions.get(name) ?? 0,
+            })),
+          });
+        });
+      }
+      if (path === "/api/upload/import" && method === "POST") {
+        const actor = await credential(req, "upload");
+        const input = importInputSchema.parse(await body(req));
+        identify({ resourceId: input.projectId });
+        return await transaction(pool, async (client) => {
+          await client.query(
+            "SELECT pg_advisory_xact_lock(hashtextextended($1,0))",
+            [actor.accountId],
+          );
+          // Recheck after lock waits; parsing/encryption must not extend authority.
+          if (
+            !(
+              await client.query(
+                "SELECT 1 FROM keyman_mvp.credentials WHERE id=$1 AND revoked=false AND expires_at>$2",
+                [actor.id, time()],
+              )
+            ).rowCount
+          )
+            throw new ApiError("UNAUTHORIZED", 401);
+          const owner = (
+            await client.query<Account>(
+              "SELECT * FROM keyman_mvp.accounts WHERE id=$1",
+              [actor.accountId],
+            )
+          ).rows[0];
+          if (
+            !owner ||
+            input.entries.some((entry) => entry.envelope.keyId !== owner.key_id)
+          )
+            throw new ApiError("KEY_MISMATCH", 409);
+          if (
+            !(
+              await client.query(
+                "SELECT 1 FROM keyman_mvp.projects WHERE id=$1 AND account_id=$2",
+                [input.projectId, actor.accountId],
+              )
+            ).rowCount
+          )
+            throw new ApiError("NOT_FOUND", 404);
+          const existing = (
+            await client.query<{ name: string; revision: number }>(
+              "SELECT name,revision FROM keyman_mvp.secrets WHERE project_id=$1 AND name=ANY($2::text[]) FOR UPDATE",
+              [input.projectId, input.entries.map((entry) => entry.name)],
+            )
+          ).rows;
+          const revisions = new Map(
+            existing.map((row) => [row.name, row.revision]),
+          );
+          if (
+            input.entries.some(
+              (entry) =>
+                (revisions.get(entry.name) ?? 0) !== entry.expectedRevision,
+            )
+          )
+            throw new ApiError("CONFLICT", 409);
+          for (const entry of input.entries) {
+            await client.query(
+              "INSERT INTO keyman_mvp.secrets(account_id,project_id,name,revision,envelope) VALUES($1,$2,$3,$4,$5) ON CONFLICT(project_id,name) DO UPDATE SET revision=EXCLUDED.revision,envelope=EXCLUDED.envelope",
+              [
+                actor.accountId,
+                input.projectId,
+                entry.name,
+                entry.expectedRevision + 1,
+                entry.envelope,
+              ],
+            );
+          }
+          return Response.json({
+            imported: input.entries.map((entry) => ({
+              name: entry.name,
+              revision: entry.expectedRevision + 1,
+            })),
+          });
         });
       }
       if (path === "/api/upload/context" && method === "POST") {

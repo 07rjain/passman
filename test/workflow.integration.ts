@@ -25,6 +25,8 @@ import {
   startLogin,
   pollLogin,
   uploadValue,
+  prepareEnvImport,
+  ImportCommitError,
   KeymanClient,
   KeymanError,
   type Identity,
@@ -616,6 +618,337 @@ await test("MVP: built Next.js, real JWT verification/PostgreSQL enrollment, enc
         await run(["check", "--project", "production", "--name", "CLI_VALUE"]),
         /Found/,
       );
+    },
+  );
+  await t.test(
+    "dotenv import: atomic encrypted batches, conflict policies, races, tenant/credential boundaries, audit rollback and actual CLI",
+    async () => {
+      const plan = (
+        source: string,
+        conflicts: "error" | "skip" | "replace" = "error",
+        allowEmpty = false,
+      ) =>
+        prepareEnvImport({
+          identity: alice,
+          project: "production",
+          source,
+          conflicts,
+          allowEmpty,
+          transport,
+        });
+      await uploadValue(
+        alice,
+        "production",
+        "ENV_EXISTS",
+        "synthetic-original-env",
+        false,
+        transport,
+      );
+      const blocked = await plan(
+        "ENV_NEW=synthetic-imported-env\nENV_EXISTS=synthetic-replaced-env",
+      );
+      assert.equal(blocked.preview.conflicts, 1);
+      await assert.rejects(blocked.commit());
+      assert.equal(await client.hasSecret({ name: "ENV_NEW" }), false);
+      const skip = await plan(
+        "ENV_NEW=synthetic-imported-env\nENV_EXISTS=synthetic-replaced-env",
+        "skip",
+      );
+      assert.deepEqual((await skip.commit()).skipped, ["ENV_EXISTS"]);
+      assert.equal(
+        await client.getSecret({ name: "ENV_EXISTS" }),
+        "synthetic-original-env",
+      );
+      const empty = await plan(
+        "ENV_EMPTY=\nENV_EXISTS=synthetic-replaced-env",
+        "replace",
+      );
+      await assert.rejects(empty.commit());
+      const replacement = await plan(
+        "ENV_EMPTY=\nENV_EXISTS=synthetic-replaced-env",
+        "replace",
+        true,
+      );
+      assert.equal((await replacement.commit()).imported.length, 2);
+      assert.equal(await client.getSecret({ name: "ENV_EMPTY" }), "");
+      assert.equal(
+        await client.getSecret({ name: "ENV_EXISTS" }),
+        "synthetic-replaced-env",
+      );
+      const stale = await plan(
+        "ENV_STALE=synthetic-stale\nENV_NEW=synthetic-must-not-replace",
+        "replace",
+      );
+      await uploadValue(
+        alice,
+        "production",
+        "ENV_STALE",
+        "synthetic-concurrent",
+        false,
+        transport,
+      );
+      await assert.rejects(
+        stale.commit(),
+        (e: unknown) =>
+          e instanceof ImportCommitError &&
+          e.code === "CONFLICT" &&
+          e.outcome === "not-applied",
+      );
+      assert.equal(
+        await client.getSecret({ name: "ENV_NEW" }),
+        "synthetic-imported-env",
+      );
+      const races = await Promise.all([
+        plan("ENV_RACE=synthetic-race-a\nENV_ONLY_A=synthetic-only-a"),
+        plan("ENV_RACE=synthetic-race-b\nENV_ONLY_B=synthetic-only-b"),
+      ]);
+      const results = await Promise.allSettled(races.map((p) => p.commit()));
+      assert.equal(results.filter((r) => r.status === "fulfilled").length, 1);
+      assert.equal(
+        (
+          await owner.query(
+            "SELECT name FROM keyman_mvp.secrets WHERE project_id=$1 AND name=ANY($2::text[])",
+            [p.id, ["ENV_RACE", "ENV_ONLY_A", "ENV_ONLY_B"]],
+          )
+        ).rowCount,
+        2,
+      );
+
+      // Capture ciphertext only to exercise request-boundary denials and atomic rollback.
+      let encryptedBody = "";
+      const capture: Transport = async (url, init) => {
+        if (String(url).endsWith("/api/upload/import"))
+          encryptedBody = String(init?.body);
+        return transport(url, init);
+      };
+      const original = await prepareEnvImport({
+        identity: alice,
+        project: "production",
+        source: "ENV_BODY_A=synthetic-body-a\nENV_BODY_B=synthetic-body-b",
+        transport: capture,
+      });
+      await original.commit();
+      const body = JSON.parse(encryptedBody);
+      const invoke = (
+        input: unknown,
+        token = alice.upload!.token,
+        route = "/api/upload/import",
+      ) =>
+        fetch(origin + route, {
+          method: "POST",
+          headers: {
+            authorization: "Bearer " + token,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(input),
+        });
+      assert.equal((await invoke(body, read.token)).status, 401);
+      assert.equal(
+        (
+          await invoke(
+            { project: "production", names: ["ENV_BODY_A"] },
+            read.token,
+            "/api/upload/import-context",
+          )
+        ).status,
+        401,
+      );
+      assert.equal((await invoke(body, bob.upload!.token)).status, 409);
+      assert.equal(
+        (await invoke({ ...body, projectId: randomUUID() })).status,
+        404,
+      );
+      assert.equal(
+        (await invoke({ ...body, entries: [body.entries[0], body.entries[0]] }))
+          .status,
+        400,
+      );
+      assert.equal(
+        (
+          await invoke({
+            ...body,
+            entries: [body.entries[0], { ...body.entries[1], envelope: {} }],
+          })
+        ).status,
+        400,
+      );
+      assert.equal(
+        (
+          await invoke({
+            ...body,
+            entries: [
+              {
+                ...body.entries[0],
+                envelope: {
+                  ...body.entries[0].envelope,
+                  keyId: "b".repeat(43),
+                },
+              },
+            ],
+          })
+        ).status,
+        409,
+      );
+      assert.equal(
+        (await invoke({ ...body, padding: "x".repeat(120000) })).status,
+        400,
+      );
+
+      // An approval that expires during a database lock wait cannot authorize a batch.
+      const expiresDuringWait = await plan("ENV_WAIT=synthetic-must-not-save");
+      const blocker = await owner.connect();
+      const digest = createHash("sha256")
+        .update(alice.upload!.token)
+        .digest("hex");
+      await blocker.query("BEGIN");
+      await blocker.query(
+        "SELECT pg_advisory_xact_lock(hashtextextended($1,0))",
+        [alice.vault!.accountId],
+      );
+      const waiting = expiresDuringWait.commit().then(
+        () => undefined,
+        (error) => error,
+      );
+      try {
+        let blocked = false;
+        for (let n = 0; n < 100; n++) {
+          if (
+            (
+              await owner.query(
+                "SELECT 1 FROM pg_stat_activity WHERE wait_event_type='Lock' AND query LIKE 'SELECT pg_advisory_xact_lock%'",
+              )
+            ).rowCount
+          ) {
+            blocked = true;
+            break;
+          }
+          await delay(10);
+        }
+        assert.equal(blocked, true);
+        await owner.query(
+          "UPDATE keyman_mvp.credentials SET expires_at=1 WHERE hash=$1",
+          [digest],
+        );
+      } finally {
+        await blocker.query("COMMIT");
+        blocker.release();
+      }
+      try {
+        const failure = await waiting;
+        assert.ok(
+          failure instanceof ImportCommitError &&
+            failure.code === "UNAUTHORIZED",
+        );
+        assert.equal(await client.hasSecret({ name: "ENV_WAIT" }), false);
+      } finally {
+        await owner.query(
+          "UPDATE keyman_mvp.credentials SET expires_at=$1 WHERE hash=$2",
+          [alice.upload!.expiresAt, digest],
+        );
+      }
+
+      const failedAudit = await plan(
+        "ENV_ROLLBACK_A=synthetic-rollback-a\nENV_ROLLBACK_B=synthetic-rollback-b",
+      );
+      await owner.query(
+        "REVOKE INSERT ON keyman_mvp.audit_events FROM keyman_mvp_test_runtime",
+      );
+      try {
+        await assert.rejects(failedAudit.commit());
+      } finally {
+        await owner.query(
+          "GRANT INSERT ON keyman_mvp.audit_events TO keyman_mvp_test_runtime",
+        );
+      }
+      assert.equal(
+        (
+          await owner.query(
+            "SELECT 1 FROM keyman_mvp.secrets WHERE project_id=$1 AND name=ANY($2::text[])",
+            [p.id, ["ENV_ROLLBACK_A", "ENV_ROLLBACK_B"]],
+          )
+        ).rowCount,
+        0,
+      );
+      const events = (
+        await owner.query(
+          "SELECT * FROM keyman_mvp.audit_events WHERE action='secret.import' AND account_id=$1",
+          [alice.vault!.accountId],
+        )
+      ).rows;
+      assert.ok(events.some((e) => e.outcome === "success"));
+      assert.ok(
+        events.some((e) => e.outcome === "denied" && e.reason === "CONFLICT"),
+      );
+      const audit = JSON.stringify(events);
+      for (const forbidden of [
+        "synthetic-imported-env",
+        "ENV_BODY_A",
+        "ciphertext",
+        alice.upload!.token,
+        alice.privateKey.d,
+      ])
+        assert.ok(!audit.includes(forbidden));
+
+      const file = path.join(first.dir, ".env-import-test"),
+        passwordFile = path.join(first.dir, "env-passphrase");
+      await writeFile(
+        file,
+        'ENV_CLI="synthetic-cli-imported"\nENV_REF=${ENV_CLI}',
+        { mode: 0o600 },
+      );
+      await writeFile(passwordFile, "synthetic-local-passphrase", {
+        mode: 0o600,
+      });
+      const cli = path.join(root, "packages/client/dist/cli.js");
+      async function runImport(flags: string[]) {
+        const child = spawn(
+          process.execPath,
+          [
+            cli,
+            "import",
+            "--project",
+            "production",
+            "--file",
+            file,
+            "--directory",
+            first.dir,
+            "--passphrase-file",
+            passwordFile,
+            ...flags,
+          ],
+          {
+            env: { PATH: process.env.PATH ?? "" },
+            stdio: ["ignore", "pipe", "pipe"],
+          },
+        );
+        let output = "";
+        child.stdout.on("data", (b: Buffer) => {
+          output += b.toString();
+        });
+        child.stderr.on("data", (b: Buffer) => {
+          output += b.toString();
+        });
+        const [code] = await once(child, "exit");
+        assert.equal(
+          code,
+          0,
+          "Actual CLI import failed (sensitive output withheld)",
+        );
+        assert.ok(!output.includes("synthetic-cli-imported"));
+        assert.ok(!output.includes("${ENV_CLI}"));
+        return output;
+      }
+      assert.match(await runImport(["--dry-run"]), /Dry run complete/);
+      assert.equal(await client.hasSecret({ name: "ENV_CLI" }), false);
+      assert.match(
+        await runImport(["--yes"]),
+        /Imported 2 encrypted values atomically/,
+      );
+      assert.equal(
+        await client.getSecret({ name: "ENV_CLI" }),
+        "synthetic-cli-imported",
+      );
+      assert.equal(await client.getSecret({ name: "ENV_REF" }), "${ENV_CLI}");
     },
   );
   await t.test(

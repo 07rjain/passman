@@ -13,6 +13,10 @@ import {
   KeymanClient,
   KeymanError,
   LocalVaultError,
+  prepareEnvImport,
+  readEnvFile,
+  EnvImportError,
+  ImportCommitError,
   type Identity,
   type Transport,
 } from "./index.js";
@@ -46,9 +50,9 @@ export async function runCli(args: string[], runtime: CliRuntime) {
     runtime.print(metadata.version);
     return;
   }
-  if (!["login", "put", "search", "check"].includes(command ?? "")) {
+  if (!["login", "put", "import", "search", "check"].includes(command ?? "")) {
     runtime.print(
-      "Passman: login (or signin); put --project NAME --name KEY [--replace]; search --project NAME [--query TEXT]; check --project NAME --name KEY; --version. Interactive put renews expired upload authorization through browser approval before secret input; noninteractive put requires prior login. No command prints provider values. Optional --url ORIGIN, --directory, --passphrase-file, --value-file, --no-browser. Default service: https://passman.subdomain.wtf.",
+      "Passman: login (or signin); put --project NAME --name KEY [--replace]; import --project NAME --file PATH [--dry-run] [--skip-existing | --replace] [--allow-empty] [--yes]; search --project NAME [--query TEXT]; check --project NAME --name KEY; --version. Interactive put/import renew expired upload authorization before secret input; noninteractive use requires prior login. Import previews names only, then requires confirmation (--yes for automation). No command prints provider values. Optional --url ORIGIN, --directory, --passphrase-file, --value-file, --no-browser. Default service: https://passman.subdomain.wtf.",
     );
     return;
   }
@@ -85,7 +89,8 @@ export async function runCli(args: string[], runtime: CliRuntime) {
     );
   let identity = exists
     ? await unlockIdentity(directory, password, {
-        administrative: command === "login" || command === "put",
+        administrative:
+          command === "login" || command === "put" || command === "import",
       })
     : await initializeIdentity(
         directory,
@@ -133,9 +138,18 @@ export async function runCli(args: string[], runtime: CliRuntime) {
     await authorize(identity);
     return;
   }
-  if (command === "put") {
-    const project = option("project"),
-      name = option("name");
+  if (command === "put" || command === "import") {
+    const project = option("project");
+    const name = command === "put" ? option("name") : "";
+    const importFile = command === "import" ? option("file") : "";
+    if (
+      command === "import" &&
+      args.includes("--replace") &&
+      args.includes("--skip-existing")
+    )
+      throw new CliError(
+        "Choose either --replace or --skip-existing, not both.",
+      );
     if (!hasUploadAuthorization(identity)) {
       if (!runtime.interactive)
         throw new CliError(
@@ -145,6 +159,70 @@ export async function runCli(args: string[], runtime: CliRuntime) {
         "Upload authorization is missing or expired. Approve this vault in your browser to renew it before entering a secret.",
       );
       identity = await authorize(identity);
+    }
+    if (command === "import") {
+      let source: Uint8Array;
+      try {
+        source = await readEnvFile(importFile);
+      } catch {
+        throw new CliError(
+          "Could not read the .env file. Check that it exists, is at most 64 KiB and has owner-only access inside a private directory with safe parent paths (NTFS ACLs on Windows).",
+        );
+      }
+      let prepared;
+      try {
+        prepared = await prepareEnvImport({
+          identity,
+          project,
+          source,
+          conflicts: args.includes("--replace")
+            ? "replace"
+            : args.includes("--skip-existing")
+              ? "skip"
+              : "error",
+          allowEmpty: args.includes("--allow-empty"),
+          transport: runtime.transport,
+        });
+      } finally {
+        source.fill(0);
+      }
+      const preview = prepared.preview;
+      runtime.print(
+        `Import into project ${JSON.stringify(preview.project)}: ${preview.create} new, ${preview.replace} replacements, ${preview.skip} skipped, ${preview.conflicts} conflicts, ${preview.empty} selected empty values.`,
+      );
+      for (const entry of preview.entries)
+        runtime.print(
+          `${entry.name}: ${entry.action}${entry.empty ? " (empty)" : ""}${entry.literalReferences ? " (literal reference; no expansion or execution)" : ""}`,
+        );
+      if (preview.conflicts)
+        throw new CliError(
+          "Existing keys conflict. No values were saved. Review and choose --skip-existing or --replace explicitly.",
+        );
+      if (!preview.ready)
+        throw new CliError(
+          "Empty values require acknowledgement with --allow-empty. No values were saved.",
+        );
+      if (args.includes("--dry-run")) {
+        runtime.print("Dry run complete. No values were saved.");
+        return;
+      }
+      if (!args.includes("--yes")) {
+        if (!runtime.interactive)
+          throw new CliError(
+            "Import requires confirmation. Review --dry-run, then rerun with --yes to save. No values were saved.",
+          );
+        if (
+          (await runtime.prompt(
+            "Type IMPORT to save this batch (values remain hidden): ",
+          )) !== "IMPORT"
+        )
+          throw new CliError("Import cancelled. No values were saved.");
+      }
+      const result = await prepared.commit();
+      runtime.print(
+        `Imported ${result.imported.length} encrypted values atomically; skipped ${result.skipped.length}.`,
+      );
+      return;
     }
     const file = option("value-file", false),
       value = file
@@ -188,13 +266,16 @@ export async function runCli(args: string[], runtime: CliRuntime) {
 
 export function cliErrorMessage(error: unknown, command?: string): string {
   if (error instanceof CliError) return error.message;
+  if (error instanceof EnvImportError || error instanceof ImportCommitError)
+    return error.message;
   if (error instanceof LocalVaultError)
     return "Could not unlock the local vault or read a protected file. Check the local vault passphrase (not your website password), file ownership and permissions. Keep your existing vault file.";
   if (error instanceof KeymanError) {
     const tip =
       error.code === "EXPIRED"
         ? " Browser approval or upload authorization expired. Run passman login with the same vault and approve the request, then retry."
-        : error.code === "UNAUTHORIZED" && command === "put"
+        : error.code === "UNAUTHORIZED" &&
+            (command === "put" || command === "import")
           ? " Upload authorization was rejected. Run passman login with the same vault, then retry."
           : "";
     return error.message + tip;

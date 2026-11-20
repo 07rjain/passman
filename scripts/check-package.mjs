@@ -53,7 +53,7 @@ try {
   );
   await writeFile(
     path.join(directory, "check.mjs"),
-    `import assert from 'node:assert/strict';import {generateIdentity,encryptValue,decryptValue} from '@keyman-mvp/core';import {KeymanClient,KeymanError} from '@keyman-mvp/client';const i=await generateIdentity();const c={version:1,accountId:crypto.randomUUID(),vaultId:crypto.randomUUID(),projectId:crypto.randomUUID(),project:'demo',name:'KEY',revision:1};const e=await encryptValue('synthetic-value',i.publicKey,c);assert.equal(await decryptValue(e,i.privateKey,c),'synthetic-value');assert.equal(typeof KeymanClient,'function');assert.equal(new KeymanError('NOT_FOUND').code,'NOT_FOUND');`,
+    `import assert from 'node:assert/strict';import {generateIdentity,encryptValue,decryptValue} from '@keyman-mvp/core';import {KeymanClient,KeymanError,parseEnv,prepareEnvImport} from '@keyman-mvp/client';const i=await generateIdentity();const c={version:1,accountId:crypto.randomUUID(),vaultId:crypto.randomUUID(),projectId:crypto.randomUUID(),project:'demo',name:'KEY',revision:1};const e=await encryptValue('synthetic-value',i.publicKey,c);assert.equal(await decryptValue(e,i.privateKey,c),'synthetic-value');assert.equal(typeof KeymanClient,'function');assert.equal(new KeymanError('NOT_FOUND').code,'NOT_FOUND');assert.equal(parseEnv('KEY=synthetic-value')[0].name,'KEY');const profile={version:1,origin:'https://artifact.test',...i,vault:{id:c.vaultId,accountId:c.accountId,publicKey:i.publicKey,keyId:i.keyId},upload:{token:'kmu_'+'a'.repeat(43),expiresAt:Math.floor(Date.now()/1000)+1200}};const prepared=await prepareEnvImport({identity:profile,project:'demo',source:'KEY=synthetic-value',transport:async url=>Response.json(String(url).endsWith('import-context')?{vault:profile.vault,project:{id:c.projectId,name:'demo'},entries:[{name:'KEY',revision:0}]}:{imported:[{name:'KEY',revision:1}]})});assert.ok(!JSON.stringify(prepared).includes('synthetic-value'));assert.equal((await prepared.commit()).imported.length,1);`,
   );
   execFileSync(process.execPath, ["check.mjs"], {
     cwd: directory,
@@ -61,7 +61,7 @@ try {
   });
   await writeFile(
     path.join(directory, "consumer.ts"),
-    `import {KeymanClient,type Identity} from '@keyman-mvp/client';declare const identity:Identity;const client=new KeymanClient({identity,project:'demo',serviceKey:'configured-locally'});const result:Promise<string>=client.getSecret({name:'KEY'});void result;`,
+    `import {KeymanClient,prepareEnvImport,type PreparedEnvImport,type Identity} from '@keyman-mvp/client';declare const identity:Identity;const client=new KeymanClient({identity,project:'demo',serviceKey:'configured-locally'});const result:Promise<string>=client.getSecret({name:'KEY'});void result;const plan:Promise<PreparedEnvImport>=prepareEnvImport({identity,project:'demo',source:'KEY=synthetic'});void plan;`,
   );
   execFileSync(
     process.execPath,

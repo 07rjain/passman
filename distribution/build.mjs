@@ -16,17 +16,22 @@ import { execFileSync } from "node:child_process";
 const root = path.resolve(import.meta.dirname, "..");
 export async function buildDistribution(
   output = path.join(root, "ignore-docs/releases"),
+  packageDirectory = "client",
 ) {
   const stage = await mkdtemp(path.join(tmpdir(), "passman-release-"));
   try {
     const client = JSON.parse(
-      await readFile(path.join(root, "packages/client/package.json"), "utf8"),
+      await readFile(
+        path.join(root, `packages/${packageDirectory}/package.json`),
+        "utf8",
+      ),
     );
-    if (!/^\d+\.\d+\.\d+$/.test(client.version))
-      throw Error("Release must use a stable semantic version");
+    if (!/^\d+\.\d+\.\d+(?:-alpha\.\d+)?$/.test(client.version))
+      throw Error("Release must use a supported semantic version");
     const metadata = {
       ...client,
-      name: "@07rjain/passman",
+      name:
+        packageDirectory === "passman" ? "@passman/sdk" : "@07rjain/passman",
       private: true,
       scripts: undefined,
       files: ["dist", "node_modules", "README.md", "LICENSE", "THIRD_PARTY.md"],
@@ -34,11 +39,11 @@ export async function buildDistribution(
       repository: {
         type: "git",
         url: "https://github.com/07rjain/passman.git",
-        directory: "packages/client",
+        directory: `packages/${packageDirectory}`,
       },
     };
     await cp(
-      path.join(root, "packages/client/dist"),
+      path.join(root, `packages/${packageDirectory}/dist`),
       path.join(stage, "dist"),
       { recursive: true },
     );
@@ -85,7 +90,7 @@ export async function buildDistribution(
       }
       seen.set(name, p.version);
       const target = path.join(stage, "node_modules", name);
-      if (name === "@keyman-mvp/core") {
+      if (["@keyman-mvp/core", "@passman/protocol"].includes(name)) {
         await mkdir(target, { recursive: true });
         await cp(
           path.join(source, "package.json"),
@@ -112,14 +117,16 @@ export async function buildDistribution(
         await include(dependency, source);
     }
     for (const name of Object.keys(client.dependencies))
-      await include(name, path.join(root, "packages/client"));
+      await include(name, path.join(root, "packages", packageDirectory));
     await writeFile(
       path.join(stage, "package.json"),
       JSON.stringify(metadata, null, 2) + "\n",
     );
     await writeFile(
       path.join(stage, "README.md"),
-      "# Passman CLI and SDK\n\nExperimental encrypted secret client. Documentation: https://passman.subdomain.wtf\n\nRun `passman login`, then `passman put --project testing --name TEST_KEY`. SDK exports include KeymanClient and unlockIdentity. Private decryption keys stay local. No recovery is provided.\n",
+      packageDirectory === "passman"
+        ? "# Passman fresh SDK/CLI\n\nPassman 1.0 alpha uses separate local custody and /api/passman/v1. Run `passman-v1 login`, then `passman-v1 init`. SDK: import { connect } from '@passman/sdk'; const value = await (await connect()).getSecret({ project: 'demo', name: 'TOKEN' }); See https://github.com/07rjain/passman/blob/main/docs/fresh-quickstart.md for native storage prerequisites, setup and key synchronization. Synthetic values only until your platform is verified.\n"
+        : "# Passman CLI and SDK\n\nExperimental encrypted secret client. Documentation: https://passman.subdomain.wtf\n\nRun `passman login`, then `passman put --project testing --name TEST_KEY`. SDK exports include KeymanClient and unlockIdentity. Private decryption keys stay local. No recovery is provided.\n",
     );
     await cp(path.join(root, "LICENSE"), path.join(stage, "LICENSE"));
     await writeFile(

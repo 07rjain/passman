@@ -4,6 +4,8 @@ Status: implemented in source with migration 2. Production migration and restric
 
 ## Coverage
 
+Atomic imports use `upload.import-context` for the metadata snapshot and `secret.import` for the complete encrypted batch. One project-scoped event covers the transaction; no source filenames, key names, values, ciphertext, counts or bodies are added to audit payloads. The same transaction commits writes and success auditing; an audit failure rolls back the whole batch. Default denials/redaction/tenant filtering remain unchanged.
+
 | Event | Meaning |
 | --- | --- |
 | `setup.start/inspect/approve/claim` | Bound local-vault enrollment stages; claim may be pending |

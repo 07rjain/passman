@@ -1,0 +1,68 @@
+name: Fresh Passman release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Committed fresh SDK alpha version
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  acceptance:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Validate committed alpha version
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: node --input-type=module -e 'import fs from "node:fs";const p=JSON.parse(fs.readFileSync("packages/passman/package.json"));if(!/^\d+\.\d+\.\d+-alpha\.\d+$/.test(process.env.RELEASE_VERSION)||p.version!==process.env.RELEASE_VERSION)throw Error("Version mismatch");'
+      - run: npm run check
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y gnome-keyring python3-dbus dbus-x11
+      - if: runner.os == 'Linux'
+        run: npm run test:fresh:native && npm run test:fresh:isolated
+      - if: runner.os != 'Linux'
+        run: node --import tsx --test test/fresh-native.test.ts
+        env:
+          PASSMAN_NATIVE_FIXTURE: "1"
+  publish:
+    needs: acceptance
+    runs-on: ubuntu-latest
+    environment: passman-release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run release:fresh:build
+      - name: Sign with protected publisher key
+        env:
+          PASSMAN_RELEASE_PRIVATE_KEY: ${{ secrets.PASSMAN_RELEASE_PRIVATE_KEY }}
+          PASSMAN_RELEASE_FLAVOR: fresh
+        run: node distribution/sign.mjs
+      - name: Publish immutable prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_COMMIT: ${{ github.sha }}
+        run: node distribution/publish-fresh.mjs

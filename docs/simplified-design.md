@@ -1,6 +1,23 @@
 # Simplified Keyman design decisions
 
+Implementation update (2026-11-20): the fresh alpha source now exists independently of the earlier release. See [the fresh guide](fresh-quickstart.md) and [test record](fresh-testing.md); proposed APIs below may be superseded by the tested implementation. Native Windows/macOS and live browser/deployment qualification remain open.
+
+
 Status: accepted replacement direction, implemented experimentally in this standalone repository, with Vercel/Neon deployed and targeted acceptance recorded; see [live-setup.md](live-setup.md). The earlier application remains in the separate [Keyman repository](https://github.com/07rjain/keyman). This decision record describes the product boundary; [security.md](security.md) defines the implemented profile and [testing.md](testing.md) records verification limits. Passman client archives are distributed through GitHub Releases; npm-registry publication remains deferred.
+
+## From-scratch direction — confirmed scope, draft implementation
+
+Latest user decisions: website submissions remain pending until exact name/value verification in a trusted local client; website update/overwrite/delete/activation is forbidden. Administrative CLI/SDK may create/activate/update/delete, including headless workloads with separate administrative credentials and local write authority. The read-only account inventory counts registered installations and logical deployments with last-seen/active status. See [the revised draft](fresh-design.md) and [security review](fresh-design-security-review.md).
+
+The [fresh design draft](fresh-design.md), confirmed product choices dated 2026-11-20 and [PRD](PRD.md) supersede the 2026-11-19 redesign proposal and conflicting decisions below. Start without legacy compatibility or migrations. Use an account-wide versioned vault key, read-only scoped service keys with optional expiry, protected automatic local retrieval and intentional plaintext access. Support the JavaScript/TypeScript SDK and CLI on desktop/headless Windows/Linux/macOS, containers and ordinary Node.js cloud functions.
+
+Automatically synchronize encrypted runtime material; password bootstrap requires management login or explicitly enabled service credentials, while ordinary runtime keys can refresh only their encrypted operational keyring. Full administrative restoration requires account login plus the vault password and a separately encrypted administrative package. If that password is forgotten and only read-only keys survive, administrative authority is unrecoverable, with no login/support/read-key replacement bypass; existing authorized reads may continue. The proposed profile uses public-recipient encryption, private administrative signing authority absent from runtime sync, and a signed keyring rooted in a bootstrap-pinned public verifier. Website entries never become default-readable without trusted local activation. Copied decryption keys cover every account project regardless of API scope. Formats/adapters remain draft and unimplemented.
+
+Each account has one active decryption key whose copies are identical across machines. Several accounts may coexist locally: the service credential identifies the account, and the SDK automatically chooses that account's vault/key version using an origin/account/vault/key namespace. No project-name guessing, cross-account key trial or last-used-key fallback is allowed. Explicit rotation changes a key version; ordinary synchronization and service-key replacement do not.
+
+SDK key transfer uses a long high-entropy expiring code plus the recipient's own same-account service key. One recipient claim may resume only with independently persisted receiver proof. Include authenticated account/vault details, identical decryption material, runtime sync authority and pinned writer public verifier; omit source credentials and private signing authority. Short-code alternatives are excluded. Exact encoding and relay state details remain engineering proposals.
+
+The remaining sections describe the existing implementation or superseded decisions. Their manual unlock, HPKE/browser input, immutable key, no-recovery, old-device-transfer and migration rules do not constrain the replacement.
 
 ## Core model
 
@@ -9,11 +26,13 @@ Status: accepted replacement direction, implemented experimentally in this stand
 - Secret names are readable metadata. Values are encrypted before upload and decrypted locally. Use an established hybrid-encryption implementation; internal ephemeral data keys are managed automatically, not presented as additional user credentials.
 - Projects organize names and lookups; they are not separate cryptographic trust domains. Account isolation and explicit API authorization remain mandatory. Prefer unambiguous project/name arguments over parsing arbitrary dotted strings.
 - Losing every usable copy of the required private key makes the affected values unrecoverable. No account-only reset, support escrow or recovery kit is planned for this simpler version.
-- Multi-machine key transfer, private-key export/sharing and any email/website transfer flow are deferred. A fresh key pair on another machine cannot decrypt old records automatically. Sharing one private key also shares decryption authority and cannot provide independent cryptographic device revocation.
+- The current implementation has no multi-machine key transfer or private-key export/sharing. The confirmed redesign adds only deliberate human-approved workload provisioning; general email/website transfer and independent device identities remain deferred. A fresh key pair on another machine cannot decrypt old records automatically. Sharing one private key also shares decryption authority and cannot provide independent cryptographic device revocation.
 
 The initial implementation has one immutable vault public key per account, bound application-managed setup approval, and the HPKE/context profile in [security.md](security.md). The encryption key is not reused for signing. No old-application data migration or private-key transfer is implemented.
 
 ## Input paths and write authority
+
+The CLI and separately exported administrative `prepareEnvImport` also support a bounded `.env` import. Parsing and encryption stay local; metadata context and encrypted entries use separate endpoints. A single transaction validates every selected revision and commits the whole batch with its audit event. Runtime `KeymanClient`/read credentials remain read-only. There is no automatic mutation retry or persisted idempotency receipt; a lost commit response requires metadata inspection before a deliberate new attempt. See [the format and failure contract](env-import.md).
 
 The preferred input path is a trusted local CLI/administrative library operation: accept the name/value locally, encrypt the value locally using the selected vault public key and upload only its ciphertext and public metadata. Existing CLI management and runtime application access are different permission classes.
 
@@ -47,7 +66,7 @@ An authorized receiving application can always copy the value. Provider-side rev
 
 - [ ] Define separately authorized programmatic SDK write/update/delete operations, using local encryption and explicit write credentials or human administrative authorization. Keep runtime read credentials read-only.
 - [ ] Evaluate a hosted browser-to-local connector bridge only if a concrete user flow requires it; specify origin binding, local authentication, replay/CSRF protection and permissions first. It is not required for the simpler initial version.
-- [ ] Design private-key transfer between machines separately, including recipient verification, encrypted transport and the limitations of cloned vault identities. Do not implement ordinary email attachments as a presumed secure transfer protocol.
+- [ ] Deliver the confirmed one-time workload-provisioning requirement through the [redesign plan](sdk-redesign-proposal.md), including recipient verification, authenticated encrypted transport and cloned-identity/revocation limits. General email/website transfer remains excluded.
 - [ ] Provide an optional task-specific agent-tool integration with output/error redaction. Keep the base store provider-independent; adapters are separate integrations.
 - [ ] Decide whether stronger model isolation needs a restricted executor/OS identity. Specify and test the threat model before promising that an agent cannot obtain plaintext.
 

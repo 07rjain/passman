@@ -1,0 +1,37 @@
+name: Fresh Passman verification
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+      - name: Prepare isolated Linux Secret Service
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y gnome-keyring python3-dbus dbus-x11
+      - if: runner.os == 'Linux'
+        run: npm run test:fresh:native
+      - if: runner.os != 'Linux'
+        run: node --import tsx --test test/fresh-native.test.ts
+        env:
+          PASSMAN_NATIVE_FIXTURE: "1"
+      - if: runner.os == 'Linux'
+        run: npm run test:fresh:isolated

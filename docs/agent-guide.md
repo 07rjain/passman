@@ -54,6 +54,8 @@ Local input encrypts before upload. Optional website input exposes new plaintext
 
 ## Configure read access before searching or retrieving
 
+For a user-authorized `.env` import, client/server 0.4.0 provides `passman import --project sandbox --file /absolute/private/project.env --dry-run`. Run the parser/importer directly; never read the private file into model/tool output. The preview exposes names/statuses only. Saving requires confirmation (or an already authorized `--yes`); defaults stop on existing names and empty selected values. Use skip/replace/allow-empty only according to the user’s requested policy. An unknown commit outcome must not be automatically retried. Version 0.4.0 is prepared, not yet published. See [the import guide](env-import.md).
+
 The user creates an expiring, preferably project-scoped read service credential on the website. It is shown once. Configure `KEYMAN_SERVICE_KEY` through trusted private local configuration; do not put its value in commands, source, shell history, model messages or tool output. Login's upload credential does not grant read access.
 
 Once privately configured, these commands return metadata only and still require local vault unlock:

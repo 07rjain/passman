@@ -5,8 +5,8 @@ import path from "node:path";
 const root = path.resolve(import.meta.dirname, "..");
 
 export async function signRelease(directory, version, privateKey) {
-  if (!/^\d+\.\d+\.\d+$/.test(version) || !privateKey)
-    throw Error("A release signing key and stable version are required");
+  if (!/^\d+\.\d+\.\d+(?:-alpha\.\d+)?$/.test(version) || !privateKey)
+    throw Error("A release signing key and supported version are required");
   const file = path.join(directory, `passman-${version}.tgz.sha256`);
   const manifest = await readFile(file);
   const filename = `passman-${version}.tgz`;
@@ -25,10 +25,21 @@ export async function signRelease(directory, version, privateKey) {
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const { version } = JSON.parse(
-    await readFile(path.join(root, "packages/client/package.json"), "utf8"),
+    await readFile(
+      path.join(
+        root,
+        `packages/${process.env.PASSMAN_RELEASE_FLAVOR === "fresh" ? "passman" : "client"}/package.json`,
+      ),
+      "utf8",
+    ),
   );
   await signRelease(
-    path.join(root, "ignore-docs/releases"),
+    path.join(
+      root,
+      process.env.PASSMAN_RELEASE_FLAVOR === "fresh"
+        ? "ignore-docs/fresh-releases"
+        : "ignore-docs/releases",
+    ),
     version,
     process.env.PASSMAN_RELEASE_PRIVATE_KEY,
   );

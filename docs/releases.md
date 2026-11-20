@@ -64,6 +64,8 @@ The archive bundles its exact runtime dependencies, includes ESM/TypeScript decl
 
 ## Version and changelog workflow
 
+Client 0.4.0 is prepared with `.env` import and requires the matching additive API endpoints. It is not yet published. Publish through the protected workflow, deploy the API after the signed-release guard clears and verify an import with synthetic data before announcing availability. Existing clients/data need no migration. The server also patches Next.js to 16.4.6; see [import rollout](env-import.md#rollout).
+
 Record every user-visible client fix, feature or breaking change under Unreleased in [SDK_CHANGELOG.md](SDK_CHANGELOG.md). Before releasing:
 
 ```sh

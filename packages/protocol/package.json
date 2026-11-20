@@ -1,0 +1,27 @@
+{
+  "name": "@passman/protocol",
+  "version": "1.0.0-alpha.1",
+  "private": true,
+  "type": "module",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "@hpke/core": "1.9.0",
+    "jose": "6.2.14",
+    "zod": "4.6.7"
+  }
+}
