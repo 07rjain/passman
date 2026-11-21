@@ -290,3 +290,7 @@ The shared browser initially returned a click timeout and a failed subsequent ac
 ## Owner-specified Vercel round trip — 2026-11-20
 
 A new Agent37 VM linked the owner-confirmed account through real email-code sign-in and browser fingerprint approval. The SDK stored the supplied `Vercel` test entry and returned its exact value in two VM processes. Ciphertext-only API and metadata-only website checks passed. The project/entry remain; temporary credentials were revoked and the VM was deleted after preserving/verifying its encrypted vault privately. See [the short report and executed code](live-vercel-sdk-test.md). This covers the currently deployed API-compatible client, not the undeployed replacement SDK.
+
+## Deterministic pending-approval deadline — 2026-11-21
+
+A loaded Linux CI runner exposed a timing dependency in the legacy CLI test: a real one-second timer could wake just before the cutoff and permit an extra pending poll. The fixture now advances a controlled logical clock to the deadline when returning its pending response. Assertions still require expiry, exactly one pending poll, no secret read/upload and byte-for-byte preservation of the local vault. The production deadline loop is unchanged.

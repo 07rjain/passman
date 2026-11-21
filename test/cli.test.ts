@@ -368,9 +368,14 @@ test("pending approval stops at its deadline without reading a secret or replaci
   const f = await fixture(t),
     h = harness(f);
   const before = await readFile(path.join(f.directory, "vault.json"));
+  // Advance the logical clock from the pending response, instead of relying on
+  // a one-second OS timer waking at exactly its requested deadline.
+  let now = Date.now();
+  t.mock.method(Date, "now", () => now);
   h.runtime.transport = async (url, init) => {
     if (String(url).endsWith("/api/device/poll")) {
       h.events.push("pending");
+      now += 1000;
       return Response.json({ status: "pending" });
     }
     const response = await h.transport(url, init);
