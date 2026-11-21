@@ -1,4 +1,5 @@
 import { randomUUID, timingSafeEqual } from "node:crypto";
+import { reverificationError } from "@clerk/shared/authorization-errors";
 import type { Pool, PoolClient } from "pg";
 import {
   API_PATH,
@@ -66,6 +67,11 @@ type Credential = {
   revoked: boolean;
 };
 type Actor = { vault: Vault; credential?: Credential; human?: Human };
+class RecentVerificationRequired extends PassmanError {
+  constructor() {
+    super("FORBIDDEN");
+  }
+}
 const statusCodes: Partial<Record<ErrorCode, number>> = {
   UNAUTHORIZED: 401,
   FORBIDDEN: 403,
@@ -184,8 +190,8 @@ export function createFreshApi(config: {
       const h = token?.startsWith("pmm1.")
         ? await nativeManagement(client, token)
         : await config.authenticate(request);
-      if (!h.recent) return failure("FORBIDDEN");
       context.actorId = h.id;
+      if (!h.recent) throw new RecentVerificationRequired();
       return h;
     } catch (e) {
       if (e instanceof PassmanError) throw e;
@@ -1209,7 +1215,13 @@ export function createFreshApi(config: {
         code = "UNAVAILABLE";
       }
       return response(
-        { error: { code }, requestId: context.requestId },
+        {
+          error: { code },
+          requestId: context.requestId,
+          ...(e instanceof RecentVerificationRequired && code === "FORBIDDEN"
+            ? reverificationError({ level: "first_factor", afterMinutes: 10 })
+            : {}),
+        },
         statusCodes[code] ?? 400,
       );
     }

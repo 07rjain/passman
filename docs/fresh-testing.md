@@ -2,6 +2,12 @@
 
 Latest status: [signed alpha publication and hosted rollout, 2026-11-21](#signed-alpha-publication-and-hosted-rollout--2026-11-21). Earlier dated entries below retain their original verification scope.
 
+## Connection approval verification fix — 2026-11-21
+
+FRESH-55 source verification: `npm run check` passed (71 unit tests passed, five native/platform cases skipped on this runner; build, type checks, lint, package/distribution and documentation checks passed). Two new request tests cover Clerk challenges, fresh-token request submission, explicit approval validation, distinct denial guidance and redaction. PostgreSQL native-login regression checks that stale sign-in returns the verification hint alongside the existing 403 error, is audited as denied and leaves the login unapproved; a wrong code returns 403 without a verification hint.
+
+All 19 fresh PostgreSQL integration tests passed with a separate temporary PostgreSQL 16 cluster bound to loopback, including built Next/Clerk-format JWT/CLI and native-login tests. Docker was inaccessible to this process, so the existing extracted PostgreSQL binaries ran as the unprivileged user; the temporary cluster was stopped and removed. No deployed database or user vault was modified. Hosted deployment and actual Clerk reverification on the owner's Mac are separate acceptance steps; this record does not claim they passed.
+
 Date: 2026-11-20. Runtime: Node.js 24.22.3/npm 11.19.1 on Linux x64. Source packages are `@passman/protocol` and `@passman/sdk` 1.0.0-alpha.1. This is local synthetic verification, not a release, deployment, independent cryptographic audit or production acceptance. Follow [the alpha guide](fresh-quickstart.md) for runnable setup and limitations.
 
 ## Implemented boundaries

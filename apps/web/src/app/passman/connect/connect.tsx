@@ -1,13 +1,31 @@
 "use client";
-import { SignInButton, useAuth } from "@clerk/nextjs";
+import {
+  SignInButton,
+  UserButton,
+  useAuth,
+  useReverification,
+} from "@clerk/nextjs";
+import { isReverificationCancelledError } from "@clerk/nextjs/errors";
 import { useState, type FormEvent } from "react";
-import { API_PATH, bytes32 } from "@passman/protocol";
+import { bytes32 } from "@passman/protocol";
 import styles from "../console.module.css";
+import {
+  approvalSchema,
+  connectionMessage,
+  requestConnection,
+} from "./connection-request";
 export default function Connect({ session }: { session: string }) {
   const { isLoaded, isSignedIn, getToken } = useAuth();
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+  const verifiedApprove = useReverification(async (fingerprint: string) =>
+    requestConnection({
+      session,
+      fingerprint,
+      token: await getToken({ skipCache: true }),
+    }),
+  );
   async function approve(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
@@ -17,26 +35,17 @@ export default function Connect({ session }: { session: string }) {
       return;
     }
     setBusy(true);
+    setNotice("");
     try {
-      const token = await getToken();
-      if (!token) throw new Error("Sign in");
-      const r = await fetch(`${API_PATH}/console/auth/approve`, {
-        method: "POST",
-        credentials: "omit",
-        cache: "no-store",
-        headers: {
-          authorization: `Bearer ${token}`,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({ id: session, fingerprint: fingerprint.data }),
-      });
-      if (!r.ok) throw new Error("Connection unavailable");
+      approvalSchema.parse(await verifiedApprove(fingerprint.data));
       form.reset();
       setDone(true);
       setNotice("Connected. Return to your terminal to finish setup.");
-    } catch {
+    } catch (error) {
       setNotice(
-        "Connection failed. Check the code and sign in again with recent verification. Start a new CLI login if the link expired.",
+        isReverificationCancelledError(error)
+          ? "Verification was cancelled. Connect again and complete sign-in verification before the link expires."
+          : connectionMessage(error),
       );
     } finally {
       setBusy(false);
@@ -49,6 +58,7 @@ export default function Connect({ session }: { session: string }) {
           <h1>Connect your local client</h1>
           <p>Continue the login you started in your terminal.</p>
         </div>
+        {isSignedIn ? <UserButton /> : null}
       </header>
       <section className={styles.section}>
         <p>
@@ -80,7 +90,9 @@ export default function Connect({ session }: { session: string }) {
                 client you control.
               </small>
             </label>
-            <button disabled={busy}>Connect local client</button>
+            <button disabled={busy}>
+              {busy ? "Connecting…" : "Connect local client"}
+            </button>
           </form>
         ) : null}
         <p role="status" aria-live="polite">

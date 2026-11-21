@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { test } from "node:test";
 import type { PoolClient } from "pg";
+import { isReverificationHint } from "@clerk/shared/authorization-errors";
 import {
   API_PATH,
   bytes32,
@@ -182,18 +183,50 @@ await test(
         const approval = { id: started.id, fingerprint: details.fingerprint };
         fingerprint = details.fingerprint;
         await assertError(await request(approvePath, approval), "UNAUTHORIZED");
-        await assertError(
-          await request(approvePath, approval, `Bearer ${browserStale}`),
-          "FORBIDDEN",
+        const staleApproval = await request(
+          approvePath,
+          approval,
+          `Bearer ${browserStale}`,
         );
-        await assertError(
-          await request(
-            approvePath,
-            { ...approval, fingerprint: randomSecret() },
-            signedBrowser,
-          ),
-          "FORBIDDEN",
+        assert.equal(staleApproval.status, 403);
+        const staleBody: unknown = await staleApproval.json();
+        assert.equal(errorSchema.parse(staleBody).error.code, "FORBIDDEN");
+        assert.ok(isReverificationHint(staleBody));
+        assert.deepEqual(staleBody.clerk_error.metadata?.reverification, {
+          level: "first_factor",
+          afterMinutes: 10,
+        });
+        assert.deepEqual(
+          (
+            await owner.query<{
+              actor_id: string;
+              outcome: string;
+              reason: string;
+            }>(
+              "SELECT actor_id,outcome,reason FROM passman_v1.audit_events WHERE request_id=$1",
+              [errorSchema.parse(staleBody).requestId],
+            )
+          ).rows,
+          [{ actor_id: userId, outcome: "denied", reason: "FORBIDDEN" }],
         );
+        assert.equal(
+          (
+            await owner.query<{ human_id: string | null }>(
+              "SELECT human_id FROM passman_v1.native_logins WHERE id=$1",
+              [started.id],
+            )
+          ).rows[0]?.human_id,
+          null,
+        );
+        const wrongCode = await request(
+          approvePath,
+          { ...approval, fingerprint: randomSecret() },
+          signedBrowser,
+        );
+        assert.equal(wrongCode.status, 403);
+        const wrongCodeBody: unknown = await wrongCode.json();
+        assert.equal(errorSchema.parse(wrongCodeBody).error.code, "FORBIDDEN");
+        assert.equal(isReverificationHint(wrongCodeBody), false);
         const responses = await Promise.all([
           request(approvePath, approval, signedBrowser),
           request(approvePath, approval, signedBrowser),
