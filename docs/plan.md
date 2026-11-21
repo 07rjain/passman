@@ -2,6 +2,8 @@
 
 Implementation update: fresh protocol, role-separated runtime/admin SDK/CLI, native management login, isolated transactional API, pending management UI, inventory, synchronization, code transfer and staged writer replacement now exist. Local synthetic evidence and outstanding platform gates are in [fresh-testing.md](fresh-testing.md). Use [fresh-quickstart.md](fresh-quickstart.md) for implementation contracts; historical plans below are not fresh completion claims.
 
+Fresh connection follow-up (FRESH-55): preserve recent-authentication enforcement, expose the Clerk verification hint on stale-session denials and use the browser verification flow before one fresh-token approval retry. Cover wrong-code/expired-link errors and unapproved state in regression tests; distinguish source checks from hosted/Mac browser acceptance.
+
 
 Status: experimental standalone source prepared for [07rjain/passman](https://github.com/07rjain/passman). The new Vercel project/domain are deployed; Clerk/database configuration, health, published-client login setup and authorization denial checks pass; targeted two-account production browser/VM acceptance is recorded in [the manual report](manual-security-test-2026-11-01.md); wider release validation remains pending. Follow the [PRD](PRD.md), [design decisions](simplified-design.md) and [working instructions](../AGENTS.md). See [testing.md](testing.md) for commands and [live-setup.md](live-setup.md) for the new deployment checklist.
 

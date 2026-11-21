@@ -78,6 +78,7 @@ Resolved review choices: website creates remain pending until exact trusted loca
 | FRESH-52 | Password-reset/rotation races atomically bind wrapper, runtime keyring and administrative package to one compatible epoch; wrong revisions conflict rather than leaving unrestorable torn state | Real database concurrent reset/rotation and interrupted commit cases |
 | FRESH-53 | After compromise-driven replacement, changed password and write-epoch retirement prevent fresh writes/website activation under an old compromised recipient; signed floors detect rollback where trusted state exists | Hostile old-wrapper/bootstrap and epoch-at-commit cases |
 | FRESH-54 | Vault password forgotten and only read-workload keys survive: existing authorized reads may continue, but administrative reset/restoration/root replacement stays denied even with account login, new service keys or support/email reset | Isolated read-only-survivor recovery/no-escalation journey |
+| FRESH-55 | Native connection approval with an older valid website session returns an audited 403 and Clerk verification hint; the page completes verification and retries with a fresh token. Denied approval never marks the login approved; wrong codes receive no verification hint. Expired links, wrong codes and unavailable sign-in have distinct redacted guidance, and malformed success bodies never show connected | Connection-request unit tests and PostgreSQL native-login regression; actual Clerk browser completion remains a separate acceptance check |
 
 ## Required automated commands
 

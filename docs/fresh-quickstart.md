@@ -92,6 +92,8 @@ Login prints a short-lived connection link and connection code. Paste the code f
 
 The saved management credential lasts ten minutes; run `login` explicitly when another management session is needed. It never opens a browser during a normal SDK read or write. Initial administrative credentials last 30 days; administrative credentials may last at most 90 days and need deliberate renewal/enrollment. Read keys have optional expiry.
 
+The browser connection link expires after five minutes. Keep `passman login` running and copy the link and complete connection code from that same invocation. If your website sign-in is older than ten minutes, the connection page asks you to verify it through Clerk before retrying approval. Cancelling verification leaves the connection unapproved. If the link expires while verifying, run `passman login` again and use both its new link and code. The account menu lets you sign out and sign in again if the website session is unavailable. Connection errors do not require deleting your vault.
+
 ```sh
 passman project create --account ACCOUNT_UUID --project demo
 passman put --account ACCOUNT_UUID --project demo --name OPENAI_API_KEY
