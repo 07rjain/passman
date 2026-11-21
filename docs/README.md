@@ -1,5 +1,8 @@
 # Passman documentation
 
+**Fresh implementation:** [set up the from-scratch alpha](fresh-quickstart.md) and review [actual test evidence and open platform gates](fresh-testing.md). Earlier released-client guides below remain separate.
+
+
 Passman is an experimental, source-available encrypted secret store. Start with synthetic values. Independent security review and operational release checks remain open.
 
 ## Use Passman
@@ -14,6 +17,8 @@ Agents: start with the [setup and usage guide](agent-guide.md), served at [`/llm
 6. [Get support and share feedback](support.md); [check service status](https://passman.subdomain.wtf/status).
 
 - [Use Passman with an agent skill](skills.md); MCP is deferred.
+- [Import a protected .env file](env-import.md): validation, previews, atomic writes and the administrative SDK.
+
 
 - [Windows installation and local protection](windows.md).
 
@@ -21,10 +26,15 @@ Agents: start with the [setup and usage guide](agent-guide.md), served at [`/llm
 
 - [Security profile and encryption](security.md).
 - [Architecture and accepted design decisions](simplified-design.md).
+- [From-scratch Passman design](fresh-design.md): accepted replacement scope, pending website submissions with trusted local activation, role-separated key sync/restoration and read-only installation/deployment inventory. See the fresh setup and verification guides for implemented behavior and remaining acceptance.
+- [Fresh-design security review](fresh-design-security-review.md): consolidated high-reasoning findings and user decision record; not an implementation audit.
+- [Earlier SDK redesign proposal](sdk-redesign-proposal.md): superseded; not the new product specification.
 - [Requirements](PRD.md) and [implementation plan](plan.md).
 - [Landing-page design and storage illustration](landing-design.md).
 
 ## Develop and operate
+
+- [Fresh SDK/CLI release notes](FRESH_CHANGELOG.md), signed alpha packaging and the fresh health endpoint are tracked separately from earlier client releases.
 
 - [Contribute](CONTRIBUTING.md) and [engineering standards](agent.md).
 - [Testing commands](testing.md) and [feature regression catalogue](feature.md).
@@ -33,8 +43,10 @@ Agents: start with the [setup and usage guide](agent-guide.md), served at [`/llm
 
 ## Evidence and status
 
+- [Live Vercel SDK test](live-vercel-sdk-test.md): short executed example and actual Agent37/live-site result for the currently deployed API.
+
 The [current setup record](live-setup.md) and [2026-11-01 manual security exercise](manual-security-test-2026-11-01.md) describe finite live checks, not certification. The [earlier Agent37 report](agent37-verification.md) and [legacy deployment record](history/legacy-hosted-setup.md) are historical evidence, not instructions for current configuration.
 
-Documentation distinguishes implemented behavior, configured infrastructure, observed test results and planned features. A checked-in feature is not automatically deployed. Losing every usable private-key copy is unrecoverable through Passman, regardless of account login or database backups.
+Documentation distinguishes implemented behavior, configured infrastructure, observed test results and planned features. A checked-in feature is not automatically deployed. In the earlier release, losing every usable private-key copy is unrecoverable through Passman. The [fresh design](fresh-design.md) supports restoration from encrypted synchronized material plus its vault password; account login alone still cannot decrypt it.
 
 - [Security remediation and rollout](security-remediation.md): seven-finding fixes, compatibility and verification gates.

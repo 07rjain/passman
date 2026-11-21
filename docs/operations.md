@@ -29,3 +29,9 @@ Follow [key-loss.md](key-loss.md). Rotate infrastructure credentials through pro
 ## Release gate
 
 Run the [feature catalogue](feature.md), required build/integration/distribution checks, full-history and artifact secret scans, applicable live acceptance and backup/restore checks. Independent protocol/security review remains required. Publish immutable client artifacts through [releases.md](releases.md); never overwrite an existing release. Audit metadata does not resolve the documented hostile-server value substitution or rollback boundary.
+
+## Owner-authorized legacy cleanup — 2026-11-20
+
+The owner explicitly selected clearing all legacy accounts' application data after reviewing the live inventory. Deleted 7 `keyman_mvp` vault/account bindings, 10 projects, 6 encrypted secret records, 17 application credentials and 1 setup session in one transaction. A separate read verified all five live-data counts at zero. Clerk sign-in identities, the schema/migrations, quota counters and prior audit history were preserved. Seven atomic `operation.configuration` events identify the cleared bindings under request `f8de0a66-d615-4be1-abfd-116377f07a24`; the verified audit total was 87.
+
+The live health endpoint returned 200 after cleanup. The fresh `/api/passman/v1/account` endpoint still returned 404 before cleanup, and the fresh `passman_v1` schema was absent: this operation did not deploy, migrate or publish the new SDK/API. Local vault files on users' machines were not deleted. Test the new implementation using [the fresh guide](fresh-quickstart.md) and a separately configured fresh server.

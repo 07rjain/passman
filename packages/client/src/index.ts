@@ -26,6 +26,21 @@ export class KeymanError extends Error {
   }
 }
 export type Transport = typeof fetch;
+export {
+  parseEnv,
+  EnvImportError,
+  type EnvEntry,
+  type EnvIssue,
+} from "./env.js";
+export {
+  prepareEnvImport,
+  readEnvFile,
+  ImportCommitError,
+  type ImportConflictPolicy,
+  type EnvImportPreview,
+  type EnvImportResult,
+  type PreparedEnvImport,
+} from "./env-import.js";
 async function redacted<T>(action: () => Promise<T>): Promise<T> {
   try {
     return await action();

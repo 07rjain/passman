@@ -1,8 +1,27 @@
 # Passman implementation plan
 
+Implementation update: fresh protocol, role-separated runtime/admin SDK/CLI, native management login, isolated transactional API, pending management UI, inventory, synchronization, code transfer and staged writer replacement now exist. Local synthetic evidence and outstanding platform gates are in [fresh-testing.md](fresh-testing.md). Use [fresh-quickstart.md](fresh-quickstart.md) for implementation contracts; historical plans below are not fresh completion claims.
+
+
 Status: experimental standalone source prepared for [07rjain/passman](https://github.com/07rjain/passman). The new Vercel project/domain are deployed; Clerk/database configuration, health, published-client login setup and authorization denial checks pass; targeted two-account production browser/VM acceptance is recorded in [the manual report](manual-security-test-2026-11-01.md); wider release validation remains pending. Follow the [PRD](PRD.md), [design decisions](simplified-design.md) and [working instructions](../AGENTS.md). See [testing.md](testing.md) for commands and [live-setup.md](live-setup.md) for the new deployment checklist.
 
+## From-scratch replacement plan — source alpha
+
+The user has resolved the six [security-review decisions](fresh-design-security-review.md): pending website submissions require exact local verification; password bootstrap is separately authorized; inventory counts installations/deployments; transfer redemption also requires the recipient's own-account service key; headless administrative credentials are supported; and account login plus vault password restores full administration. The follow-up decision is also final: forgotten password with only read-only keys surviving has no administrative recovery path. Runtime service keys remain read-only and cannot be promoted through login/support bypasses.
+
+The [fresh design](fresh-design.md) supersedes the earlier SDK-only redesign. Confirmed requirements include no legacy compatibility/migration, account-wide versioned decryption, optional-expiry read credentials, no-prompt reads, deliberate plaintext access, encrypted role-separated synchronization/restoration, pending website entry with trusted local activation, administrative CRUD and read-only machine inventory. Targets remain desktop/headless Windows/Linux/macOS, containers and ordinary Node.js cloud functions.
+
+1. Finalize public-recipient encryption, administrative record/request signatures, pinned writer root and signed runtime keyring, role-separated password restoration, atomic sync/reset epochs, headless administrative credentials and concrete custody adapters. Do not carry forward immutable keys, SSH-only transfer, read approvals or a mandatory broker.
+2. Implement the new crypto/sync and account/project/operation authorization foundation in an isolated replacement boundary, with meaningful format/interoperability and API/database tests. No old-format migration suite is required.
+3. Implement first setup, explicitly authorized password bootstrap, saved credentials, metadata/ciphertext/verified-plaintext methods, multi-account key selection, signed automatic sync, long-code transfer requiring recipient service authorization and secret-bound same-claim retries, plus local/headless administrative writes. Runtime transfers omit private writer authority; decryption copies remain identical per account. Build website pending-only submission and exact trusted local verification/activation without ever requesting the vault password on the website.
+4. Verify desktop/headless/container/function lifecycles, pending-versus-active trust on fresh readers, cross-route/cascade denial, canonical create races/idempotency, runtime/admin keyring separation, full administrative restoration, recipient-session resumption and stable installation/deployment counts. Register cases under the planned FRESH IDs in [feature.md](feature.md#fresh-design-acceptance--implementation-evidence).
+5. Specify/test routine key rotation versus compromise-driven vault-and-sync-authority replacement, account-wide exposure and decommissioning. Complete packaging and independent security review, then plan an intentional release and cutover separately.
+
+Implementation evidence is recorded in [fresh-testing.md](fresh-testing.md); this plan alone establishes no test outcome, existing-data deletion or deployment. The remaining sections are existing-build history and earlier backlog; they are not compatibility requirements or acceptance evidence for the replacement.
+
 ## Implemented and verified locally
+
+- Prepared client 0.4.0 and additive API support local `.env` validation, metadata-only preview, explicit skip/replace/empty policies and atomic encrypted batch writes. Keep the SDK runtime read-only, preserve vault/wire/account formats and report uncertain commit outcomes without retries. No new database migration/grants; deploy the compatible API before import use. See [import guide](env-import.md).
 
 - Responsive Passman landing page with an illustrated local-key/encrypted-storage flow, platform install tabs, clipboard feedback, a TypeScript SDK example and security disclosures. Matching browser and Apple touch icons use the existing header mark. The public page also renders without Clerk configuration; sign-in is offered only when Clerk is configured. See [the design rationale](landing-design.md) and the dated local browser checks in [testing.md](testing.md).
 - Public support and service-status routes, local Open Graph/Twitter sharing card and canonical metadata, plus a single expandable public-footer “Contact us” group for calls, website and email; mobile dashboard navigation, forms and long-value layouts. Status uses only the existing readiness endpoint and makes no monitoring, uptime-history, email-delivery or recovery claim. See [support](support.md), [status behavior](operations.md#public-service-status) and the dated verification in [testing.md](testing.md).
@@ -71,7 +90,7 @@ The public SDK/CLI release is 0.3.2, published through the protected signing wor
 - [ ] Upgrade the MVP to Node.js 26.x: verify dependency compatibility; run crypto/local-vault, SDK/CLI, packaging, database integration and clean web-build checks on Linux/macOS as applicable; then align package engine constraints, lockfile metadata, `.nvmrc`, CI, Vercel settings and documentation. Complete a deployed smoke test before making 26.x the default. Keep 24.x as the current baseline until validation passes.
 - [ ] Separately authorized programmatic SDK create/update/delete operations; ordinary application credentials stay read-only.
 - [ ] Browser-to-local connector bridge, only after origin binding, authentication and permissions are specified.
-- [ ] Secure private-key transfer between machines with recipient verification and explicit cloned-identity/revocation limitations.
+- [ ] Deliver the approved one-time workload provisioning in the SDK redesign above, with recipient verification and explicit cloned-identity/revocation limits; general device transfer remains separate.
 - [ ] Optional task-specific agent tools/adapters that return task output rather than credentials.
 - [ ] Stronger agent isolation through a restricted executor if protection from arbitrary agent code is required.
 

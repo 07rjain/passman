@@ -114,8 +114,11 @@ export async function windowsPrivatePath(location: string, createAcl = false) {
   await windowsOperation(location, createAcl);
 }
 export async function windowsReadPrivateFile(location: string, max: number) {
+  return (await windowsReadPrivateBytes(location, max)).toString("utf8");
+}
+export async function windowsReadPrivateBytes(location: string, max: number) {
   if (!Number.isInteger(max) || max < 0 || max > 100000)
     throw new Error("Invalid private input limit");
   const encoded = await windowsOperation(location, false, max);
-  return Buffer.from(encoded, "base64").toString("utf8");
+  return Buffer.from(encoded, "base64");
 }

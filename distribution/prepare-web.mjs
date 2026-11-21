@@ -1,14 +1,14 @@
 import { cp, mkdir, readFile } from "node:fs/promises";
-import { assertPublishedClient } from "./public-release.mjs";
+import { assertPublishedVersion } from "./public-release.mjs";
 if (process.env.VERCEL_ENV === "production") {
   const { version } = JSON.parse(
     await readFile(
-      new URL("../packages/client/package.json", import.meta.url),
+      new URL("../packages/passman/package.json", import.meta.url),
       "utf8",
     ),
   );
-  await assertPublishedClient({
-    minimumVersion: version,
+  await assertPublishedVersion({
+    version,
     publicKey: await readFile(new URL("./release-public.pem", import.meta.url)),
   });
 }
@@ -23,3 +23,9 @@ await cp(
   new URL("./install.ps1", import.meta.url),
   new URL("install.ps1", target),
 );
+
+const { freshInstallers } = await import("./fresh.mjs");
+for (const [name, content] of Object.entries(await freshInstallers())) {
+  const { writeFile } = await import("node:fs/promises");
+  await writeFile(new URL(name, target), content);
+}

@@ -1,5 +1,7 @@
 # CLI, SDK and permissions
 
+Prepared client 0.4.0 adds `import --project NAME --file PATH [--dry-run] [--skip-existing | --replace] [--allow-empty] [--yes]`. Administrative SDK exports include `parseEnv`, `readEnvFile`, `prepareEnvImport`, `EnvImportError`, `ImportCommitError` and preview/result types. Runtime `KeymanClient` stays read-only. See [complete import syntax and failure semantics](env-import.md); matching server endpoints are required and this version is not yet published.
+
 The SDK/CLI version is tracked in [SDK_CHANGELOG.md](SDK_CHANGELOG.md). Internal `@keyman-mvp/*` source names and `~/.keyman-mvp` paths are retained for compatibility; the public product is Passman.
 
 | Command | Purpose |
@@ -7,6 +9,8 @@ The SDK/CLI version is tracked in [SDK_CHANGELOG.md](SDK_CHANGELOG.md). Internal
 | `passman login` / `signin` | Unlock or create a local vault; complete bound browser approval |
 | `passman put --project NAME --name KEY` | Encrypt locally and upload with short-lived upload authorization |
 | `passman put --project NAME --name KEY --replace` | Replace deliberately with optimistic revision checks |
+| `passman import --project NAME --file PATH --dry-run` | Validate and preview names without saving (prepared 0.4.0) |
+| `passman import --project NAME --file PATH` | Confirm an atomic encrypted import (prepared 0.4.0) |
 | `passman search --project NAME --query TEXT` | List permitted metadata |
 | `passman check --project NAME --name KEY` | Check existence without printing its value |
 | `passman --version` / `--help` | Display version or command help |

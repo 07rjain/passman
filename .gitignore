@@ -4,6 +4,8 @@
 !.env.example
 .keyman-mvp/
 .keyman/
+.passman-v1/
+.passman-v1-native-locks/
 .ssh/
 /private/
 vault.json
@@ -31,3 +33,6 @@ next-env.d.ts
 Thumbs.db
 __pycache__/
 .pytest_cache/
+
+/apps/web/public/install-v1.sh
+/apps/web/public/install-v1.ps1

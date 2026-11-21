@@ -64,8 +64,20 @@ export async function assertPublishedClient({
       throw Error("Publish the signed client before production deployment");
     if (current[i] > minimum[i]) break;
   }
-  const filename = `passman-${latest}.tgz`;
-  const url = `${base}/download/passman-v${latest}/${filename}`;
+  await assertPublishedVersion({ version: latest, publicKey, transport, base });
+}
+
+/** Verify one pinned stable or alpha release; never resolve another release on failure. */
+export async function assertPublishedVersion({
+  version,
+  publicKey,
+  transport = globalThis.fetch,
+  base = "https://github.com/07rjain/passman/releases",
+}) {
+  if (!/^\d+\.\d+\.\d+(?:-alpha\.\d+)?$/.test(version))
+    throw Error("Invalid pinned client version");
+  const filename = `passman-${version}.tgz`;
+  const url = `${base}/download/passman-v${version}/${filename}`;
   const manifest = await download(url + ".sha256", 512, transport);
   const signature = await download(url + ".sha256.sig", 1024, transport);
   if (!verify("sha256", manifest, publicKey, signature))

@@ -4,6 +4,23 @@ This file records website/API/security and operational changes. Installable clie
 
 ## Unreleased
 
+- Announce fresh SDK/CLI 1.0.0-alpha.1 on the public landing page with promptless reads, multi-machine sync/transfer and trusted local writes. Link the matching alpha release, render the SDK example with copyable line breaks, and clarify pending website entry. Preserve the existing visual style and experimental-software disclosure.
+
+- Align the fresh landing page, support and agent entry points with the new quickstart and pinned alpha release. Use the installer's `passman` command, configure the service origin before login, and show the required account UUID in administrative examples. Clarify fresh restoration versus earlier-client key-loss behavior.
+
+- Prepare the signed fresh 1.0.0-alpha.1 SDK/CLI archive and pinned alpha installers, fresh home/console entry point, separate `/legacy` access and schema-backed `/api/passman/health`. The production guard verifies the exact signed alpha artifact before deployment. Publication, CI and live acceptance are recorded separately.
+
+- Record the owner-specified live `Vercel` SDK round trip on a temporary Agent37 VM, with exact retrieval, encrypted transport checks and credential/VM cleanup. Preserve the requested test entry and verified encrypted vault copy; no code change or deployment. See [the short report](live-vercel-sdk-test.md).
+
+- Verify the fresh SDK across two Linux machines using a temporary Agent37 VM: 44 synthetic checks covering transfer, three-account local custody, automatic sync, compromise re-provisioning, credential replacement, mounted Docker restarts and cold VM reboot. Remove the VM and fixture keys afterward; no application-code change or hosted rollout. See [the verification record](fresh-multimachine-verification.md).
+
+- Record the owner's explicit 2026-11-20 cleanup of all legacy application data: vault bindings, projects, ciphertext, credentials and setup sessions. Preserve Clerk identities and audit history; verify zero remaining legacy data and live health 200. This is a database maintenance action, not a new SDK/API deployment. See [the operations record](operations.md#owner-authorized-legacy-cleanup--2026-11-20).
+
+- Add the isolated fresh alpha API/schema, browser-assisted native login, create-only pending submissions, signed local activation/rejection, service-key management, read-only installation inventory, role-separated sync/restoration, single-receiver transfer and transactional writer replacement. Requires explicit fresh migration/grants and separate configuration; no old-data import, publication or deployment. See [fresh verification](fresh-testing.md).
+
+- Add upload-only import-context and atomic encrypted batch-import API operations, with account/key/revision validation and transactional `secret.import` auditing. The original `.env` file and plaintext stay local; no schema/grant changes or per-entry fallback. Prepare client 0.4.0 and portable skill 0.2.0; publication/deployment remain separate.
+- Patch Next.js from 16.4.3 to 16.4.6 after the build reported GHSA-mfr8-8qww-v76h and GHSA-vc7v-qv4w-wrv8. Preserve the Node.js 24 baseline and other direct dependency versions.
+
 ### Website
 
 - Prepare SDK/CLI 0.3.1 and portable skill 0.1.3, with matching package examples and release notes for seamless command discovery. Publish through the protected signed-release workflow; existing releases and vault/account bindings remain unchanged.

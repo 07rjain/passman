@@ -1,6 +1,6 @@
 # Passman usage reference
 
-The public CLI/SDK release is 0.3.1. This skill has its own metadata version; it does not change client or wire/vault versions. Source and maintained guides: [07rjain/passman](https://github.com/07rjain/passman).
+The public CLI/SDK release is 0.3.2. Client 0.4.0 with environment-file import is prepared but not yet published; it requires matching server endpoints. This skill has its own metadata version; it does not change client or wire/vault versions. Source and maintained guides: [07rjain/passman](https://github.com/07rjain/passman).
 
 ## CLI metadata lookup
 
@@ -24,7 +24,7 @@ Only the path appears in this command, never the passphrase. Do not create the f
 Install in the intended application's directory with Node.js 24/npm:
 
 ```sh
-npm install https://github.com/07rjain/passman/releases/download/passman-v0.3.1/passman-0.3.1.tgz
+npm install https://github.com/07rjain/passman/releases/download/passman-v0.3.2/passman-0.3.2.tgz
 ```
 
 Use the published package name `@07rjain/passman`. Do not install unrelated npm packages named `passman` or `passman-cli`. `@keyman-mvp/client` is only the repository's internal workspace name.
@@ -56,6 +56,25 @@ try {
 ```
 
 For file-based trusted configuration, `readPrivateFile(passphraseFile, 1024)` is exported by the SDK. Strip only a trailing newline from the passphrase; never print it. The repository's [retrieval example](https://github.com/07rjain/passman/blob/main/examples/retrieve.mjs) demonstrates a complete local flow (its internal import is for repository contributors; external applications use `@07rjain/passman`). Do not assume the skill installer also installs the SDK or configures/unlocks the vault.
+
+## Environment-file import
+
+Requires client/server 0.4.0. Check `passman --version` before using these commands; 0.3.2 does not implement import. Publication and compatible server rollout are separate from installing this skill. The user must supply the intended project and protected local file path.
+
+```sh
+passman import --project production --file /absolute/private/project.env --dry-run
+passman import --project production --file /absolute/private/project.env
+```
+
+The importer reads the protected file privately, validates the full UTF-8 dotenv document and previews only names/actions/counts. Never read or quote its contents in agent output. Limits are 64 KiB, 100 case-sensitive ASCII environment names and existing per-value/API bounds. Quotes/comments/export/multiline are supported; malformed lines, invalid UTF-8, binary controls and duplicate keys fail with redacted line/reason errors. References such as `${NAME}` and `$(command)` are literal, not expanded or executed. Syntax validity does not establish provider-key validity.
+
+The normal command asks for `IMPORT` after preview. With user-authorized automation, use the privately provisioned `--passphrase-file` plus `--yes`. Local unlock and short-lived upload authorization remain required; interactive commands can start bound browser approval before file access, while noninteractive commands require prior login. Never ask for passphrases, approval codes or file contents in chat.
+
+Existing names stop the entire import by default. Use `--skip-existing` to preserve existing values or `--replace` only for intended replacements; do not choose an overwrite merely to clear an error. Selected empty values require `--allow-empty` separately from confirmation. No entries are deleted because they are absent from the file.
+
+For trusted application code, administrative `prepareEnvImport({identity, project, source, conflicts, allowEmpty})` returns a metadata-only `.preview` and a single-use `.commit()`. `readEnvFile(path)` reads protected bytes; `parseEnv(source)` returns plaintext entries and must never be logged or exposed to the model. Runtime `KeymanClient` has no import method and read credentials cannot write.
+
+The commit encrypts locally and saves selected entries atomically. A conflict/denial requires a fresh preview. `ImportCommitError.outcome === "unknown"` means the response may have been lost after commit: do not automatically retry, add `--replace`, or claim nothing was saved. Inspect project metadata/revisions and obtain any needed direction for a deliberate retry. No values, file contents, tokens or raw errors belong in audit/tool output. The original file remains on disk.
 
 ## Management and failures
 

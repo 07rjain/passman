@@ -149,6 +149,36 @@ function harness(f: Awaited<ReturnType<typeof fixture>>) {
         project: { id: projectId, name: "Explorer" },
         revision: 0,
       });
+    if (pathname === "/api/upload/import-context") {
+      const input = JSON.parse(body);
+      return Response.json({
+        vault: f.identity.vault,
+        project: { id: projectId, name: "Explorer" },
+        entries: input.names.map((name: string) => ({ name, revision: 0 })),
+      });
+    }
+    if (pathname === "/api/upload/import") {
+      const input = JSON.parse(body);
+      for (const entry of input.entries)
+        assert.equal(
+          await decryptValue(entry.envelope, f.identity.privateKey, {
+            version: 1,
+            accountId: f.identity.vault!.accountId,
+            vaultId: f.identity.vault!.id,
+            projectId,
+            project: "Explorer",
+            name: entry.name,
+            revision: 1,
+          }),
+          secret,
+        );
+      return Response.json({
+        imported: input.entries.map((entry: { name: string }) => ({
+          name: entry.name,
+          revision: 1,
+        })),
+      });
+    }
     assert.equal(pathname, "/api/upload");
     const uploaded = JSON.parse(body);
     assert.equal(
@@ -338,9 +368,14 @@ test("pending approval stops at its deadline without reading a secret or replaci
   const f = await fixture(t),
     h = harness(f);
   const before = await readFile(path.join(f.directory, "vault.json"));
+  // Advance the logical clock from the pending response, instead of relying on
+  // a one-second OS timer waking at exactly its requested deadline.
+  let now = Date.now();
+  t.mock.method(Date, "now", () => now);
   h.runtime.transport = async (url, init) => {
     if (String(url).endsWith("/api/device/poll")) {
       h.events.push("pending");
+      now += 1000;
       return Response.json({ status: "pending" });
     }
     const response = await h.transport(url, init);
@@ -376,4 +411,67 @@ test("authorization rejected by the server has login guidance and no automatic u
     return true;
   });
   assert.deepEqual(h.events, ["secret", "/api/upload/context", "rejected"]);
+});
+
+test("CLI import renews before file input, previews without values, dry-runs, confirms and cancels safely", async (t) => {
+  const f = await fixture(t),
+    h = harness(f);
+  const file = path.join(f.directory, ".env");
+  const args = ["import", ...f.args.slice(1, -2), "--file", file];
+  h.runtime.transport = async (url, init) => {
+    if (String(url).endsWith("/api/device/poll")) {
+      await writeFile(file, `A=${h.secret}\nB=${h.secret}`, { mode: 0o600 });
+      if (process.platform === "win32") await windowsPrivatePath(file, true);
+    }
+    return h.transport(url, init);
+  };
+  await runCli([...args, "--dry-run"], h.runtime);
+  assert.deepEqual(h.events, [
+    "/api/device/start",
+    "browser",
+    "/api/device/poll",
+    "/api/upload/import-context",
+  ]);
+  assert.ok(!h.output.join("\n").includes(h.secret));
+  h.runtime.prompt = async (label) => {
+    assert.match(label, /Type IMPORT/);
+    return "cancel";
+  };
+  await assert.rejects(runCli(args, h.runtime), (error) =>
+    /Import cancelled/.test(cliErrorMessage(error, "import")),
+  );
+  assert.ok(!h.events.includes("/api/upload/import"));
+  h.runtime.prompt = async () => "IMPORT";
+  await runCli(args, h.runtime);
+  assert.equal(h.events.filter((e) => e === "/api/upload/import").length, 1);
+  assert.ok(!h.output.join("\n").includes(h.secret));
+});
+
+test("CLI import refuses missing authorization before file access and requires explicit automation confirmation", async (t) => {
+  const f = await fixture(t),
+    h = harness(f);
+  h.runtime.interactive = false;
+  const file = path.join(f.directory, ".env");
+  const args = ["import", ...f.args.slice(1, -2), "--file", file];
+  await assert.rejects(runCli(args, h.runtime), (error) =>
+    /passman login/.test(cliErrorMessage(error, "import")),
+  );
+  assert.equal(h.events.length, 0);
+  f.identity.upload!.expiresAt = Math.floor(Date.now() / 1000) + 1200;
+  await saveIdentity(f.directory, f.password, f.identity);
+  await writeFile(file, `A=${h.secret}`, { mode: 0o600 });
+  if (process.platform === "win32") await windowsPrivatePath(file, true);
+  await assert.rejects(runCli(args, h.runtime), (error) =>
+    /--yes/.test(cliErrorMessage(error, "import")),
+  );
+  assert.ok(!h.events.includes("/api/upload/import"));
+  await runCli([...args, "--yes"], h.runtime);
+  assert.equal(h.events.filter((e) => e === "/api/upload/import").length, 1);
+  await assert.rejects(
+    runCli([...args, "--replace", "--skip-existing"], h.runtime),
+  );
+  await writeFile(file, "A=\nA=synthetic-cli-secret-value");
+  await assert.rejects(runCli([...args, "--yes"], h.runtime), (error) =>
+    /DUPLICATE_KEY/.test(cliErrorMessage(error, "import")),
+  );
 });

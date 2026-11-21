@@ -1,5 +1,9 @@
 # MVP security contract and limits
 
+For the implemented fresh `@passman/sdk` alpha, read [its security and operational limits](fresh-quickstart.md#operational-limits), [confirmed design](fresh-design.md), [security decisions](fresh-design-security-review.md) and [verification record](fresh-testing.md). The protocol and no-recovery statements below apply only to the earlier client.
+
+This file describes the existing implementation. The [from-scratch draft](fresh-design.md) proposes role-separated encryption/signing/sync, password-based administrative restoration, pending website entry with exact trusted local activation, and a read-only installation/deployment inventory. See [the security decision record](fresh-design-security-review.md). Its scope supersedes old requirements but has no inherited implementation-test/audit evidence.
+
 Status: experimental implementation, not an independent audit or production certification. This profile applies to the standalone Passman repository; it does not downgrade the older API or migrate its users. Use synthetic values until the live/platform and security-review gates are complete.
 
 ## Data and key ownership
@@ -71,3 +75,7 @@ Use [GitHub private vulnerability reporting](https://github.com/07rjain/passman/
 ## Windows key custody
 
 Windows uses current-user SID/NTFS ACL validation rather than POSIX mode bits. Private files and directories reject shared Allow entries, non-owner SIDs and reparse points. New vault directories are made owner-only before writing private data. Local NTFS storage and Windows PowerShell are required; see [windows.md](windows.md). No cryptographic format, account recovery or OS-administrator isolation is added.
+
+## Local environment-file import
+
+Prepared client/server 0.4.0 adds protected local dotenv parsing and atomic encrypted batch writes. The original file and values stay local; names are readable metadata. Upload-only authority, pinned vault binding, expected revisions, body/count limits and transactional auditing apply to the complete batch. Authorization is rechecked after database lock waits. Unknown commit outcomes are not automatically retried. See [the exact format and failure contract](env-import.md). Runtime credentials remain read-only, and neither import nor zeroing input bytes isolates an arbitrary-code agent or equivalent OS user. The original plaintext file is not deleted.

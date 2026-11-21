@@ -4,6 +4,16 @@ The SDK and CLI share one semantic version. This changelog covers the installabl
 
 ## Unreleased
 
+- Preserve atomic Windows custody updates with an actual null .NET backup path, and verify native credential replacement/reload.
+
+- Remove the fresh Windows custody helper's dependency on PowerShell ACL cmdlets; use .NET ACL APIs to preserve validation when launched from PowerShell 7.
+
+- Prepare separate `@passman/sdk` / `@passman/protocol` 1.0.0-alpha.1 and `passman-v1`: promptless local reads, saved scoped credentials, explicit OS/deployment custody, account routing, signed administrative CRUD, password bootstrap/restoration, staged rotations/root replacement and resumable transfer. Breaking fresh formats have no legacy migration. Source alpha only; see [setup](fresh-quickstart.md) and [platform limits](fresh-testing.md).
+
+## 0.4.0 — 2026-11-18
+
+- Add atomic local `.env` import with a strict UTF-8 dotenv parser, protected byte input, metadata-only previews, default conflict rejection, explicit skip/replace and empty-value acknowledgement, dry runs, human confirmation or authorized `--yes` automation. Expose `parseEnv`, `readEnvFile`, `prepareEnvImport`, safe errors and preview/result types through the administrative SDK; keep runtime reads read-only. Limit files to 64 KiB/100 entries, encrypt before upload, reject stale batches atomically and never retry an unknown commit outcome. Requires the matching import API; existing vault/wire formats, identities and lifetimes are preserved.
+
 ## 0.3.2 — 2026-11-15
 
 - Renew missing/expired upload authorization automatically during interactive `passman put`, using the existing browser approval and vault key before prompting for or reading the secret. Honor `--no-browser`; noninteractive commands require prior `passman login`. Preserve the 20-minute lifetime, account/origin binding and encrypted vault format. Stop on failed approval or already-expired new authorization without reading a value; do not replay rejected uploads. Clarify local vault/passphrase errors and give actionable expiry/rejection guidance.

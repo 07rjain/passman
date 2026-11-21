@@ -14,8 +14,8 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run build -w @keyman-mvp/core && npm run build -w @keyman-mvp/client && npm run build -w @keyman-mvp/web",
-    "dev": "npm run build -w @keyman-mvp/core && npm run dev -w @keyman-mvp/web",
+    "build": "npm run build -w @passman/protocol && npm run build -w @passman/sdk && npm run build -w @keyman-mvp/core && npm run build -w @keyman-mvp/client && npm run build -w @keyman-mvp/web",
+    "dev": "npm run build -w @passman/protocol && npm run build -w @keyman-mvp/core && npm run dev -w @keyman-mvp/web",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p apps/web/tsconfig.json",
     "test": "node --import tsx --test test/*.test.ts",
     "test:integration": "node --import tsx --test --test-concurrency=1 test/*.integration.ts",
@@ -23,7 +23,7 @@
     "db:migrate": "node --env-file-if-exists=.env.migrate --import tsx scripts/migrate.ts",
     "lint": "eslint packages apps test scripts examples distribution",
     "format:check": "prettier --check .",
-    "check": "npm run format:check && npm run build && npm run typecheck && npm run lint && npm test && npm run test:package && npm run docs:check",
+    "check": "npm run format:check && npm run build && npm run typecheck && npm run lint && npm test && npm run test:package && npm run test:fresh:package && npm run test:fresh:distribution && npm run docs:check",
     "release:build": "npm run build -w @keyman-mvp/core && npm run build -w @keyman-mvp/client && node distribution/build.mjs",
     "release:version": "node distribution/version.mjs",
     "test:distribution": "node distribution/check.mjs",
@@ -33,7 +33,14 @@
     "audit:prune": "node --env-file-if-exists=.env.migrate --import tsx scripts/audit-prune.ts",
     "audit:operation": "node --env-file-if-exists=.env.migrate --import tsx scripts/audit-operation.ts",
     "db:grants": "node --env-file-if-exists=.env.migrate --import tsx scripts/runtime-grants.ts",
-    "release:sign": "node distribution/sign.mjs"
+    "release:sign": "node distribution/sign.mjs",
+    "test:fresh:integration": "node --import tsx --test --test-concurrency=1 test/fresh-*.integration.ts",
+    "test:fresh:isolated": "node scripts/fresh-test-database.mjs",
+    "test:fresh:package": "node scripts/check-fresh-package.mjs",
+    "db:fresh": "node --env-file-if-exists=.env.fresh.migrate --import tsx scripts/fresh-database.ts",
+    "test:fresh:native": "node scripts/fresh-native-test.mjs",
+    "release:fresh:build": "npm run build -w @passman/protocol && npm run build -w @passman/sdk && node distribution/fresh.mjs",
+    "test:fresh:distribution": "node distribution/check-fresh.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

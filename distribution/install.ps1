@@ -100,8 +100,8 @@ try {
         Download "$base/latest/download/latest.txt" (Join-Path $work 'latest.txt')
         $version = [IO.File]::ReadAllText((Join-Path $work 'latest.txt')).Trim()
     }
-    if ($version -notmatch '^\d+\.\d+\.\d+$') { throw 'Invalid release version.' }
-    if ([version]$version -lt [version]'0.2.0') { throw 'Windows requires Passman 0.2.0 or newer.' }
+    if ($version -notmatch '^\d+\.\d+\.\d+(-alpha\.\d+)?$') { throw 'Invalid release version.' }
+    if ([version]($version -split '-')[0] -lt [version]'0.2.0') { throw 'Windows requires Passman 0.2.0 or newer.' }
     $stage = 'DOWNLOAD_RELEASE'
     $archive = "passman-$version.tgz"
     $package = Join-Path $work 'package.tgz'

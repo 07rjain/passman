@@ -1,9 +1,9 @@
 ---
 name: passman
-description: Set up Passman and use its local CLI or TypeScript SDK to find and consume encrypted project secrets in application code. Use when the user asks to use Passman credentials or integrate Passman into an agent workflow.
+description: Set up Passman and use its local CLI or TypeScript SDK to find and consume encrypted project secrets in application code or import a user-selected .env file locally. Use when the user asks to use Passman credentials or integrate Passman into an agent workflow.
 license: PolyForm-Noncommercial-1.0.0
 metadata:
-  version: "0.1.3"
+  version: "0.2.0"
 ---
 
 # Passman
@@ -28,6 +28,12 @@ Read [references/usage.md](references/usage.md) for exact commands, SDK imports,
 - Do not add a CLI `get` command or invent an MCP tool. The existing CLI intentionally never prints provider values. Ordinary read credentials cannot create/delete projects, revoke credentials or write secrets.
 - Local uploads use `passman put` with separate short-lived upload authorization. Do not overwrite, delete or rotate entries merely to validate retrieval; perform only the management action the user requested.
 - Report safe status, project/name and redacted error codes. A missing value differs from a denied/unavailable lookup; never report every error as “not found.”
+
+## Import a user-selected environment file
+
+Client/server 0.4.0 adds administrative `.env` import (prepared source; publication is separate). Follow [the import procedure](references/usage.md#environment-file-import) only when the user requested that file/project mutation. Pass the path directly to the CLI or trusted SDK code; never inspect file contents through `cat`, shell expansion, model-visible output or `source`/`eval`.
+
+Start with a names-only `--dry-run`. Existing keys stop by default; choose skip or replacement according to the user's intent. Empty selected values need separate acknowledgement, and variable references stay literal. Saving requires confirmation, or `--yes` when the import is already authorized; a dry run alone is not authorization to save or replace. On an unknown commit outcome, stop automatic retries and inspect metadata before a deliberate new attempt. Runtime read keys remain read-only.
 
 ## Preserve the security boundary
 

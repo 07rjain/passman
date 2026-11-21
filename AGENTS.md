@@ -2,6 +2,12 @@
 
 Read the repository-wide engineering standards in [docs/agent.md](docs/agent.md), then this MVP's [PRD](docs/PRD.md), [plan](docs/plan.md), and [accepted design decisions](docs/simplified-design.md).
 
+## Current replacement direction
+
+For the from-scratch replacement, read [docs/fresh-design.md](docs/fresh-design.md) and its [security decision record](docs/fresh-design-security-review.md). Current scope supersedes old compatibility, manual-unlock, immutable-key, no-transfer, no-recovery and hosted-input rules below. Website secret submissions are create-only/pending until exact trusted local verification; administrative CLI/SDK support CRUD/activation, including separately authorized headless writes. Runtime service keys remain read-only, normal reads remain promptless, and private writer authority must not be decryptable by runtime sync material. Apply the selected bootstrap/transfer/restoration and installation-inventory policies in the draft. Interfaces/crypto/custody remain unimplemented; no data deletion or deployment is authorized by drafting.
+
+The instructions below describe the existing build unless they state general engineering, testing, audit, credential hygiene or contribution standards, which continue to apply.
+
 - This is the standalone Passman repository. Work from its root; keep maintained documents in `docs/` and disposable artifacts in ignored `ignore-docs/`.
 - The MVP specification is the target for this folder. Older multi-machine, dual-signature and root-recovery requirements describe the earlier application and must not be imported as MVP requirements automatically.
 - The earlier application remains in the separate `07rjain/keyman` repository. Preserve existing vault/database formats and data; this repository extraction does not authorize any account migration/reset.

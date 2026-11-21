@@ -1,5 +1,7 @@
 # Key loss and exposure
 
+For the fresh `@passman/sdk`, use [password changes, compromise and loss](fresh-quickstart.md#password-changes-compromise-and-loss). Account login plus the vault password can restore full administration from the encrypted synchronized package. Login alone cannot decrypt. If the password is forgotten and only read-only keys survive, administration cannot be recovered. The sections below describe the earlier client only.
+
 **Losing every usable copy of your private key means Passman cannot recover the encrypted values.** Account login, email ownership, support, database backups and a newly generated key do not restore decryption. The MVP has no recovery/reset/private-key-transfer feature.
 
 ## Before loss

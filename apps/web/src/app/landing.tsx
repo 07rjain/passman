@@ -1,5 +1,6 @@
 "use client";
 import CreatorContact from "./creator-contact";
+import { version } from "../../../../packages/passman/package.json";
 
 import { SignInButton } from "@clerk/nextjs";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
@@ -147,7 +148,7 @@ function CopyButton({ text, label }: { text: string; label: string }) {
   );
 }
 
-function SecretFlow() {
+function SecretFlow({ fresh }: { fresh: boolean }) {
   return (
     <figure
       className={styles.secretFlow}
@@ -165,7 +166,7 @@ function SecretFlow() {
           <strong>Your machine</strong>
           <span>Private key in your local vault</span>
         </div>
-        <span className={styles.localOnly}>Stays here</span>
+        <span className={styles.localOnly}>Protected locally</span>
       </div>
       <div className={styles.flowConnection} aria-hidden="true">
         <span />
@@ -246,6 +247,11 @@ function SecretFlow() {
         <code>
           await client.getSecret({"{"}
           <br />
+          {fresh && (
+            <>
+              &nbsp; project: <span>'my-app'</span>,<br />
+            </>
+          )}
           &nbsp; name: <span>'PAYMENTS_KEY'</span>
           <br />
           {"}"});
@@ -258,7 +264,9 @@ function SecretFlow() {
       <figcaption>
         The service stores encrypted values.
         <br />
-        Your private key stays on your machine.
+        {fresh
+          ? "Runtime keys decrypt on your configured machines."
+          : "Your private key stays on your machine."}
       </figcaption>
     </figure>
   );
@@ -269,15 +277,17 @@ function SignInAction({
   ready,
   children,
   className,
+  guide = "quickstart.md",
 }: {
   configured: boolean;
   ready: boolean;
   children: ReactNode;
   className?: string;
+  guide?: string;
 }) {
   if (!configured)
     return (
-      <a className={className} href={`${docs}/quickstart.md`}>
+      <a className={className} href={`${docs}/${guide}`}>
         Read the docs
       </a>
     );
@@ -293,13 +303,32 @@ function SignInAction({
 export default function Landing({
   authConfigured = true,
   authReady = true,
+  fresh = false,
 }: {
   authConfigured?: boolean;
   authReady?: boolean;
+  fresh?: boolean;
 }) {
   const [platform, setPlatform] = useState<"unix" | "windows">("unix");
   const tabsId = useId();
-  const command = installCommands[platform];
+  const guide = fresh ? "fresh-quickstart.md" : "quickstart.md";
+  const command = fresh
+    ? installCommands[platform]
+        .replace("install.sh", "install-v1.sh")
+        .replaceAll("install.ps1", "install-v1.ps1") +
+      (platform === "unix"
+        ? ` && export PASSMAN_ORIGIN=${installerOrigin}`
+        : `\n$env:Path = "$env:LOCALAPPDATA\\Passman\\bin;" + $env:Path\n$env:PASSMAN_ORIGIN = "${installerOrigin}"`)
+    : installCommands[platform];
+  const example = fresh
+    ? `import { connect } from '@passman/sdk';
+
+const client = await connect();
+const value = await client.getSecret({
+  project: 'my-app',
+  name: 'PAYMENTS_KEY',
+});`
+    : sdkExample;
   return (
     <div className={styles.landing}>
       <a className={styles.skipLink} href="#main-content">
@@ -312,7 +341,7 @@ export default function Landing({
         <nav className={styles.navigation} aria-label="Main navigation">
           <a href="#how-it-works">How it works</a>
           <a href="#developers">For developers</a>
-          <a href={`${docs}/quickstart.md`}>Docs</a>
+          <a href={`${docs}/${guide}`}>Docs</a>
         </nav>
         <div className={styles.headerActions}>
           <a
@@ -326,6 +355,7 @@ export default function Landing({
             configured={authConfigured}
             ready={authReady}
             className={styles.signIn}
+            guide={guide}
           >
             Sign in
           </SignInAction>
@@ -336,10 +366,14 @@ export default function Landing({
           <div className={styles.heroCopy}>
             <a
               className={styles.releaseLink}
-              href={`${repository}/releases/latest`}
+              href={
+                fresh
+                  ? `${repository}/releases/tag/passman-v${version}`
+                  : `${repository}/releases/latest`
+              }
             >
               <span />
-              Latest Passman release
+              {fresh ? `New: Passman ${version}` : "Latest Passman release"}
               <svg
                 width="15"
                 height="15"
@@ -360,9 +394,9 @@ export default function Landing({
               <span>Ship the code.</span>
             </h1>
             <p className={styles.heroDescription}>
-              A simple home for your application secrets. Encrypt locally, store
-              them in Passman, and decrypt in your code. The private key stays
-              on your machine.
+              {fresh
+                ? "Set up your vault once. Give your applications and agents scoped access, then retrieve secrets in one SDK call. Your configured machine decrypts automatically."
+                : "A simple home for your application secrets. Encrypt locally, store them in Passman, and decrypt in your code. The private key stays on your machine."}
             </p>
             <div className={styles.heroActions}>
               <a className={styles.primaryButton} href="#get-started">
@@ -388,8 +422,43 @@ export default function Landing({
               For macOS, Linux and Windows
             </p>
           </div>
-          <SecretFlow />
+          <SecretFlow fresh={fresh} />
         </section>
+
+        {fresh && (
+          <section
+            className={styles.releaseNotes}
+            aria-labelledby="release-title"
+          >
+            <div>
+              <p className={styles.sectionKicker}>New in {version}</p>
+              <h2 id="release-title">Your secrets, ready wherever you run.</h2>
+              <a
+                className={styles.textLink}
+                href={`${repository}/releases/tag/passman-v${version}`}
+              >
+                Read the alpha release notes <Icon name="code" size={16} />
+              </a>
+            </div>
+            <ul>
+              <li>
+                <strong>Read without repeated prompts.</strong> Save scoped
+                access once. The SDK finds the matching account key and decrypts
+                locally.
+              </li>
+              <li>
+                <strong>Bring another machine online.</strong> Unlock encrypted
+                sync with your vault password once, or use an expiring transfer
+                code.
+              </li>
+              <li>
+                <strong>Write from a trusted client.</strong> The CLI and
+                administrative SDK sign writes. Website submissions stay pending
+                until verified locally.
+              </li>
+            </ul>
+          </section>
+        )}
 
         <section
           className={styles.principles}
@@ -403,8 +472,9 @@ export default function Landing({
             <div>
               <h2>Local keys. Your control.</h2>
               <p>
-                Your private key lives in a passphrase-encrypted vault on your
-                machine.
+                {fresh
+                  ? "Your machine stores the runtime key in OS-protected or explicitly configured deployment storage."
+                  : "Your private key lives in a passphrase-encrypted vault on your machine."}
               </p>
             </div>
           </article>
@@ -454,7 +524,7 @@ export default function Landing({
               your application read-only access, and retrieve exactly what it
               needs.
             </p>
-            <a href={`${docs}/reference.md`}>
+            <a href={`${docs}/${fresh ? guide : "reference.md"}`}>
               Meet the TypeScript SDK
               <svg
                 width="16"
@@ -481,34 +551,42 @@ export default function Landing({
                 <span className={styles.fileDot} />
                 your-app.ts
               </span>
-              <CopyButton text={sdkExample} label="Copy SDK example" />
+              <CopyButton text={example} label="Copy SDK example" />
             </div>
             <pre tabIndex={0} aria-label="TypeScript SDK example">
               <code>
-                <span className={styles.syntaxKeyword}>import</span>
-                {" { KeymanClient, unlockIdentity } "}
-                <span className={styles.syntaxKeyword}>from</span>
-                {"\n  "}
-                <span className={styles.syntaxString}>
-                  {"'@07rjain/passman'"}
-                </span>
-                {";\n\n"}
-                <span className={styles.syntaxKeyword}>const</span>
-                {" identity = "}
-                <span className={styles.syntaxKeyword}>await</span>
-                {" unlockIdentity(\n  directory, passphrase,\n);\n"}
-                <span className={styles.syntaxKeyword}>const</span>
-                {" client = "}
-                <span className={styles.syntaxKeyword}>new</span>
-                {" KeymanClient({\n  identity,\n  serviceKey,\n  project: "}
-                <span className={styles.syntaxString}>{"'my-app'"}</span>
-                {",\n});\n\n"}
-                <span className={styles.syntaxKeyword}>const</span>
-                {" value = "}
-                <span className={styles.syntaxKeyword}>await</span>
-                {" client.getSecret({\n  name: "}
-                <span className={styles.syntaxString}>{"'PAYMENTS_KEY'"}</span>
-                {",\n});"}
+                {fresh ? (
+                  example
+                ) : (
+                  <>
+                    <span className={styles.syntaxKeyword}>import</span>
+                    {" { KeymanClient, unlockIdentity } "}
+                    <span className={styles.syntaxKeyword}>from</span>
+                    {"\n  "}
+                    <span className={styles.syntaxString}>
+                      {"'@07rjain/passman'"}
+                    </span>
+                    {";\n\n"}
+                    <span className={styles.syntaxKeyword}>const</span>
+                    {" identity = "}
+                    <span className={styles.syntaxKeyword}>await</span>
+                    {" unlockIdentity(\n  directory, passphrase,\n);\n"}
+                    <span className={styles.syntaxKeyword}>const</span>
+                    {" client = "}
+                    <span className={styles.syntaxKeyword}>new</span>
+                    {" KeymanClient({\n  identity,\n  serviceKey,\n  project: "}
+                    <span className={styles.syntaxString}>{"'my-app'"}</span>
+                    {",\n});\n\n"}
+                    <span className={styles.syntaxKeyword}>const</span>
+                    {" value = "}
+                    <span className={styles.syntaxKeyword}>await</span>
+                    {" client.getSecret({\n  name: "}
+                    <span className={styles.syntaxString}>
+                      {"'PAYMENTS_KEY'"}
+                    </span>
+                    {",\n});"}
+                  </>
+                )}
               </code>
             </pre>
             <div className={styles.codeFooter}>
@@ -537,7 +615,7 @@ export default function Landing({
               <br />
               Just a small CLI and your local vault.
             </p>
-            <a className={styles.textLink} href={`${docs}/quickstart.md`}>
+            <a className={styles.textLink} href={`${docs}/${guide}`}>
               Follow the full quickstart
               <svg
                 width="16"
@@ -647,7 +725,9 @@ export default function Landing({
                       ? "passman login"
                       : '& "$env:LOCALAPPDATA\\Passman\\bin\\passman.cmd" login'}
                   </code>{" "}
-                  and approve the request in your browser.
+                  {fresh
+                    ? "then run passman init to set up your vault once. Keep the account UUID it prints."
+                    : "and approve the request in your browser."}
                 </p>
               </div>
             </div>
@@ -656,11 +736,13 @@ export default function Landing({
               <div className={styles.stepContent}>
                 <h3>Add a project. Store your first value.</h3>
                 <p>
-                  Create a project in your workspace, then run{" "}
+                  {fresh
+                    ? "Run passman project create --account ACCOUNT_UUID --project my-app, then enter a value with "
+                    : "Create a project in your workspace, then run "}
                   <code>
                     {platform === "unix"
-                      ? "passman put --project my-app --name PAYMENTS_KEY"
-                      : '& "$env:LOCALAPPDATA\\Passman\\bin\\passman.cmd" put --project my-app --name PAYMENTS_KEY'}
+                      ? `passman put ${fresh ? "--account ACCOUNT_UUID " : ""}--project my-app --name PAYMENTS_KEY`
+                      : `& "$env:LOCALAPPDATA\\Passman\\bin\\passman.cmd" put ${fresh ? "--account ACCOUNT_UUID " : ""}--project my-app --name PAYMENTS_KEY`}
                   </code>{" "}
                   to enter and encrypt a value locally.
                 </p>
@@ -668,6 +750,7 @@ export default function Landing({
                   configured={authConfigured}
                   ready={authReady}
                   className={styles.workspaceLink}
+                  guide={guide}
                 >
                   Open your workspace
                 </SignInAction>
@@ -686,7 +769,10 @@ export default function Landing({
               <br />
               No secret promises.
             </h2>
-            <a className={styles.textLink} href={`${docs}/security.md`}>
+            <a
+              className={styles.textLink}
+              href={`${docs}/${fresh ? "fresh-quickstart.md#operational-limits" : "security.md"}`}
+            >
               Read the security model
               <Icon name="key" size={16} />
             </a>
@@ -695,11 +781,15 @@ export default function Landing({
             {[
               [
                 "Does Passman ever see my secret values?",
-                "When you use the local CLI, values are encrypted on your machine before upload. The optional browser form can read new values before encryption, so it trusts the website’s JavaScript. Use local input when that distinction matters.",
+                fresh
+                  ? "The local CLI encrypts values before upload. Website input trusts hosted JavaScript and stays pending until you verify its exact name and value in a trusted local client. Existing stored values are not revealed by the website."
+                  : "When you use the local CLI, values are encrypted on your machine before upload. The optional browser form can read new values before encryption, so it trusts the website’s JavaScript. Use local input when that distinction matters.",
               ],
               [
                 "What happens if I lose my private key?",
-                "There is no private-key recovery, reset or transfer service. Signing in cannot replace a lost key or recover its ciphertext. Keep access to your existing local vault and its passphrase.",
+                fresh
+                  ? "Use your vault password once to unlock encrypted synchronized key material on a new machine, or transfer runtime access with an expiring code. Account login alone cannot decrypt your secrets. Ordinary reads use configured local custody without that password."
+                  : "There is no private-key recovery, reset or transfer service. Signing in cannot replace a lost key or recover its ciphertext. Keep access to your existing local vault and its passphrase.",
               ],
               [
                 "Can I use this with an AI agent?",
@@ -731,7 +821,11 @@ export default function Landing({
           <a href="/support">Support</a>
           <a href="/llms.txt">Agent docs</a>
           <a href={repository}>Source</a>
-          <a href={`${docs}/security.md`}>Security</a>
+          <a
+            href={`${docs}/${fresh ? "fresh-quickstart.md#operational-limits" : "security.md"}`}
+          >
+            Security
+          </a>
           <a href={`${repository}/blob/main/LICENSE`}>License</a>
         </nav>
         <CreatorContact className={styles.creatorContacts} />

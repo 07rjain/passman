@@ -1,0 +1,41 @@
+{
+  "name": "@passman/sdk",
+  "version": "1.0.0-alpha.1",
+  "private": true,
+  "type": "module",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "files": [
+    "dist"
+  ],
+  "bin": {
+    "passman": "dist/cli.js",
+    "passman-v1": "dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./admin": {
+      "types": "./dist/admin.d.ts",
+      "import": "./dist/admin.js"
+    },
+    "./transfers": {
+      "types": "./dist/transfers.d.ts",
+      "import": "./dist/transfers.js"
+    },
+    "./writer-replacement": {
+      "types": "./dist/writer-replacement.d.ts",
+      "import": "./dist/writer-replacement.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "@passman/protocol": "1.0.0-alpha.1"
+  }
+}

@@ -64,6 +64,66 @@ export const projectSchema = z
 export const recordSchema = z
   .object({ context: contextSchema, envelope: envelopeSchema })
   .strict();
+export const ENV_FILE_MAX = 65536;
+export const ENV_ENTRIES_MAX = 100;
+export const envNameSchema = nameSchema.regex(/^[A-Za-z_][A-Za-z0-9_]*$/);
+const revisionSchema = z.number().int().min(0).max(2147483646);
+export const importNamesSchema = z
+  .array(envNameSchema)
+  .min(1)
+  .max(ENV_ENTRIES_MAX)
+  .refine((names) => new Set(names).size === names.length);
+export const importContextInputSchema = z
+  .object({ project: projectNameSchema, names: importNamesSchema })
+  .strict();
+export const importContextSchema = z
+  .object({
+    vault: vaultSchema,
+    project: projectSchema,
+    entries: z
+      .array(
+        z.object({ name: envNameSchema, revision: revisionSchema }).strict(),
+      )
+      .min(1)
+      .max(ENV_ENTRIES_MAX),
+  })
+  .strict();
+export const importInputSchema = z
+  .object({
+    projectId: idSchema,
+    entries: z
+      .array(
+        z
+          .object({
+            name: envNameSchema,
+            expectedRevision: revisionSchema,
+            envelope: envelopeSchema,
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(ENV_ENTRIES_MAX)
+      .refine(
+        (entries) =>
+          new Set(entries.map((e) => e.name)).size === entries.length,
+      ),
+  })
+  .strict();
+export const importResultSchema = z
+  .object({
+    imported: z
+      .array(
+        z
+          .object({
+            name: envNameSchema,
+            revision: z.number().int().positive().max(2147483647),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(ENV_ENTRIES_MAX),
+  })
+  .strict();
 export const codes = [
   "INVALID_REQUEST",
   "UNAUTHORIZED",

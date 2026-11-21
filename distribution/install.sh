@@ -21,7 +21,7 @@ work=$(mktemp -d "$root/.install.XXXXXX")
 trap 'rm -rf "$work"' EXIT HUP INT TERM
 version=${PASSMAN_VERSION:-}
 if [ -z "$version" ]; then fetch "$base/latest/download/latest.txt" "$work/latest"; version=$(cat "$work/latest"); fi
-printf '%s\n' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || fail 'Invalid release version.'
+printf '%s\n' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-alpha\.[0-9]+)?$' || fail 'Invalid release version.'
 archive="passman-$version.tgz"
 fetch "$base/download/passman-v$version/$archive" "$work/package.tgz"
 fetch "$base/download/passman-v$version/$archive.sha256" "$work/package.sha256"
