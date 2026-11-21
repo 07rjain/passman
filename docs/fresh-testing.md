@@ -81,3 +81,7 @@ For both authenticated sessions, `/api/passman/v1/account` still returned 404 `N
 ## Two-machine and multiple-vault acceptance — 2026-11-20
 
 A new temporary Agent37 VM and the controlling Linux machine passed 44 distinct synthetic checks with packed fresh SDK artifacts and an isolated real PostgreSQL API. Evidence covers code transfer/retry/expiry/single-use, password bootstrap, three account vaults in one store, account routing/no fallback, routine and compromise rotation, credential replacement, inventory identity, an unprivileged read-only mounted container, and reads after a confirmed cold VM reboot. The fixture API used verified synthetic human JWTs and explicit transport adapters; this is not a live Clerk/production test. The VM was deleted, and transient fixture key material was removed. See [the full record and repeatable user steps](fresh-multimachine-verification.md).
+
+## macOS CI fixture isolation — 2026-11-21
+
+The first native macOS CI run passed the build/unit/package checks but failed its Keychain persistence case with `STORAGE_UNAVAILABLE`. The macOS runner now creates an isolated disposable keychain, unlocks it explicitly, selects it only for the native suite, then restores the previous default/search list and deletes the fixture. This tests supported unlocked storage without depending on an unattended runner login keychain or weakening runtime no-prompt behavior. Native acceptance is pending the next CI result.

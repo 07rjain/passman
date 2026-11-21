@@ -36,7 +36,9 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y gnome-keyring python3-dbus dbus-x11
       - if: runner.os == 'Linux'
         run: npm run test:fresh:native && npm run test:fresh:isolated
-      - if: runner.os != 'Linux'
+      - if: runner.os == 'macOS'
+        run: node scripts/fresh-macos-test.mjs
+      - if: runner.os == 'Windows'
         run: node --import tsx --test test/fresh-native.test.ts
         env:
           PASSMAN_NATIVE_FIXTURE: "1"
