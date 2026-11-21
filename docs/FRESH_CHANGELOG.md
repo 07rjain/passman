@@ -14,3 +14,5 @@ The macOS native CI fixture uses an explicitly unlocked temporary keychain and r
 - Correct Windows package-fixture command quoting and exercise installation in a directory containing spaces. The fixture continues to execute the installed npm CLI shim before native acceptance.
 
 - Cast Security `CFStringRef` query constants to their toll-free Objective-C objects before constructing macOS Keychain dictionaries; raw references produced `errSecParam` for otherwise valid queries.
+
+- Compare Windows custody owner/access identities by canonical SID values and add synthetic-only native-helper diagnostics to the Windows acceptance runner.

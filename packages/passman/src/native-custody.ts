@@ -117,9 +117,9 @@ function Assert-Path($path) {
  $item=Get-Item -LiteralPath $path -Force
  if(($item.Attributes -band [IO.FileAttributes]::ReparsePoint)-ne 0){throw 'unavailable'}
  $acl=Get-Acl -LiteralPath $path
- if($acl.GetOwner([Security.Principal.SecurityIdentifier]) -ne $sid){throw 'unavailable'}
+ if($acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne $sid.Value){throw 'unavailable'}
  foreach($rule in $acl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier])) {
-  if($rule.AccessControlType -eq 'Allow' -and $rule.IdentityReference -ne $sid -and $rule.IdentityReference.Value -ne 'S-1-5-18' -and $rule.IdentityReference.Value -ne 'S-1-5-32-544'){throw 'unavailable'}
+  if($rule.AccessControlType -eq 'Allow' -and $rule.IdentityReference.Value -ne $sid.Value -and $rule.IdentityReference.Value -ne 'S-1-5-18' -and $rule.IdentityReference.Value -ne 'S-1-5-32-544'){throw 'unavailable'}
  }
 }
 if(!(Test-Path -LiteralPath $root)) {

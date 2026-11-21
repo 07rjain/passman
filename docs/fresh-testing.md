@@ -93,3 +93,7 @@ The isolated macOS fixture still returned native `errSecParam` (-50) for each qu
 Both Windows jobs on `02dbbd8` passed their build/unit/earlier-package stages, then failed when the fresh package fixture launched npm’s `.cmd` shim. Node escaped the intentionally quoted `cmd /s /c` payload a second time. The fixture now passes that payload verbatim and uses a consumer directory containing spaces. It still executes the installed shim and checks its actual help output; native DPAPI acceptance remains pending the subsequent CI stages.
 
 The reduced queries also returned -50. Boundary inspection identified raw Security `CFStringRef` constants being passed as `NSDictionary` keys/values. The helper now casts those constants to their toll-free Objective-C objects and uses a Foundation Boolean for return-data requests. The synthetic bridge probe uses the same conversions. Native macOS read/write and locked-keychain tests remain enabled; CI must confirm the corrected bridge.
+
+## Windows native-helper verification — 2026-11-21
+
+After the package-quoting correction, Windows package/distribution checks passed and the native suite reached the DPAPI helper, which returned `STORAGE_UNAVAILABLE`. SID ownership/access checks now compare canonical SID strings. The isolated Windows runner can diagnose a failure with a fresh random slot and fixed synthetic data using the actual helper; production helper diagnostics remain drained/redacted. Native acceptance is pending CI.
