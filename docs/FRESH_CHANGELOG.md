@@ -2,6 +2,8 @@
 
 ## 1.0.0-alpha.1 — 2026-11-20
 
+Prepared 2026-11-20; [published as a signed prerelease](https://github.com/07rjain/passman/releases/tag/passman-v1.0.0-alpha.1) on 2026-11-21 from `a94215b36469717b2bf83b56c15caf60b3f627e8`. Linux/macOS/Windows release acceptance passed. The fresh API and updated landing page are live; public signature/checksum, hosted installers and an isolated installed Linux SDK were verified. [Rollout evidence](fresh-testing.md#signed-alpha-publication-and-hosted-rollout--2026-11-21).
+
 - First separate fresh SDK/CLI release: promptless local retrieval, saved scoped read credentials, account-specific custody, signed administrative writes, encrypted synchronization/restoration, code transfers and routine/compromise rotation.
 - Self-contained GitHub archive exports `@passman/sdk`, `/admin`, `/transfers` and `/writer-replacement`; commands `passman` and `passman-v1`, with an explicit `--version`. Node.js 24 is required; fresh installers include a verified private runtime.
 - Separate local custody and API/schema. Existing accounts/data are retained in the earlier workspace and are not automatically imported. Initialize a new fresh vault explicitly. Do not delete earlier keys while earlier values are still needed.

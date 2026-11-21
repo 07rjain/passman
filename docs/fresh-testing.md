@@ -1,5 +1,7 @@
 # Fresh implementation: verification record
 
+Latest status: [signed alpha publication and hosted rollout, 2026-11-21](#signed-alpha-publication-and-hosted-rollout--2026-11-21). Earlier dated entries below retain their original verification scope.
+
 Date: 2026-11-20. Runtime: Node.js 24.22.3/npm 11.19.1 on Linux x64. Source packages are `@passman/protocol` and `@passman/sdk` 1.0.0-alpha.1. This is local synthetic verification, not a release, deployment, independent cryptographic audit or production acceptance. Follow [the alpha guide](fresh-quickstart.md) for runnable setup and limitations.
 
 ## Implemented boundaries
@@ -105,3 +107,13 @@ On `921612d`, those synthetic create/read/delete probes passed, but the complete
 ## Public alpha preflight — 2026-11-21
 
 After the replacement/onboarding corrections, `npm run check` passed: 69 unit cases passed, 5 platform-fixture cases were skipped, both package consumers and the offline signed alpha distribution passed, and 43 Markdown documents passed checks. The isolated Linux native suite passed 3 cases, including credential replacement/reload, with the macOS-only case skipped. GitHub private vulnerability reporting is enabled. The landing page and support/agent documentation now target the fresh guide, pinned alpha release and actual installer command; setup includes origin/account configuration. These local results do not close Windows native CI, signed public publication or the fresh hosted end-to-end journey.
+
+## Signed alpha publication and hosted rollout — 2026-11-21
+
+Merged [PR #7](https://github.com/07rjain/passman/pull/7) at `a94215b36469717b2bf83b56c15caf60b3f627e8` after all four required checks and fresh native Linux/macOS/Windows jobs passed on head `86f9be84525cc34971ebcd9697e21f411732d503`. The [fresh release workflow](https://github.com/07rjain/passman/actions/runs/44865978986) repeated platform acceptance, received the configured maintainer approval, signed with the protected publisher key and published immutable [1.0.0-alpha.1](https://github.com/07rjain/passman/releases/tag/passman-v1.0.0-alpha.1) at 04:31:59 UTC. The stable latest pointer and earlier release assets were retained.
+
+The first production build stopped at the missing-public-archive gate. After public signature/checksum verification, a production retry completed as deployment `dpl_BfYJ91YVm3EeA5ypCeV5UCWwVGTM` for that main commit, aliased to `passman.subdomain.wtf`. Fresh schema version 1 and the separate restricted runtime configuration were verified without resetting prior data. The browser observed fresh health 200 (`ready`, version 1.0.0-alpha.1), unauthenticated account 401 with cookies omitted, the pinned new release link and correct SDK line breaks. Desktop 1280×800 and mobile 375×667 layouts had no horizontal document overflow; no console errors were observed.
+
+At 08:09 UTC, anonymous downloads passed pinned publisher-signature and checksum verification. Both hosted installers matched source. A fresh, isolated Linux installation using the hosted installer and its verified private Node runtime reported the correct CLI version; the actual installed SDK decrypted a synthetic signed record, restored runtime and administrative packages, rejected a wrong password, and denied plaintext access without custody. Temporary installation/key material was removed, and shell profiles and existing installations were left unchanged. Archive SHA-256: `4886432c9455061525f0307a32b59b4304de8f2574bb38033779a4efa6180a47`.
+
+This closes the prior missing-deployment/publication and native-CI gates for this alpha. It does not establish a newly authenticated hosted Clerk-to-vault lifecycle, real provider use, Kubernetes/cloud-function platform acceptance, monitoring delivery or production backup/restore. The alpha remains experimental.

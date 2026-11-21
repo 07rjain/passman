@@ -1,6 +1,6 @@
 # Fresh Passman: local alpha guide
 
-This guide is for the new `@passman/sdk` **1.0.0-alpha.1** source implementation and `passman` CLI on Node.js 24. It uses `/api/passman/v1`, the separate `passman_v1` PostgreSQL schema and separate local custody. It does not import old vaults or data. The release candidate now has a signed GitHub archive/installer workflow; consult [release status](FRESH_CHANGELOG.md) for publication and hosted verification. Start with synthetic secrets; see [verification and platform gaps](fresh-testing.md).
+This guide is for the new `@passman/sdk` **1.0.0-alpha.1** source implementation and `passman` CLI on Node.js 24. It uses `/api/passman/v1`, the separate `passman_v1` PostgreSQL schema and separate local custody. It does not import old vaults or data. The signed alpha archive and matching website are now published; consult [release status](FRESH_CHANGELOG.md) for verified scope and limits. Start with synthetic secrets; see [verification and platform gaps](fresh-testing.md).
 
 ## The three things you configure
 

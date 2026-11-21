@@ -1,6 +1,16 @@
 # Passman installation and releases
 
-The public Passman SDK/CLI release is **0.3.2**, published on 2026-11-15 through the protected signing workflow. Client archives use a pinned publisher signature. The command is `passman`; the previous `keyman-mvp` command remains available. Packages use PolyForm Noncommercial 1.0.0; third-party licenses are included. This remains an experimental vault, not production security approval.
+The stable Passman SDK/CLI release is **0.3.2**, published on 2026-11-15 through the protected signing workflow. Client archives use a pinned publisher signature. The command is `passman`; the previous `keyman-mvp` command remains available. Packages use PolyForm Noncommercial 1.0.0; third-party licenses are included. This remains an experimental vault, not production security approval.
+
+## Fresh public alpha — 2026-11-21
+
+[Passman 1.0.0-alpha.1](https://github.com/07rjain/passman/releases/tag/passman-v1.0.0-alpha.1) was published from main commit `a94215b36469717b2bf83b56c15caf60b3f627e8` through the [protected fresh release workflow](https://github.com/07rjain/passman/actions/runs/44865978986). Linux, macOS and Windows acceptance passed before owner approval, signing and immutable prerelease publication. [PR #7](https://github.com/07rjain/passman/pull/7) passed all required checks and all fresh native-platform jobs before merge.
+
+The fresh landing page and API are deployed at [passman.subdomain.wtf](https://passman.subdomain.wtf). Use the version-pinned `install-v1.sh` / `install-v1.ps1` commands in [the fresh quickstart](fresh-quickstart.md), rather than the stable-client commands below. The stable GitHub latest pointer remains 0.3.2; this prerelease does not silently move earlier clients to a new vault format.
+
+Anonymous public downloads verified against the pinned publisher key and checksum. Archive SHA-256: `4886432c9455061525f0307a32b59b4304de8f2574bb38033779a4efa6180a47`. Hosted installers matched source. An isolated public Linux installation passed CLI version, private-runtime, installed-SDK plaintext retrieval with a synthetic transport, runtime/admin restoration, wrong-password rejection and missing-custody denial. Live fresh health returned 200 with version 1.0.0-alpha.1; unauthenticated account access with omitted cookies returned 401. Desktop/mobile landing checks passed with the new announcement and real code line breaks.
+
+Production deployment `dpl_BfYJ91YVm3EeA5ypCeV5UCWwVGTM` serves the checked main code after the signed-release gate cleared. Existing data/keys were retained. This record does not establish a fresh authenticated hosted vault journey, cloud-function acceptance, backup/restore, or production security approval. See [the full evidence record](fresh-testing.md#signed-alpha-publication-and-hosted-rollout--2026-11-21).
 
 ## Repository transition
 
