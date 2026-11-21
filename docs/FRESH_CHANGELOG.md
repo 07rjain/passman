@@ -8,3 +8,5 @@
 - Experimental alpha: native platform CI and hosted acceptance must pass before publication/deployment is marked verified. Provider rotation, production backup/restore and operational alerting remain operator responsibilities. See [the verification record](fresh-testing.md).
 
 The macOS native CI fixture uses an explicitly unlocked temporary keychain and restores its previous keychain settings afterward. A successful build or package check alone is not native Keychain acceptance.
+
+- Correct macOS file-keychain queries that returned `errSecParam` (-50) even with unlocked storage. Runtime interaction stays disabled; native CI also checks that locking the isolated keychain rejects reads/writes without a prompt.

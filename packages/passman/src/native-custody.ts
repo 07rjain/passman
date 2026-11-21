@@ -79,8 +79,8 @@ var q=$.NSMutableDictionary.alloc.init;
 q.setObjectForKey($.kSecClassGenericPassword,$.kSecClass);
 q.setObjectForKey($('passman.v1'),$.kSecAttrService);
 q.setObjectForKey($(data.slot),$.kSecAttrAccount);
-q.setObjectForKey($.kCFBooleanFalse,$.kSecAttrSynchronizable);
-q.setObjectForKey($.kSecUseAuthenticationUIFail,$.kSecUseAuthenticationUI);
+// The default file keychain is non-synchronizing. Data-protection query options
+// are rejected with errSecParam here; the process-wide setting above forbids UI.
 if(data.operation==='delete') {
  var status=$.SecItemDelete(q); if(status!==0 && status!==-25300) return failed(status); return JSON.stringify(null);
 } else if(data.operation==='read') {
@@ -96,7 +96,7 @@ if(data.operation==='delete') {
  var status=$.SecItemUpdate(q,update);
  if(status===-25300) {
   // Use the supported file-based login keychain; no app entitlement or iCloud synchronization.
-  var add=q.mutableCopy; add.removeObjectForKey($.kSecUseAuthenticationUI); add.addEntriesFromDictionary(update); status=$.SecItemAdd(add,null);
+  var add=q.mutableCopy; add.addEntriesFromDictionary(update); status=$.SecItemAdd(add,null);
  }
  if(status!==0) return failed(status); return JSON.stringify(null);
 }

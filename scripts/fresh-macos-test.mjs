@@ -34,7 +34,12 @@ try {
     ["--import", "tsx", "--test", "test/fresh-native.test.ts"],
     {
       stdio: "inherit",
-      env: { ...process.env, PASSMAN_NATIVE_FIXTURE: "1" },
+      env: {
+        ...process.env,
+        PASSMAN_NATIVE_FIXTURE: "1",
+        PASSMAN_NATIVE_MACOS_KEYCHAIN: keychain,
+        PASSMAN_NATIVE_MACOS_PASSWORD: password,
+      },
       timeout: 120000,
     },
   );
@@ -58,12 +63,11 @@ try {
  q.setObjectForKey($.kSecClassGenericPassword,$.kSecClass);
  q.setObjectForKey($('passman.synthetic.probe'),$.kSecAttrService);
  q.setObjectForKey($('fixture'),$.kSecAttrAccount);
- q.setObjectForKey($.kCFBooleanFalse,$.kSecAttrSynchronizable);
- q.setObjectForKey($.kSecUseAuthenticationUIFail,$.kSecUseAuthenticationUI);
+ // Match the adapter's default, non-synchronizing file-keychain query.
  stage='read-missing'; var result=Ref(); q.setObjectForKey($.kCFBooleanTrue,$.kSecReturnData);
  console.log('synthetic.read-missing.status='+$.SecItemCopyMatching(q,result));
  q.removeObjectForKey($.kSecReturnData); stage='add';
- var add=q.mutableCopy;add.removeObjectForKey($.kSecUseAuthenticationUI);
+ var add=q.mutableCopy;
  add.setObjectForKey($('synthetic').dataUsingEncoding($.NSUTF8StringEncoding),$.kSecValueData);
  console.log('synthetic.add.status='+$.SecItemAdd(add,null));
  stage='read';q.setObjectForKey($.kCFBooleanTrue,$.kSecReturnData);

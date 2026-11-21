@@ -213,3 +213,53 @@ assert properties.Get('org.freedesktop.Secret.Collection','Locked')
     );
   },
 );
+
+const macKeychain =
+  process.platform === "darwin" && process.env.PASSMAN_NATIVE_FIXTURE === "1"
+    ? process.env.PASSMAN_NATIVE_MACOS_KEYCHAIN
+    : undefined;
+test(
+  "locked macOS fixture rejects existing reads and new writes without prompting",
+  {
+    skip: macKeychain ? false : "Requires the isolated macOS Keychain fixture",
+    timeout: 8000,
+  },
+  async () => {
+    assert(macKeychain);
+    const password = process.env.PASSMAN_NATIVE_MACOS_PASSWORD;
+    assert(password);
+    const store = new NativeStore(),
+      selection = { origin: "http://localhost:3100", accountId: randomUUID() };
+    await store.write(
+      "credential",
+      selection,
+      "synthetic macOS locked fixture",
+      () => true,
+    );
+    const security = promisify(execFile);
+    try {
+      await security("/usr/bin/security", ["lock-keychain", macKeychain], {
+        timeout: 5000,
+      });
+      await assert.rejects(store.read("credential", selection), {
+        code: "VAULT_LOCKED",
+      });
+      await assert.rejects(
+        store.write(
+          "credential",
+          { ...selection, accountId: randomUUID() },
+          "synthetic blocked fixture",
+          () => true,
+        ),
+        { code: "VAULT_LOCKED" },
+      );
+    } finally {
+      await security(
+        "/usr/bin/security",
+        ["unlock-keychain", "-p", password, macKeychain],
+        { timeout: 5000 },
+      );
+      await store.remove("credential", selection);
+    }
+  },
+);
