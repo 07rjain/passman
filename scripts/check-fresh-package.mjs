@@ -4,7 +4,7 @@ import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 const root = path.resolve(import.meta.dirname, ".."),
-  directory = await mkdtemp(path.join(tmpdir(), "passman-fresh-artifact-"));
+  directory = await mkdtemp(path.join(tmpdir(), "passman fresh artifact-"));
 const npm = (args, cwd = directory) =>
   execFileSync(process.execPath, [process.env.npm_execpath, ...args], {
     cwd,
@@ -70,7 +70,13 @@ assert.equal(new PassmanError('FORBIDDEN').code,'FORBIDDEN');`;
       ? execFileSync(
           process.env.ComSpec ?? "C:\\Windows\\System32\\cmd.exe",
           ["/d", "/s", "/c", `""${shim}" --help"`],
-          { cwd: directory, encoding: "utf8" },
+          {
+            cwd: directory,
+            encoding: "utf8",
+            // cmd /s /c needs its outer quotes verbatim; Node's default argv
+            // escaping otherwise turns the whole quoted command into a filename.
+            windowsVerbatimArguments: true,
+          },
         )
       : execFileSync(shim, ["--help"], { cwd: directory, encoding: "utf8" });
   assert.match(shimHelp, /Usage: passman-v1/);

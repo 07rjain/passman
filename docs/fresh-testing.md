@@ -87,3 +87,7 @@ A new temporary Agent37 VM and the controlling Linux machine passed 44 distinct 
 The first native macOS CI run passed the build/unit/package checks but failed its Keychain persistence case with `STORAGE_UNAVAILABLE`. The macOS runner now creates an isolated disposable keychain, unlocks it explicitly, selects it only for the native suite, then restores the previous default/search list and deletes the fixture. This tests supported unlocked storage without depending on an unattended runner login keychain or weakening runtime no-prompt behavior. Native acceptance is pending the next CI result.
 
 The isolated macOS fixture still returned native `errSecParam` (-50) for each query. The adapter now uses only supported file-keychain query options and keeps process-wide interaction disabled. The macOS suite adds locked-keychain read/write denial; successful native CI is still required to confirm this correction.
+
+## Windows package-fixture quoting — 2026-11-21
+
+Both Windows jobs on `02dbbd8` passed their build/unit/earlier-package stages, then failed when the fresh package fixture launched npm’s `.cmd` shim. Node escaped the intentionally quoted `cmd /s /c` payload a second time. The fixture now passes that payload verbatim and uses a consumer directory containing spaces. It still executes the installed shim and checks its actual help output; native DPAPI acceptance remains pending the subsequent CI stages.
