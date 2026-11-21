@@ -321,7 +321,13 @@ export default function Landing({
         : `\n$env:Path = "$env:LOCALAPPDATA\\Passman\\bin;" + $env:Path\n$env:PASSMAN_ORIGIN = "${installerOrigin}"`)
     : installCommands[platform];
   const example = fresh
-    ? `import { connect } from '@passman/sdk';\n\nconst client = await connect();\nconst value = await client.getSecret({\n  project: 'my-app',\n  name: 'PAYMENTS_KEY',\n});`
+    ? `import { connect } from '@passman/sdk';
+
+const client = await connect();
+const value = await client.getSecret({
+  project: 'my-app',
+  name: 'PAYMENTS_KEY',
+});`
     : sdkExample;
   return (
     <div className={styles.landing}>
@@ -367,7 +373,7 @@ export default function Landing({
               }
             >
               <span />
-              {fresh ? `Passman ${version}` : "Latest Passman release"}
+              {fresh ? `New: Passman ${version}` : "Latest Passman release"}
               <svg
                 width="15"
                 height="15"
@@ -388,9 +394,9 @@ export default function Landing({
               <span>Ship the code.</span>
             </h1>
             <p className={styles.heroDescription}>
-              A simple home for your application secrets. Encrypt locally, store
-              them in Passman, and decrypt in your code. The private key stays
-              on your machine.
+              {fresh
+                ? "Set up your vault once. Give your applications and agents scoped access, then retrieve secrets in one SDK call. Your configured machine decrypts automatically."
+                : "A simple home for your application secrets. Encrypt locally, store them in Passman, and decrypt in your code. The private key stays on your machine."}
             </p>
             <div className={styles.heroActions}>
               <a className={styles.primaryButton} href="#get-started">
@@ -418,6 +424,41 @@ export default function Landing({
           </div>
           <SecretFlow fresh={fresh} />
         </section>
+
+        {fresh && (
+          <section
+            className={styles.releaseNotes}
+            aria-labelledby="release-title"
+          >
+            <div>
+              <p className={styles.sectionKicker}>New in {version}</p>
+              <h2 id="release-title">Your secrets, ready wherever you run.</h2>
+              <a
+                className={styles.textLink}
+                href={`${repository}/releases/tag/passman-v${version}`}
+              >
+                Read the alpha release notes <Icon name="code" size={16} />
+              </a>
+            </div>
+            <ul>
+              <li>
+                <strong>Read without repeated prompts.</strong> Save scoped
+                access once. The SDK finds the matching account key and decrypts
+                locally.
+              </li>
+              <li>
+                <strong>Bring another machine online.</strong> Unlock encrypted
+                sync with your vault password once, or use an expiring transfer
+                code.
+              </li>
+              <li>
+                <strong>Write from a trusted client.</strong> The CLI and
+                administrative SDK sign writes. Website submissions stay pending
+                until verified locally.
+              </li>
+            </ul>
+          </section>
+        )}
 
         <section
           className={styles.principles}
@@ -740,7 +781,9 @@ export default function Landing({
             {[
               [
                 "Does Passman ever see my secret values?",
-                "When you use the local CLI, values are encrypted on your machine before upload. The optional browser form can read new values before encryption, so it trusts the website’s JavaScript. Use local input when that distinction matters.",
+                fresh
+                  ? "The local CLI encrypts values before upload. Website input trusts hosted JavaScript and stays pending until you verify its exact name and value in a trusted local client. Existing stored values are not revealed by the website."
+                  : "When you use the local CLI, values are encrypted on your machine before upload. The optional browser form can read new values before encryption, so it trusts the website’s JavaScript. Use local input when that distinction matters.",
               ],
               [
                 "What happens if I lose my private key?",

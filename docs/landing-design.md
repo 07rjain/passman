@@ -1,5 +1,9 @@
 # Passman landing page
 
+## Fresh alpha announcement — 2026-11-21
+
+The fresh alpha announcement adds a quiet sage release section below the existing hero, using the established Manrope type, charcoal text and left-aligned two-column layout. It highlights saved scoped reads, one-time machine provisioning and trusted-client writes without adding animation or changing the product illustration. The release link is pinned to the source alpha version. The SDK example uses actual line breaks for readable rendering and clipboard output; website-input copy describes pending local verification. Mobile stacks the announcement in reading order with the existing focus and contrast treatment.
+
 The public page introduces the local-key vault to developers, shows a real SDK example and leads into installation or existing Clerk sign-in. The authenticated workspace and approval flow retain their existing behavior. The hero illustration explains the storage boundary using example metadata; it is not a live workspace or a complete cryptographic protocol diagram.
 
 ## Design direction
@@ -48,3 +52,7 @@ The public footer and dashboard link to `/support` and `/status`. Support routes
 The dashboard keeps its account-keyed client component behind the server home-page entry. Public support/status routes remain usable without Clerk configuration. Below 800px, workspace navigation moves above the content; narrow screens use two navigation columns, stacked form controls and separate metadata/action rows. Long names, fingerprints and one-time credentials wrap inside their panels. Public controls have larger mobile touch targets. These presentation changes do not add a native mobile application or alter authorization.
 
 The landing, support and status footers keep their existing content and group creator links under one initially collapsed “Contact us” control. Expanding it reveals Book a call, Website and Email links in a compact panel, without a builder introduction. Native details/summary works with keyboard, touch and JavaScript disabled. The control inherits the footer theme, fits narrow screens, preserves visible focus and 44px targets, and uses ordinary links without an embed or tracking.
+
+The 2026-11-21 landing update passed the full `npm run check` pipeline (69 unit cases passed, five platform fixtures skipped locally), plus shared-browser inspection of the built page at 1280×800 and 375×667. The release announcement and SDK example fit both widths without horizontal document overflow. The SDK code has actual line breaks and no literal backslash-n text. The Windows installer tab selects the pinned alpha script; ArrowLeft returns selection/focus to macOS/Linux. No browser console errors were observed in the local page. This is local presentation evidence, not a claim that the signed alpha or hosted fresh journey is already published.
+
+The existing release-branch CI at `30612e646ab96af294a08cb79caf97763c1d8c25` passed all required checks and the fresh native Linux/macOS/Windows jobs. The landing update will run those checks again before main promotion. Fresh production schema version 1 and the separate `PASSMAN_DATABASE_URL` configuration were confirmed without modifying existing data; the signed-publication gate remains required.

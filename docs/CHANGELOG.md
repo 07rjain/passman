@@ -4,6 +4,8 @@ This file records website/API/security and operational changes. Installable clie
 
 ## Unreleased
 
+- Announce fresh SDK/CLI 1.0.0-alpha.1 on the public landing page with promptless reads, multi-machine sync/transfer and trusted local writes. Link the matching alpha release, render the SDK example with copyable line breaks, and clarify pending website entry. Preserve the existing visual style and experimental-software disclosure.
+
 - Align the fresh landing page, support and agent entry points with the new quickstart and pinned alpha release. Use the installer's `passman` command, configure the service origin before login, and show the required account UUID in administrative examples. Clarify fresh restoration versus earlier-client key-loss behavior.
 
 - Prepare the signed fresh 1.0.0-alpha.1 SDK/CLI archive and pinned alpha installers, fresh home/console entry point, separate `/legacy` access and schema-backed `/api/passman/health`. The production guard verifies the exact signed alpha artifact before deployment. Publication, CI and live acceptance are recorded separately.
