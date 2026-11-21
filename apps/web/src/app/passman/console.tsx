@@ -251,8 +251,8 @@ export default function Console() {
       </p>
       {!ready && (
         <p className={styles.notice}>
-          Complete <code>passman-v1 init</code> locally to create your vault.
-          This page never asks for your vault password.
+          Complete <code>passman init</code> locally to create your vault. This
+          page never asks for your vault password.
         </p>
       )}
       <section

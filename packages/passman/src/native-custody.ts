@@ -158,7 +158,9 @@ if($d.operation -eq 'delete') {
   $fileAcl.AddAccessRule((New-Object Security.AccessControl.FileSystemAccessRule($sid,'FullControl','Allow')))
   $file=[IO.FileStream]::new($temp,[IO.FileMode]::CreateNew,[Security.AccessControl.FileSystemRights]::FullControl,[IO.FileShare]::None,4096,[IO.FileOptions]::WriteThrough,$fileAcl)
   try{$file.Write($bytes,0,$bytes.Length);$file.Flush($true)}finally{$file.Dispose()}
-  if(Test-Path -LiteralPath $path){[IO.File]::Replace($temp,$path,$null)}else{[IO.File]::Move($temp,$path)}
+  # PowerShell coerces $null to an empty string for .NET string parameters.
+  # File.Replace requires an actual null backup path when no backup is wanted.
+  if(Test-Path -LiteralPath $path){[IO.File]::Replace($temp,$path,[NullString]::Value)}else{[IO.File]::Move($temp,$path)}
  }finally{if(Test-Path -LiteralPath $temp){Remove-Item -LiteralPath $temp -Force}}
  [Console]::Out.Write('null')
 }

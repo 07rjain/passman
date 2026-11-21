@@ -17,7 +17,7 @@ export default function PublicShell({ children }: { children: ReactNode }) {
         <nav aria-label="Main navigation">
           <Link href="/status">Status</Link>
           <Link href="/support">Support</Link>
-          <a href="https://github.com/07rjain/passman/blob/main/docs/quickstart.md">
+          <a href="https://github.com/07rjain/passman/blob/main/docs/fresh-quickstart.md">
             Docs
           </a>
         </nav>

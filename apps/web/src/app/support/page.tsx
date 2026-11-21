@@ -54,10 +54,13 @@ export default function SupportPage() {
       <section className={styles.panel}>
         <h2>Lost access to your vault?</h2>
         <p>
-          Keep your existing vault file. Support cannot recover a lost private
-          key, reset its passphrase or replace its account binding. Read the{" "}
-          <a href="https://github.com/07rjain/passman/blob/main/docs/key-loss.md">
-            key-loss guide
+          Keep existing local keys. For the fresh SDK, account login plus the
+          vault password can restore administration and decryption from the
+          encrypted synchronized package. Login alone cannot decrypt. If the
+          password is forgotten and only read-only keys survive, administration
+          cannot be recovered. Read the{" "}
+          <a href="https://github.com/07rjain/passman/blob/main/docs/fresh-quickstart.md#password-changes-compromise-and-loss">
+            restoration and loss guide
           </a>{" "}
           before changing local files.
         </p>

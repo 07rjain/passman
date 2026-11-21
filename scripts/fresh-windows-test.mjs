@@ -36,7 +36,14 @@ if (process.exitCode !== 0) {
     "powershell.exe",
   );
   const slot = randomBytes(32).toString("hex");
-  for (const operation of ["read", "write", "read", "delete"]) {
+  for (const operation of [
+    "read",
+    "write",
+    "read",
+    "write",
+    "read",
+    "delete",
+  ]) {
     const probe = spawnSync(
       command,
       ["-NoProfile", "-NonInteractive", "-Command", helper],

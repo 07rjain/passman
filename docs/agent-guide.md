@@ -1,5 +1,34 @@
 # Passman
 
+## Fresh SDK 1.0.0-alpha.1
+
+For the fresh SDK/CLI, follow [the fresh quickstart](https://github.com/07rjain/passman/blob/main/docs/fresh-quickstart.md). Use the pinned `/install-v1.sh` or `/install-v1.ps1` installer and `@passman/sdk`. Publication and live acceptance are tracked in [release status](https://github.com/07rjain/passman/blob/main/docs/FRESH_CHANGELOG.md); source examples alone do not establish that downloads are available.
+
+On macOS/Linux after publication:
+
+```sh
+curl -fsSL https://passman.subdomain.wtf/install-v1.sh | sh && . "$HOME/.local/share/passman/env"
+export PASSMAN_ORIGIN=https://passman.subdomain.wtf
+passman login
+passman init
+```
+
+Setup is explicit. `init` creates a new fresh vault; existing fresh accounts use `vault unlock` or `admin restore`. Never initialize a replacement key to repair a read failure. The installer exposes `passman`; npm installs also expose `passman-v1`. Keep earlier vaults while their earlier values are needed; no automatic migration occurs.
+
+Create a project and values through the administrative CLI, then save a read service key once with `passman service-key save --default`. Ordinary reads select the credential's account and load its matching local key without a password prompt:
+
+```js
+import { connect } from "@passman/sdk";
+const passman = await connect();
+const value = await passman.getSecret({ project: "demo", name: "TOKEN" });
+```
+
+Pass the value directly to its authorized consumer; never include it in ordinary model messages or logs. A read service key cannot write values or restore signing authority. A missing local key requires explicit bootstrap or transfer; reads never create keys or open a browser. Website submissions remain pending until exact local verification. Read the quickstart for headless custody, transfer, multi-account selection, restoration and compromise response. Account login plus the vault password can restore administration; a forgotten password with only read-only keys surviving cannot.
+
+The remainder of this page documents the earlier SDK/channel. Use it only for an explicitly earlier-client task; it does not describe the fresh alpha.
+
+## Earlier SDK reference
+
 > Passman stores encrypted application secrets and lets trusted local application code decrypt them. This guide helps an agent set up the CLI, find permitted secret names and integrate the Node.js SDK without putting secret values in its conversation.
 
 Website: https://passman.subdomain.wtf/. Agent entry point: https://passman.subdomain.wtf/llms.txt. Complete documentation bundle: https://passman.subdomain.wtf/llms-full.txt.

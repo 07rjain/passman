@@ -1,5 +1,6 @@
 "use client";
 import CreatorContact from "./creator-contact";
+import { version } from "../../../../packages/passman/package.json";
 
 import { SignInButton } from "@clerk/nextjs";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
@@ -147,7 +148,7 @@ function CopyButton({ text, label }: { text: string; label: string }) {
   );
 }
 
-function SecretFlow() {
+function SecretFlow({ fresh }: { fresh: boolean }) {
   return (
     <figure
       className={styles.secretFlow}
@@ -165,7 +166,7 @@ function SecretFlow() {
           <strong>Your machine</strong>
           <span>Private key in your local vault</span>
         </div>
-        <span className={styles.localOnly}>Stays here</span>
+        <span className={styles.localOnly}>Protected locally</span>
       </div>
       <div className={styles.flowConnection} aria-hidden="true">
         <span />
@@ -246,6 +247,11 @@ function SecretFlow() {
         <code>
           await client.getSecret({"{"}
           <br />
+          {fresh && (
+            <>
+              &nbsp; project: <span>'my-app'</span>,<br />
+            </>
+          )}
           &nbsp; name: <span>'PAYMENTS_KEY'</span>
           <br />
           {"}"});
@@ -258,7 +264,9 @@ function SecretFlow() {
       <figcaption>
         The service stores encrypted values.
         <br />
-        Your private key stays on your machine.
+        {fresh
+          ? "Runtime keys decrypt on your configured machines."
+          : "Your private key stays on your machine."}
       </figcaption>
     </figure>
   );
@@ -269,15 +277,17 @@ function SignInAction({
   ready,
   children,
   className,
+  guide = "quickstart.md",
 }: {
   configured: boolean;
   ready: boolean;
   children: ReactNode;
   className?: string;
+  guide?: string;
 }) {
   if (!configured)
     return (
-      <a className={className} href={`${docs}/quickstart.md`}>
+      <a className={className} href={`${docs}/${guide}`}>
         Read the docs
       </a>
     );
@@ -301,10 +311,14 @@ export default function Landing({
 }) {
   const [platform, setPlatform] = useState<"unix" | "windows">("unix");
   const tabsId = useId();
+  const guide = fresh ? "fresh-quickstart.md" : "quickstart.md";
   const command = fresh
     ? installCommands[platform]
         .replace("install.sh", "install-v1.sh")
-        .replaceAll("install.ps1", "install-v1.ps1")
+        .replaceAll("install.ps1", "install-v1.ps1") +
+      (platform === "unix"
+        ? ` && export PASSMAN_ORIGIN=${installerOrigin}`
+        : `\n$env:Path = "$env:LOCALAPPDATA\\Passman\\bin;" + $env:Path\n$env:PASSMAN_ORIGIN = "${installerOrigin}"`)
     : installCommands[platform];
   const example = fresh
     ? `import { connect } from '@passman/sdk';\n\nconst client = await connect();\nconst value = await client.getSecret({\n  project: 'my-app',\n  name: 'PAYMENTS_KEY',\n});`
@@ -321,7 +335,7 @@ export default function Landing({
         <nav className={styles.navigation} aria-label="Main navigation">
           <a href="#how-it-works">How it works</a>
           <a href="#developers">For developers</a>
-          <a href={`${docs}/quickstart.md`}>Docs</a>
+          <a href={`${docs}/${guide}`}>Docs</a>
         </nav>
         <div className={styles.headerActions}>
           <a
@@ -335,6 +349,7 @@ export default function Landing({
             configured={authConfigured}
             ready={authReady}
             className={styles.signIn}
+            guide={guide}
           >
             Sign in
           </SignInAction>
@@ -345,10 +360,14 @@ export default function Landing({
           <div className={styles.heroCopy}>
             <a
               className={styles.releaseLink}
-              href={`${repository}/releases/latest`}
+              href={
+                fresh
+                  ? `${repository}/releases/tag/passman-v${version}`
+                  : `${repository}/releases/latest`
+              }
             >
               <span />
-              Latest Passman release
+              {fresh ? `Passman ${version}` : "Latest Passman release"}
               <svg
                 width="15"
                 height="15"
@@ -397,7 +416,7 @@ export default function Landing({
               For macOS, Linux and Windows
             </p>
           </div>
-          <SecretFlow />
+          <SecretFlow fresh={fresh} />
         </section>
 
         <section
@@ -464,7 +483,7 @@ export default function Landing({
               your application read-only access, and retrieve exactly what it
               needs.
             </p>
-            <a href={`${docs}/reference.md`}>
+            <a href={`${docs}/${fresh ? guide : "reference.md"}`}>
               Meet the TypeScript SDK
               <svg
                 width="16"
@@ -555,7 +574,7 @@ export default function Landing({
               <br />
               Just a small CLI and your local vault.
             </p>
-            <a className={styles.textLink} href={`${docs}/quickstart.md`}>
+            <a className={styles.textLink} href={`${docs}/${guide}`}>
               Follow the full quickstart
               <svg
                 width="16"
@@ -666,7 +685,7 @@ export default function Landing({
                       : '& "$env:LOCALAPPDATA\\Passman\\bin\\passman.cmd" login'}
                   </code>{" "}
                   {fresh
-                    ? "then run passman-v1 init to set up your vault once."
+                    ? "then run passman init to set up your vault once. Keep the account UUID it prints."
                     : "and approve the request in your browser."}
                 </p>
               </div>
@@ -677,12 +696,12 @@ export default function Landing({
                 <h3>Add a project. Store your first value.</h3>
                 <p>
                   {fresh
-                    ? "Create a project, then run passman-v1 put with your --account UUID: "
+                    ? "Run passman project create --account ACCOUNT_UUID --project my-app, then enter a value with "
                     : "Create a project in your workspace, then run "}
                   <code>
                     {platform === "unix"
-                      ? "passman put --project my-app --name PAYMENTS_KEY"
-                      : '& "$env:LOCALAPPDATA\\Passman\\bin\\passman.cmd" put --project my-app --name PAYMENTS_KEY'}
+                      ? `passman put ${fresh ? "--account ACCOUNT_UUID " : ""}--project my-app --name PAYMENTS_KEY`
+                      : `& "$env:LOCALAPPDATA\\Passman\\bin\\passman.cmd" put ${fresh ? "--account ACCOUNT_UUID " : ""}--project my-app --name PAYMENTS_KEY`}
                   </code>{" "}
                   to enter and encrypt a value locally.
                 </p>
@@ -690,6 +709,7 @@ export default function Landing({
                   configured={authConfigured}
                   ready={authReady}
                   className={styles.workspaceLink}
+                  guide={guide}
                 >
                   Open your workspace
                 </SignInAction>
@@ -708,7 +728,10 @@ export default function Landing({
               <br />
               No secret promises.
             </h2>
-            <a className={styles.textLink} href={`${docs}/security.md`}>
+            <a
+              className={styles.textLink}
+              href={`${docs}/${fresh ? "fresh-quickstart.md#operational-limits" : "security.md"}`}
+            >
               Read the security model
               <Icon name="key" size={16} />
             </a>
@@ -755,7 +778,11 @@ export default function Landing({
           <a href="/support">Support</a>
           <a href="/llms.txt">Agent docs</a>
           <a href={repository}>Source</a>
-          <a href={`${docs}/security.md`}>Security</a>
+          <a
+            href={`${docs}/${fresh ? "fresh-quickstart.md#operational-limits" : "security.md"}`}
+          >
+            Security
+          </a>
           <a href={`${repository}/blob/main/LICENSE`}>License</a>
         </nav>
         <CreatorContact className={styles.creatorContacts} />

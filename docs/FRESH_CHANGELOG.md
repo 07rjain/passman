@@ -18,3 +18,7 @@ The macOS native CI fixture uses an explicitly unlocked temporary keychain and r
 - Compare Windows custody owner/access identities by canonical SID values and add synthetic-only native-helper diagnostics to the Windows acceptance runner.
 
 - Use .NET ACL APIs in Windows custody so PowerShell 7's inherited module search path cannot break the Windows PowerShell helper's ACL checks. DPAPI encryption and owner/access validation remain required.
+
+- Pass a genuine null backup path to .NET's atomic Windows file replacement; PowerShell's ordinary `$null` becomes an invalid empty path. Native acceptance explicitly replaces and reloads a saved credential.
+
+- Point the fresh landing/support/agent guides to the matching alpha setup and release, use the installer's `passman` command, and include origin/account configuration in onboarding.

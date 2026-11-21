@@ -1,5 +1,7 @@
 # MVP security contract and limits
 
+For the implemented fresh `@passman/sdk` alpha, read [its security and operational limits](fresh-quickstart.md#operational-limits), [confirmed design](fresh-design.md), [security decisions](fresh-design-security-review.md) and [verification record](fresh-testing.md). The protocol and no-recovery statements below apply only to the earlier client.
+
 This file describes the existing implementation. The [from-scratch draft](fresh-design.md) proposes role-separated encryption/signing/sync, password-based administrative restoration, pending website entry with exact trusted local activation, and a read-only installation/deployment inventory. See [the security decision record](fresh-design-security-review.md). Its scope supersedes old requirements but has no inherited implementation-test/audit evidence.
 
 Status: experimental implementation, not an independent audit or production certification. This profile applies to the standalone Passman repository; it does not downgrade the older API or migrate its users. Use synthetic values until the live/platform and security-review gates are complete.

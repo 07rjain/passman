@@ -12,8 +12,8 @@ export default async function Page({
       <main style={{ maxWidth: 640, margin: "10vh auto", padding: 24 }}>
         <h1>Connect Passman CLI</h1>
         <p>
-          Start <code>passman-v1 login</code> locally and use its connection
-          link. Account sign-in must be configured.
+          Start <code>passman login</code> locally and use its connection link.
+          Account sign-in must be configured.
         </p>
       </main>
     );

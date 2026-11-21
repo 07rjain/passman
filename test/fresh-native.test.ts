@@ -40,6 +40,21 @@ test(
         await new NativeStore().read("credential", selection),
         token,
       );
+      const replacement = `synthetic-replacement-${randomUUID()}`;
+      await assert.doesNotReject(
+        () =>
+          store.write(
+            "credential",
+            selection,
+            replacement,
+            (current) => current === token,
+          ),
+        "Replacing an existing native credential must succeed",
+      );
+      assert.equal(
+        await new NativeStore().read("credential", selection),
+        replacement,
+      );
       await custody.saveRuntime(admin.runtime);
       const restored = await new NativeRuntimeCustody().loadRuntime(selection);
       assert.deepEqual(restored, admin.runtime);

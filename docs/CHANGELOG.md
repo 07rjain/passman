@@ -4,6 +4,8 @@ This file records website/API/security and operational changes. Installable clie
 
 ## Unreleased
 
+- Align the fresh landing page, support and agent entry points with the new quickstart and pinned alpha release. Use the installer's `passman` command, configure the service origin before login, and show the required account UUID in administrative examples. Clarify fresh restoration versus earlier-client key-loss behavior.
+
 - Prepare the signed fresh 1.0.0-alpha.1 SDK/CLI archive and pinned alpha installers, fresh home/console entry point, separate `/legacy` access and schema-backed `/api/passman/health`. The production guard verifies the exact signed alpha artifact before deployment. Publication, CI and live acceptance are recorded separately.
 
 - Record the owner-specified live `Vercel` SDK round trip on a temporary Agent37 VM, with exact retrieval, encrypted transport checks and credential/VM cleanup. Preserve the requested test entry and verified encrypted vault copy; no code change or deployment. See [the short report](live-vercel-sdk-test.md).

@@ -1,6 +1,6 @@
 # Fresh Passman: local alpha guide
 
-This guide is for the new `@passman/sdk` **1.0.0-alpha.1** source implementation and `passman-v1` CLI on Node.js 24. It uses `/api/passman/v1`, the separate `passman_v1` PostgreSQL schema and separate local custody. It does not import old vaults or data. The release candidate now has a signed GitHub archive/installer workflow; consult [release status](FRESH_CHANGELOG.md) for publication and hosted verification. Start with synthetic secrets; see [verification and platform gaps](fresh-testing.md).
+This guide is for the new `@passman/sdk` **1.0.0-alpha.1** source implementation and `passman` CLI on Node.js 24. It uses `/api/passman/v1`, the separate `passman_v1` PostgreSQL schema and separate local custody. It does not import old vaults or data. The release candidate now has a signed GitHub archive/installer workflow; consult [release status](FRESH_CHANGELOG.md) for publication and hosted verification. Start with synthetic secrets; see [verification and platform gaps](fresh-testing.md).
 
 ## The three things you configure
 
@@ -66,27 +66,35 @@ For applications, install the self-contained GitHub archive:
 npm install https://github.com/07rjain/passman/releases/download/passman-v1.0.0-alpha.1/passman-1.0.0-alpha.1.tgz
 ```
 
-The package remains `@passman/sdk`, with both `passman` and `passman-v1` commands. Windows uses the reviewed `/install-v1.ps1` script. The original installer/release channel remains separate. These install commands require the release assets to have been published; they do not establish that publication occurred.
+The package remains `@passman/sdk`. The signed installers expose `passman`; npm installs also expose the `passman-v1` alias. On Windows, download and review the script before executing it, then configure this PowerShell session:
+
+```powershell
+Invoke-WebRequest -Uri https://passman.subdomain.wtf/install-v1.ps1 -OutFile "$env:TEMP\passman-install-v1.ps1"
+& "$env:TEMP\passman-install-v1.ps1"
+$env:Path = "$env:LOCALAPPDATA\Passman\bin;" + $env:Path
+$env:PASSMAN_ORIGIN = "https://passman.subdomain.wtf"
+```
+
+The original installer/release channel remains separate. These install commands require the release assets to have been published; they do not establish that publication occurred.
 
 ## Desktop setup once
 
-For source development, invoke the compiled CLI with `node packages/passman/dist/cli.js` wherever this guide shows `passman-v1`. Local installation can consume both packed protocol and SDK tarballs; neither package has been published by this work.
+For source development, invoke the compiled CLI with `node packages/passman/dist/cli.js` wherever this guide shows `passman`. Local installation can consume both packed protocol and SDK tarballs; neither package has been published by this work.
 
 ```sh
-export PASSMAN_ORIGIN='http://localhost:3100'
-passman-v1 login
-passman-v1 init
+passman login
+passman init
 ```
 
-On PowerShell, set the origin with `$env:PASSMAN_ORIGIN = "http://localhost:3100"` instead of `export`.
+Keep the origin configured during installation. For source development only, use your configured local server origin, such as `http://localhost:3100`, instead of the hosted origin.
 
 Login prints a short-lived connection link and connection code. Paste the code from your terminal into the signed-in page to connect that client. `init` asks for a new vault password locally and prints a non-secret account ID. Initialization keeps durable staged material when the outcome is uncertain. Existing accounts use `admin restore` or `vault unlock`, never a new key.
 
 The saved management credential lasts ten minutes; run `login` explicitly when another management session is needed. It never opens a browser during a normal SDK read or write. Initial administrative credentials last 30 days; administrative credentials may last at most 90 days and need deliberate renewal/enrollment. Read keys have optional expiry.
 
 ```sh
-passman-v1 project create --account ACCOUNT_UUID --project demo
-passman-v1 put --account ACCOUNT_UUID --project demo --name OPENAI_API_KEY
+passman project create --account ACCOUNT_UUID --project demo
+passman put --account ACCOUNT_UUID --project demo --name OPENAI_API_KEY
 ```
 
 `put` reads the value through hidden input. `update`, `delete` and `recreate` are separate administrative actions; updates use optimistic revisions. Secret names are case-sensitive ASCII addresses, not passwords. Empty strings are valid values.
@@ -94,8 +102,8 @@ passman-v1 put --account ACCOUNT_UUID --project demo --name OPENAI_API_KEY
 In `/passman`, create a read service key scoped to `demo`. Enable bootstrap only if you want this credential to set up a new machine with the vault password. Choose an expiry or explicitly allow no expiry. Save the displayed key locally:
 
 ```sh
-passman-v1 service-key save --default
-passman-v1 get --project demo --name OPENAI_API_KEY
+passman service-key save --default
+passman get --project demo --name OPENAI_API_KEY
 ```
 
 Initial `init` already installed runtime custody on that machine. A different machine must explicitly run `vault unlock` with a bootstrap-enabled key, or `vault unlock --management` after login. The service key and vault password use hidden input. Subsequent retrieval needs only project/name. The final command deliberately prints plaintext without appending a newline. The first saved account becomes the default; use `--default` or `--account` deliberately when several accounts exist. Removing that default never selects another account automatically.
@@ -103,7 +111,7 @@ Initial `init` already installed runtime custody on that machine. A different ma
 The administrative CLI can also issue a read key, deliberately displaying it once:
 
 ```sh
-passman-v1 service-key create --account ACCOUNT_UUID --project-id PROJECT_UUID --label worker --non-expiring
+passman service-key create --account ACCOUNT_UUID --project-id PROJECT_UUID --label worker --non-expiring
 ```
 
 Only full account administrators can issue read credentials independently of their own administrative expiry. Delegated administrators cannot widen project, operation or expiry limits. Administrative child credentials always remain bounded by their parent's expiry.
@@ -131,8 +139,8 @@ const apiKey = await passman.getSecret({
 For password bootstrap, configure that machine's own same-account bootstrap-enabled service key, run `vault unlock` once, then retain only the required runtime credential/custody. Management-authorized runtime unlock is available as `vault unlock --management`. Administrative restoration is separate:
 
 ```sh
-passman-v1 login --no-browser
-passman-v1 admin restore
+passman login --no-browser
+passman admin restore
 ```
 
 Headless Linux may use explicitly selected owner-only files instead of a desktop keyring. Pass `--file-mode --store-dir /absolute/protected/directory` consistently to login/setup/read commands. The containing directory must belong to the operator or root and have no untrusted writable ancestors. Files hold plaintext runtime/admin material protected by filesystem permissions; the vault password is not a runtime security boundary.
@@ -160,13 +168,13 @@ The POSIX mount adapter accepts the configured owner/root and approved read-only
 The source needs its administrative profile, a current management login and the current vault password:
 
 ```sh
-passman-v1 vault transfer create --account ACCOUNT_UUID
+passman vault transfer create --account ACCOUNT_UUID
 ```
 
 Deliver the intentionally displayed full code privately. On the receiver, configure its own same-account service key and run:
 
 ```sh
-passman-v1 vault transfer receive
+passman vault transfer receive
 ```
 
 The code expires after about 9½ minutes by default and permits one receiver claim. Claim and encryption secrets are independent. Source credentials, password and private writer authority are excluded. Receiver proof is stored before claiming; acknowledgement follows durable storage, read-back and a local crypto round trip. Repeat an interrupted receive with the same code/store. An expired/terminal failed session can be replaced. Existing unrelated accounts are untouched. Use `vault transfer forget --transfer-id UUID` to abandon only the local receiver proof for an unwanted attempt; this neither cancels the relay nor revokes an installed key.
@@ -178,8 +186,8 @@ Code expiry governs the live relay. Anyone who captured both the full code and c
 Website entry is create-only. Its scripts can read newly typed values before encrypting them. A pending value never becomes an ordinary SDK result until you independently verify the exact account/project/name/value locally:
 
 ```sh
-passman-v1 pending verify --account ACCOUNT_UUID --project demo --name TOKEN
-passman-v1 pending reject --account ACCOUNT_UUID --project demo --name UNWANTED_TOKEN
+passman pending verify --account ACCOUNT_UUID --project demo --name TOKEN
+passman pending reject --account ACCOUNT_UUID --project demo --name UNWANTED_TOKEN
 ```
 
 Verification asks for the expected value again; there is no generic approval switch. Rejection signs a tombstone without ever activating the submitted value. Pending values under retired keys/epochs must be rejected and entered again locally. The website cannot update/delete existing names, reclaim tombstones, activate values or reveal existing plaintext. Read and administrative credential revocation are available on the website; issuing administrative authority still requires the local signer.

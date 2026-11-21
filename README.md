@@ -11,13 +11,13 @@ After the signed alpha release is published, on macOS/Linux:
 ```sh
 curl -fsSL https://passman.subdomain.wtf/install-v1.sh | sh && . "$HOME/.local/share/passman/env"
 export PASSMAN_ORIGIN=https://passman.subdomain.wtf
-passman-v1 login
-passman-v1 init
+passman login
+passman init
 ```
 
 Windows uses `https://passman.subdomain.wtf/install-v1.ps1`; review and run the downloaded script in PowerShell. Both installers include a private Node.js 24 runtime and verify the pinned publisher signature/checksum. Native desktop storage requires an available OS keystore. Explicit protected file custody is available for headless Unix deployments.
 
-`init` creates a new fresh vault. Create a project and enter values through the administrative CLI/SDK, or submit a pending value on the website and verify its exact value locally. Save a project-scoped service key once with `passman-v1 service-key save --default`. Later SDK reads use the saved credential and account-specific local key automatically.
+`init` creates a new fresh vault. Create a project and enter values through the administrative CLI/SDK, or submit a pending value on the website and verify its exact value locally. Save a project-scoped service key once with `passman service-key save --default`. Later SDK reads use the saved credential and account-specific local key automatically.
 
 ## SDK
 

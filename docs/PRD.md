@@ -11,7 +11,7 @@ Store generic named secret values encrypted on a service and retrieve/decrypt th
 
 ## MVP requirements
 
-### From-scratch replacement requirements — confirmed 2026-11-20, not implemented
+### From-scratch replacement requirements — confirmed 2026-11-20
 
 Latest user decisions: website secret **submission only**, pending trusted local verification of exact name/value, with no website activation/update/overwrite/delete. Administrative CLI/SDK support creation, activation, update and deletion, including headless/CI through separately provisioned administrative credentials and local write authority. Show a read-only inventory of registered installations and logical deployments with last-seen and active/inactive status, not a census of physical key copies. See [the draft](fresh-design.md) and [consolidated security review](fresh-design-security-review.md).
 

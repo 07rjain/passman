@@ -5,7 +5,7 @@ Implementation update: fresh protocol, role-separated runtime/admin SDK/CLI, nat
 
 Status: experimental standalone source prepared for [07rjain/passman](https://github.com/07rjain/passman). The new Vercel project/domain are deployed; Clerk/database configuration, health, published-client login setup and authorization denial checks pass; targeted two-account production browser/VM acceptance is recorded in [the manual report](manual-security-test-2026-11-01.md); wider release validation remains pending. Follow the [PRD](PRD.md), [design decisions](simplified-design.md) and [working instructions](../AGENTS.md). See [testing.md](testing.md) for commands and [live-setup.md](live-setup.md) for the new deployment checklist.
 
-## From-scratch replacement plan — draft, not implemented
+## From-scratch replacement plan — source alpha
 
 The user has resolved the six [security-review decisions](fresh-design-security-review.md): pending website submissions require exact local verification; password bootstrap is separately authorized; inventory counts installations/deployments; transfer redemption also requires the recipient's own-account service key; headless administrative credentials are supported; and account login plus vault password restores full administration. The follow-up decision is also final: forgotten password with only read-only keys surviving has no administrative recovery path. Runtime service keys remain read-only and cannot be promoted through login/support bypasses.
 
