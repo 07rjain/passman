@@ -91,3 +91,5 @@ The isolated macOS fixture still returned native `errSecParam` (-50) for each qu
 ## Windows package-fixture quoting — 2026-11-21
 
 Both Windows jobs on `02dbbd8` passed their build/unit/earlier-package stages, then failed when the fresh package fixture launched npm’s `.cmd` shim. Node escaped the intentionally quoted `cmd /s /c` payload a second time. The fixture now passes that payload verbatim and uses a consumer directory containing spaces. It still executes the installed shim and checks its actual help output; native DPAPI acceptance remains pending the subsequent CI stages.
+
+The reduced queries also returned -50. Boundary inspection identified raw Security `CFStringRef` constants being passed as `NSDictionary` keys/values. The helper now casts those constants to their toll-free Objective-C objects and uses a Foundation Boolean for return-data requests. The synthetic bridge probe uses the same conversions. Native macOS read/write and locked-keychain tests remain enabled; CI must confirm the corrected bridge.

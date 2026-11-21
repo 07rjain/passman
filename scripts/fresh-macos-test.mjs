@@ -55,25 +55,26 @@ try {
         "-e",
         String.raw`
 ObjC.import('Foundation'); ObjC.import('Security');
+var cf=ObjC.castRefToObject;
 var stage='interaction';
 try {
  $.SecKeychainSetUserInteractionAllowed(false);
  stage='query';
  var q=$.NSMutableDictionary.alloc.init;
- q.setObjectForKey($.kSecClassGenericPassword,$.kSecClass);
- q.setObjectForKey($('passman.synthetic.probe'),$.kSecAttrService);
- q.setObjectForKey($('fixture'),$.kSecAttrAccount);
+ q.setObjectForKey(cf($.kSecClassGenericPassword),cf($.kSecClass));
+ q.setObjectForKey($('passman.synthetic.probe'),cf($.kSecAttrService));
+ q.setObjectForKey($('fixture'),cf($.kSecAttrAccount));
  // Match the adapter's default, non-synchronizing file-keychain query.
- stage='read-missing'; var result=Ref(); q.setObjectForKey($.kCFBooleanTrue,$.kSecReturnData);
+ stage='read-missing'; var result=Ref(); q.setObjectForKey($.NSNumber.numberWithBool(true),cf($.kSecReturnData));
  console.log('synthetic.read-missing.status='+$.SecItemCopyMatching(q,result));
- q.removeObjectForKey($.kSecReturnData); stage='add';
+ q.removeObjectForKey(cf($.kSecReturnData)); stage='add';
  var add=q.mutableCopy;
- add.setObjectForKey($('synthetic').dataUsingEncoding($.NSUTF8StringEncoding),$.kSecValueData);
+ add.setObjectForKey($('synthetic').dataUsingEncoding($.NSUTF8StringEncoding),cf($.kSecValueData));
  console.log('synthetic.add.status='+$.SecItemAdd(add,null));
- stage='read';q.setObjectForKey($.kCFBooleanTrue,$.kSecReturnData);
+ stage='read';q.setObjectForKey($.NSNumber.numberWithBool(true),cf($.kSecReturnData));
  var status=$.SecItemCopyMatching(q,result); console.log('synthetic.read.status='+status);
  if(status===0){stage='decode';console.log('synthetic.decode.type='+typeof $.NSString.alloc.initWithDataEncoding(ObjC.castRefToObject(result[0]),$.NSUTF8StringEncoding).js);}
- q.removeObjectForKey($.kSecReturnData);stage='delete';console.log('synthetic.delete.status='+$.SecItemDelete(q));
+ q.removeObjectForKey(cf($.kSecReturnData));stage='delete';console.log('synthetic.delete.status='+$.SecItemDelete(q));
 }catch(e){console.log('synthetic.bridge.stage='+stage+' error='+String(e));}
 `,
       ],

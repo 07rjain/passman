@@ -68,6 +68,7 @@ else:
 `;
 const macHelper = String.raw`
 ObjC.import('Foundation'); ObjC.import('Security');
+var cf=ObjC.castRefToObject;
 $.SecKeychainSetUserInteractionAllowed(false);
 function failed(status) {
  if(status===-25308 || status===-25293) return JSON.stringify({error:'VAULT_LOCKED'});
@@ -76,23 +77,23 @@ function failed(status) {
 function main() {
 var data = JSON.parse($.NSString.alloc.initWithDataEncoding($.NSFileHandle.fileHandleWithStandardInput.readDataToEndOfFile,$.NSUTF8StringEncoding).js);
 var q=$.NSMutableDictionary.alloc.init;
-q.setObjectForKey($.kSecClassGenericPassword,$.kSecClass);
-q.setObjectForKey($('passman.v1'),$.kSecAttrService);
-q.setObjectForKey($(data.slot),$.kSecAttrAccount);
-// The default file keychain is non-synchronizing. Data-protection query options
-// are rejected with errSecParam here; the process-wide setting above forbids UI.
+q.setObjectForKey(cf($.kSecClassGenericPassword),cf($.kSecClass));
+q.setObjectForKey($('passman.v1'),cf($.kSecAttrService));
+q.setObjectForKey($(data.slot),cf($.kSecAttrAccount));
+// Security constants are CFStringRefs: NSDictionary requires their toll-free
+// Objective-C objects. Use the default non-synchronizing file keychain with UI disabled.
 if(data.operation==='delete') {
  var status=$.SecItemDelete(q); if(status!==0 && status!==-25300) return failed(status); return JSON.stringify(null);
 } else if(data.operation==='read') {
- q.setObjectForKey($.kCFBooleanTrue,$.kSecReturnData);
- q.setObjectForKey($.kSecMatchLimitOne,$.kSecMatchLimit);
+ q.setObjectForKey($.NSNumber.numberWithBool(true),cf($.kSecReturnData));
+ q.setObjectForKey(cf($.kSecMatchLimitOne),cf($.kSecMatchLimit));
  var result=Ref(); var status=$.SecItemCopyMatching(q,result);
  if(status===-25300) return JSON.stringify(null);
  if(status!==0) return failed(status);
  return JSON.stringify($.NSString.alloc.initWithDataEncoding(ObjC.castRefToObject(result[0]),$.NSUTF8StringEncoding).js);
 } else {
  var update=$.NSMutableDictionary.alloc.init;
- update.setObjectForKey($(data.value).dataUsingEncoding($.NSUTF8StringEncoding),$.kSecValueData);
+ update.setObjectForKey($(data.value).dataUsingEncoding($.NSUTF8StringEncoding),cf($.kSecValueData));
  var status=$.SecItemUpdate(q,update);
  if(status===-25300) {
   // Use the supported file-based login keychain; no app entitlement or iCloud synchronization.

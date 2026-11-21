@@ -12,3 +12,5 @@ The macOS native CI fixture uses an explicitly unlocked temporary keychain and r
 - Correct macOS file-keychain queries that returned `errSecParam` (-50) even with unlocked storage. Runtime interaction stays disabled; native CI also checks that locking the isolated keychain rejects reads/writes without a prompt.
 
 - Correct Windows package-fixture command quoting and exercise installation in a directory containing spaces. The fixture continues to execute the installed npm CLI shim before native acceptance.
+
+- Cast Security `CFStringRef` query constants to their toll-free Objective-C objects before constructing macOS Keychain dictionaries; raw references produced `errSecParam` for otherwise valid queries.
