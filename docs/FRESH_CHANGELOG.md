@@ -16,3 +16,5 @@ The macOS native CI fixture uses an explicitly unlocked temporary keychain and r
 - Cast Security `CFStringRef` query constants to their toll-free Objective-C objects before constructing macOS Keychain dictionaries; raw references produced `errSecParam` for otherwise valid queries.
 
 - Compare Windows custody owner/access identities by canonical SID values and add synthetic-only native-helper diagnostics to the Windows acceptance runner.
+
+- Use .NET ACL APIs in Windows custody so PowerShell 7's inherited module search path cannot break the Windows PowerShell helper's ACL checks. DPAPI encryption and owner/access validation remain required.

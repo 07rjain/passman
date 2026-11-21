@@ -116,7 +116,7 @@ $root=Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'Passman-
 function Assert-Path($path) {
  $item=Get-Item -LiteralPath $path -Force
  if(($item.Attributes -band [IO.FileAttributes]::ReparsePoint)-ne 0){throw 'unavailable'}
- $acl=Get-Acl -LiteralPath $path
+ $acl=if($item.PSIsContainer){[IO.Directory]::GetAccessControl($item.FullName)}else{[IO.File]::GetAccessControl($item.FullName)}
  if($acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne $sid.Value){throw 'unavailable'}
  foreach($rule in $acl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier])) {
   if($rule.AccessControlType -eq 'Allow' -and $rule.IdentityReference.Value -ne $sid.Value -and $rule.IdentityReference.Value -ne 'S-1-5-18' -and $rule.IdentityReference.Value -ne 'S-1-5-32-544'){throw 'unavailable'}
@@ -128,7 +128,7 @@ if(!(Test-Path -LiteralPath $root)) {
  $acl=New-Object Security.AccessControl.DirectorySecurity
  $acl.SetOwner($sid);$acl.SetAccessRuleProtection($true,$false)
  $acl.AddAccessRule((New-Object Security.AccessControl.FileSystemAccessRule($sid,'FullControl','ContainerInherit,ObjectInherit','None','Allow')))
- Set-Acl -LiteralPath $root -AclObject $acl
+ [IO.Directory]::SetAccessControl($root,$acl)
 }
 Assert-Path $root
 $path=Join-Path $root ($d.slot+'.bin')

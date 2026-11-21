@@ -4,6 +4,8 @@ The SDK and CLI share one semantic version. This changelog covers the installabl
 
 ## Unreleased
 
+- Remove the fresh Windows custody helper's dependency on PowerShell ACL cmdlets; use .NET ACL APIs to preserve validation when launched from PowerShell 7.
+
 - Prepare separate `@passman/sdk` / `@passman/protocol` 1.0.0-alpha.1 and `passman-v1`: promptless local reads, saved scoped credentials, explicit OS/deployment custody, account routing, signed administrative CRUD, password bootstrap/restoration, staged rotations/root replacement and resumable transfer. Breaking fresh formats have no legacy migration. Source alpha only; see [setup](fresh-quickstart.md) and [platform limits](fresh-testing.md).
 
 ## 0.4.0 — 2026-11-18

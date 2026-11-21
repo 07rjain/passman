@@ -97,3 +97,5 @@ The reduced queries also returned -50. Boundary inspection identified raw Securi
 ## Windows native-helper verification — 2026-11-21
 
 After the package-quoting correction, Windows package/distribution checks passed and the native suite reached the DPAPI helper, which returned `STORAGE_UNAVAILABLE`. SID ownership/access checks now compare canonical SID strings. The isolated Windows runner can diagnose a failure with a fresh random slot and fixed synthetic data using the actual helper; production helper diagnostics remain drained/redacted. Native acceptance is pending CI.
+
+The probe on `92bcb2c` identified a `Microsoft.PowerShell.Security` module-loading failure at `Get-Acl`. The helper runs in Windows PowerShell while the CI shell is PowerShell 7, whose inherited module search path can select incompatible modules. ACL reads and writes now use the .NET filesystem APIs already exercised by the earlier Windows client. The native persistence/context-validation suite remains the regression gate; this Linux workspace cannot establish Windows acceptance.
